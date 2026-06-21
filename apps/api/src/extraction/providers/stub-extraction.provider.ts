@@ -100,11 +100,6 @@ export class StubExtractionProvider implements ExtractionProvider {
   }
 }
 
-// ───────────────────────────────────────────────────────────────────────────
-// TODO (Fázis 2): AnthropicExtractionProvider – Claude alapú kinyerés.
-//   Az Anthropic API-t hívja a `claude-opus-4-8` (vagy ANTHROPIC_MODEL env)
-//   modellel: az OCR szöveget és egy strukturált promptot küld, a választ a
-//   shared `parseExtractionResult`-tal validálja. Adaptív thinking ajánlott;
-//   az ANTHROPIC_API_KEY env-ből jön. A kimenet MINDIG a shared ExtractionResult
-//   szerződés. (Részletek: docs/OCR_AI_ENGINE.md.)
-// ───────────────────────────────────────────────────────────────────────────
+// A valódi (Gemini) implementáció: ./gemini-extraction.provider.ts
+// (modell-lánccal, a shared ExtractionResult szerződést adja vissza).
+// Részletek: docs/OCR_AI_ENGINE.md.

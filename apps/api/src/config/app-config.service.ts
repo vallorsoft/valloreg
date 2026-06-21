@@ -86,29 +86,53 @@ export class AppConfigService {
     return this.get('EXTRACTION_PROVIDER');
   }
 
-  get anthropicModel(): string {
-    return this.get('ANTHROPIC_MODEL');
+  /**
+   * Gemini konfiguráció. A `models` a feldolgozó modell-lánc: 429 (kvóta) esetén
+   * a provider a következő modellre vált. A láncot a GEMINI_MODELS felülírja;
+   * a GEMINI_MODEL csak a lánc ELEJÉRE kerül (a többi marad tartaléknak).
+   */
+  get gemini(): { apiKey: string; models: string[] } {
+    const DEFAULT_CHAIN = [
+      'gemini-2.0-flash',
+      'gemini-2.0-flash-lite',
+      'gemini-2.5-flash',
+      'gemini-2.5-flash-lite',
+      'gemini-1.5-flash',
+      'gemini-1.5-flash-8b',
+    ];
+
+    const override = this.get('GEMINI_MODELS')
+      .split(',')
+      .map((m) => m.trim())
+      .filter(Boolean);
+
+    let models = override.length > 0 ? override : DEFAULT_CHAIN;
+
+    const preferred = this.get('GEMINI_MODEL').trim();
+    if (preferred) {
+      models = [preferred, ...models.filter((m) => m !== preferred)];
+    }
+
+    return { apiKey: this.get('GEMINI_API_KEY'), models };
   }
 
-  get anthropicApiKey(): string {
-    return this.get('ANTHROPIC_API_KEY');
+  get integrationEncKey(): string {
+    return this.get('INTEGRATION_ENC_KEY');
   }
 
-  get smtp(): {
-    host: string;
-    port: number;
-    user?: string;
-    password?: string;
-    from: string;
-  } {
-    const user = this.get('SMTP_USER');
-    const password = this.get('SMTP_PASSWORD');
+  get mail(): { apiKey: string; sender: string; from: string } {
     return {
-      host: this.get('SMTP_HOST'),
-      port: this.get('SMTP_PORT'),
-      user: user ? user : undefined,
-      password: password ? password : undefined,
-      from: this.get('SMTP_FROM'),
+      apiKey: this.get('BREVO_API_KEY'),
+      sender: this.get('BREVO_SENDER'),
+      from: this.get('MAIL_FROM'),
+    };
+  }
+
+  get vapid(): { publicKey: string; privateKey: string; email: string } {
+    return {
+      publicKey: this.get('VAPID_PUBLIC_KEY'),
+      privateKey: this.get('VAPID_PRIVATE_KEY'),
+      email: this.get('VAPID_EMAIL'),
     };
   }
 

@@ -47,29 +47,39 @@ export const envSchema = z.object({
 
   // S3 / MinIO
   S3_ENDPOINT: z.string().default('http://localhost:9000'),
-  S3_REGION: z.string().default('eu-central-1'),
+  S3_REGION: z.string().default('auto'),
   S3_ACCESS_KEY: z.string().default('valloreg'),
   S3_SECRET_KEY: z.string().default('valloreg-secret'),
   S3_BUCKET: z.string().default('valloreg-documents'),
   S3_FORCE_PATH_STYLE: booleanString(true),
 
-  // OCR / Extraction providerek (Fázis 2 plumbing)
-  OCR_PROVIDER: z.enum(['stub', 'mistral', 'google']).default('stub'),
+  // Integrációs kulcsok titkosítása (opcionális; ha üres, nincs titkosítás)
+  INTEGRATION_ENC_KEY: z.string().optional().default(''),
+
+  // OCR provider (Fázis 2). Gemini vision olvassa a fájlt; mistral/google opció.
+  OCR_PROVIDER: z.enum(['stub', 'gemini', 'mistral', 'google']).default('stub'),
   MISTRAL_API_KEY: z.string().optional().default(''),
   GOOGLE_DOCUMENT_AI_PROJECT_ID: z.string().optional().default(''),
   GOOGLE_DOCUMENT_AI_LOCATION: z.string().optional().default('eu'),
   GOOGLE_DOCUMENT_AI_PROCESSOR_ID: z.string().optional().default(''),
 
-  EXTRACTION_PROVIDER: z.enum(['stub', 'anthropic']).default('stub'),
-  ANTHROPIC_API_KEY: z.string().optional().default(''),
-  ANTHROPIC_MODEL: z.string().default('claude-sonnet-4-6'),
+  // Extraction provider (Fázis 2): Google Gemini (vision = OCR + extraction).
+  EXTRACTION_PROVIDER: z.enum(['stub', 'gemini']).default('stub'),
+  GEMINI_API_KEY: z.string().optional().default(''),
+  // Opcionális: ha megadod, EZ kerül a modell-lánc elejére.
+  GEMINI_MODEL: z.string().optional().default(''),
+  // Opcionális: a TELJES modell-láncot felülírja (vesszős lista).
+  GEMINI_MODELS: z.string().optional().default(''),
 
-  // SMTP
-  SMTP_HOST: z.string().default('localhost'),
-  SMTP_PORT: z.coerce.number().int().positive().default(1025),
-  SMTP_USER: z.string().optional().default(''),
-  SMTP_PASSWORD: z.string().optional().default(''),
-  SMTP_FROM: z.string().default('no-reply@valloreg.local'),
+  // E-mail: Brevo (transactional API). Ha nincs kulcs, a mailer csak logol.
+  BREVO_API_KEY: z.string().optional().default(''),
+  BREVO_SENDER: z.string().default('noreply@valloreg.local'),
+  MAIL_FROM: z.string().default('noreply@valloreg.local'),
+
+  // Web Push (VAPID) – Fázis 4 push értesítések.
+  VAPID_PUBLIC_KEY: z.string().optional().default(''),
+  VAPID_PRIVATE_KEY: z.string().optional().default(''),
+  VAPID_EMAIL: z.string().default('mailto:admin@valloreg.local'),
 
   // Feldolgozási limit
   MAX_DOCUMENT_SIZE_BYTES: z.coerce

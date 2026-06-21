@@ -14,8 +14,9 @@ const ocrProviderFactory: Provider = {
     switch (config.ocrProvider) {
       case 'stub':
         return stub;
-      // TODO (Fázis 2): case 'mistral': return new MistralOcrProvider(...);
-      // TODO (Fázis 2): case 'google': return new GoogleDocumentAiOcrProvider(...);
+      // TODO (Fázis 2): case 'gemini': GeminiOcrProvider – vision OCR a fájlból.
+      // TODO (Fázis 2): case 'mistral': MistralOcrProvider.
+      // TODO (Fázis 2): case 'google': GoogleDocumentAiOcrProvider.
       default:
         // Ismeretlen/még nem implementált provider → biztonságos fallback stubra.
         return stub;

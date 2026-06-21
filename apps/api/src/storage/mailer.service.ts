@@ -1,6 +1,4 @@
 import { Injectable, Logger } from '@nestjs/common';
-import * as nodemailer from 'nodemailer';
-import type { Transporter } from 'nodemailer';
 import { AppConfigService } from '../config/app-config.service';
 
 export interface MailMessage {
@@ -10,44 +8,58 @@ export interface MailMessage {
   html?: string;
 }
 
+const BREVO_ENDPOINT = 'https://api.brevo.com/v3/smtp/email';
+
 /**
- * Egyszerű SMTP mailer (dev: MailHog). Fázis 1-ben főleg meghívókhoz/jelszó-reset
- * stubhoz használjuk. Ha az SMTP nem elérhető, NEM dob – csak logol, hogy az
- * üzleti művelet (pl. meghívó létrehozása) ne bukjon meg miatta.
+ * Brevo (transactional) mailer a REST API-n keresztül – nincs SDK függőség.
+ * Fázis 1-ben meghívókhoz/jelszó-reset-hez. Ha nincs BREVO_API_KEY, NEM dob,
+ * csak logol (a tartalmat is dev-ben), hogy az üzleti művelet ne bukjon meg.
  */
 @Injectable()
 export class MailerService {
   private readonly logger = new Logger(MailerService.name);
-  private readonly transporter: Transporter;
-  private readonly from: string;
 
-  constructor(private readonly config: AppConfigService) {
-    const smtp = this.config.smtp;
-    this.from = smtp.from;
-    this.transporter = nodemailer.createTransport({
-      host: smtp.host,
-      port: smtp.port,
-      secure: false,
-      auth:
-        smtp.user && smtp.password
-          ? { user: smtp.user, pass: smtp.password }
-          : undefined,
-    });
-  }
+  constructor(private readonly config: AppConfigService) {}
 
   async send(message: MailMessage): Promise<void> {
+    const { apiKey, sender, from } = this.config.mail;
+
+    if (!apiKey) {
+      // Kulcs nélkül (dev/MailHog vagy CI): logoljuk, de nem dobunk.
+      this.logger.log(
+        `[MAIL stub] -> ${message.to} | ${message.subject}\n${message.text}`,
+      );
+      return;
+    }
+
     try {
-      await this.transporter.sendMail({
-        from: this.from,
-        to: message.to,
-        subject: message.subject,
-        text: message.text,
-        html: message.html,
+      const res = await fetch(BREVO_ENDPOINT, {
+        method: 'POST',
+        headers: {
+          'api-key': apiKey,
+          'Content-Type': 'application/json',
+          accept: 'application/json',
+        },
+        body: JSON.stringify({
+          sender: { email: from || sender },
+          to: [{ email: message.to }],
+          subject: message.subject,
+          textContent: message.text,
+          htmlContent: message.html,
+        }),
       });
-      this.logger.log(`Email elküldve: ${message.to} – ${message.subject}`);
+
+      if (!res.ok) {
+        const body = await res.text().catch(() => '');
+        this.logger.warn(
+          `Brevo email sikertelen (${message.to}): ${res.status} ${body.slice(0, 200)}`,
+        );
+        return;
+      }
+      this.logger.log(`Email elküldve (Brevo): ${message.to} – ${message.subject}`);
     } catch (err) {
       this.logger.warn(
-        `Email küldés sikertelen (${message.to}): ${(err as Error).message}`,
+        `Brevo email hiba (${message.to}): ${(err as Error).message}`,
       );
     }
   }
