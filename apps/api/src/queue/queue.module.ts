@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { OcrModule } from '../ocr/ocr.module';
 import { ExtractionModule } from '../extraction/extraction.module';
+import { MatchingModule } from '../matching/matching.module';
 import { documentsQueueProvider } from './queue.providers';
 import { DocumentsQueueService } from './documents-queue.service';
 import { DocumentsProcessor } from './documents.processor';
@@ -15,7 +16,7 @@ import { DocumentsProcessor } from './documents.processor';
  * ponttal Fázis 2/üzemeltetés feladata.
  */
 @Module({
-  imports: [OcrModule, ExtractionModule],
+  imports: [OcrModule, ExtractionModule, MatchingModule],
   providers: [
     documentsQueueProvider,
     DocumentsQueueService,

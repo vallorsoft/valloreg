@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import { Prisma } from '@prisma/client';
-import { DocumentStatus } from '@valloreg/shared';
+import { DocumentStatus, ItemType } from '@valloreg/shared';
 import type { ExtractionResult } from '@valloreg/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,6 +16,8 @@ import { OCR_PROVIDER } from '../ocr/ocr.provider';
 import type { OcrProvider } from '../ocr/ocr.provider';
 import { EXTRACTION_PROVIDER } from '../extraction/extraction.provider';
 import type { ExtractionProvider } from '../extraction/extraction.provider';
+import { MatchingService } from '../matching/matching.service';
+import type { VehicleMatch } from '../matching/matching.service';
 import {
   DOCUMENTS_QUEUE,
   ProcessDocumentJobData,
@@ -53,6 +55,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
     @Inject(OCR_PROVIDER) private readonly ocr: OcrProvider,
     @Inject(EXTRACTION_PROVIDER)
     private readonly extraction: ExtractionProvider,
+    private readonly matching: MatchingService,
   ) {}
 
   onModuleInit(): void {
@@ -125,17 +128,35 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
         documentId,
       });
 
-      // 3) Perzisztálás (Invoice + InvoiceItem) – idempotens upsert a documentId-re.
-      await this.persistInvoice(tenantId, documentId, extraction);
+      // 3) Felismerés: beszállító feloldása + jármű-matching (a tanult mappingek
+      //    és a rendszám/VIN egyezés alapján).
+      const supplierId = await this.matching.resolveSupplierId(
+        tenantId,
+        extraction.invoice.supplier,
+      );
+      const vehicleMatch = await this.matching.resolveVehicleForInvoice(
+        tenantId,
+        extraction,
+        supplierId,
+      );
 
-      // 4) Státusz a confidence alapján.
+      // 4) Perzisztálás (Invoice + InvoiceItem) – idempotens upsert a documentId-re.
+      await this.persistInvoice(
+        tenantId,
+        documentId,
+        extraction,
+        supplierId,
+        vehicleMatch,
+      );
+
+      // 5) Státusz a confidence alapján.
       const nextStatus =
         extraction.invoice.confidence >= AUTO_OK_CONFIDENCE_THRESHOLD
           ? DocumentStatus.AUTO_OK
           : DocumentStatus.NEEDS_REVIEW;
       await this.setStatus(tenantId, documentId, nextStatus);
 
-      // 5) Audit
+      // 6) Audit
       await this.audit.log({
         tenantId,
         action: 'document.processed',
@@ -146,6 +167,9 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
           confidence: extraction.invoice.confidence,
           itemCount: extraction.items.length,
           ocrPages: ocrResult.pages,
+          supplierId,
+          matchedVehicleId: vehicleMatch.vehicleId,
+          matchSource: vehicleMatch.source,
         },
       });
     } catch (err) {
@@ -179,6 +203,8 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
     tenantId: string,
     documentId: string,
     extraction: ExtractionResult,
+    supplierId: string | null,
+    vehicleMatch: VehicleMatch,
   ): Promise<void> {
     const inv = extraction.invoice;
 
@@ -189,6 +215,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
         create: {
           tenantId,
           documentId,
+          supplierId,
           invoiceNumber: inv.invoiceNumber || null,
           date: inv.date ? new Date(inv.date) : null,
           currency: inv.currency || null,
@@ -200,6 +227,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
           extractionRaw: extraction as unknown as Prisma.InputJsonValue,
         },
         update: {
+          supplierId,
           invoiceNumber: inv.invoiceNumber || null,
           date: inv.date ? new Date(inv.date) : null,
           currency: inv.currency || null,
@@ -226,7 +254,11 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
             category: item.category,
             partType: item.partType ?? null,
             type: item.type,
-            vehicleId: item.vehicleId ?? null,
+            // Jármű-hozzárendelés prioritása: az extrakció által megadott id, majd
+            // a matching motor egyezése – csak a jármű-típusú tételekre.
+            vehicleId:
+              item.vehicleId ??
+              (item.type === ItemType.VEHICLE ? vehicleMatch.vehicleId : null),
             quantity: item.quantity,
             unitPrice: item.unitPrice ?? null,
             price: item.price,
