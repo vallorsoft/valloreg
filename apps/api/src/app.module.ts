@@ -17,6 +17,7 @@ import { HealthModule } from './health/health.module';
 import { StatsModule } from './stats/stats.module';
 import { ReportsModule } from './reports/reports.module';
 import { AdminModule } from './admin/admin.module';
+import { BillingModule } from './billing/billing.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -47,6 +48,7 @@ import { AdminModule } from './admin/admin.module';
     StatsModule,
     ReportsModule,
     AdminModule,
+    BillingModule,
   ],
 })
 export class AppModule {}

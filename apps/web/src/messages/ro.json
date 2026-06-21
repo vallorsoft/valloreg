@@ -314,6 +314,7 @@
       "documents": "Documente",
       "reports": "Rapoarte",
       "team": "Echipă",
+      "billing": "Abonament",
       "admin": "Super Admin",
       "logout": "Deconectare"
     },
@@ -634,6 +635,37 @@
       "name": "Nume",
       "email": "E-mail",
       "role": "Rol"
+    }
+  },
+  "billing": {
+    "title": "Abonament",
+    "subtitle": "Prezentare generală a planului, utilizării și funcțiilor.",
+    "loading": "Se încarcă…",
+    "plan": "Plan",
+    "trialEnds": "Perioada de probă se încheie: {date}",
+    "periodEnds": "Perioada curentă se încheie: {date}",
+    "manageNote": "Schimbarea planului se face momentan prin operator.",
+    "plans": {
+      "STARTER": "Starter",
+      "STANDARD": "Standard",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business"
+    },
+    "statuses": {
+      "TRIALING": "Perioadă de probă",
+      "ACTIVE": "Activ",
+      "PAST_DUE": "Plată restantă",
+      "CANCELED": "Anulat"
+    },
+    "usage": {
+      "title": "Utilizare",
+      "vehicles": "Vehicule",
+      "users": "Utilizatori",
+      "documents": "Documente (luna aceasta)"
+    },
+    "features": {
+      "title": "Funcții disponibile",
+      "none": "Nicio funcție activată."
     }
   }
 }
