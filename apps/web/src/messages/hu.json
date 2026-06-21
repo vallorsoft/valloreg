@@ -323,15 +323,17 @@
   },
   "dashboard": {
     "title": "Vezérlőpult",
-    "subtitle": "A flotta költségeinek áttekintése.",
+    "subtitle": "A flotta áttekintése.",
+    "loading": "Betöltés…",
     "stats": {
-      "monthlyCost": "Havi költség",
-      "yearlyCost": "Éves költség",
-      "costPerVehicle": "Költség / jármű",
-      "costPerKm": "Költség / km",
-      "upcomingMaintenance": "Közelgő karbantartás",
-      "documentCount": "Dokumentumok száma",
-      "serviceEvents": "Szerviz események"
+      "vehicleCount": "Járművek",
+      "documentTotal": "Dokumentumok összesen",
+      "documentThisMonth": "Dokumentum (ez a hónap)",
+      "needsReview": "Ellenőrzésre vár",
+      "processing": "Feldolgozás alatt",
+      "confirmed": "Jóváhagyva",
+      "invoiceGrossTotal": "Számlázott összeg",
+      "invoiceCount": "Feldolgozott számla"
     },
     "units": {
       "currency": "Ft",
@@ -339,7 +341,7 @@
       "items": "db",
       "events": "esemény"
     },
-    "emptyHint": "A számok illusztratívak. Töltsön fel dokumentumokat a valós adatokhoz."
+    "noData": "Még nincs elég adat. Töltson fel dokumentumokat és adjon hozzá járműveket."
   },
   "vehicles": {
     "title": "Járművek",
@@ -358,6 +360,33 @@
       "title": "Még nincs jármű",
       "description": "Adjon hozzá egy járművet, hogy elkezdődhessen a szerviztörténet építése.",
       "cta": "Első jármű hozzáadása"
+    },
+    "loading": "Betöltés…",
+    "form": {
+      "addTitle": "Új jármű hozzáadása",
+      "editTitle": "Jármű szerkesztése",
+      "plate": "Rendszám",
+      "platePlaceholder": "pl. ABC-123",
+      "make": "Gyártmány",
+      "makePlaceholder": "pl. Renault",
+      "model": "Modell",
+      "modelPlaceholder": "pl. Master",
+      "year": "Évjárat",
+      "yearPlaceholder": "pl. 2020",
+      "vin": "Alvázszám",
+      "vinPlaceholder": "17 karakteres VIN",
+      "odometerKm": "Km-óra állás",
+      "odometerKmPlaceholder": "pl. 125000",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "cancel": "Mégse"
+    },
+    "actions": {
+      "edit": "Szerkesztés",
+      "delete": "Törlés",
+      "confirmDelete": "Biztosan törli ezt a járművet? Ez nem vonható vissza.",
+      "deleting": "Törlés…",
+      "deleteError": "Törlési hiba."
     }
   },
   "documents": {

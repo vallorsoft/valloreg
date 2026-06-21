@@ -323,23 +323,25 @@
   },
   "dashboard": {
     "title": "Dashboard",
-    "subtitle": "An overview of your fleet's costs.",
+    "subtitle": "Fleet overview.",
+    "loading": "Loading…",
     "stats": {
-      "monthlyCost": "Monthly cost",
-      "yearlyCost": "Yearly cost",
-      "costPerVehicle": "Cost / vehicle",
-      "costPerKm": "Cost / km",
-      "upcomingMaintenance": "Upcoming maintenance",
-      "documentCount": "Document count",
-      "serviceEvents": "Service events"
+      "vehicleCount": "Vehicles",
+      "documentTotal": "Total documents",
+      "documentThisMonth": "Documents (this month)",
+      "needsReview": "Needs review",
+      "processing": "Processing",
+      "confirmed": "Confirmed",
+      "invoiceGrossTotal": "Invoiced amount",
+      "invoiceCount": "Processed invoices"
     },
     "units": {
       "currency": "HUF",
       "perKm": "HUF/km",
-      "items": "items",
+      "items": "pcs",
       "events": "events"
     },
-    "emptyHint": "Figures are illustrative. Upload documents to see real data."
+    "noData": "Not enough data yet. Upload documents and add vehicles."
   },
   "vehicles": {
     "title": "Vehicles",
@@ -358,6 +360,33 @@
       "title": "No vehicles yet",
       "description": "Add a vehicle to start building its service history.",
       "cta": "Add your first vehicle"
+    },
+    "loading": "Loading…",
+    "form": {
+      "addTitle": "Add vehicle",
+      "editTitle": "Edit vehicle",
+      "plate": "Plate number",
+      "platePlaceholder": "e.g. ABC-123",
+      "make": "Make",
+      "makePlaceholder": "e.g. Renault",
+      "model": "Model",
+      "modelPlaceholder": "e.g. Master",
+      "year": "Year",
+      "yearPlaceholder": "e.g. 2020",
+      "vin": "VIN",
+      "vinPlaceholder": "17-character VIN",
+      "odometerKm": "Odometer (km)",
+      "odometerKmPlaceholder": "e.g. 125000",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this vehicle? This cannot be undone.",
+      "deleting": "Deleting…",
+      "deleteError": "Delete failed."
     }
   },
   "documents": {

@@ -323,23 +323,25 @@
   },
   "dashboard": {
     "title": "Panou de control",
-    "subtitle": "Privire de ansamblu asupra costurilor flotei.",
+    "subtitle": "Prezentare generală a flotei.",
+    "loading": "Se încarcă…",
     "stats": {
-      "monthlyCost": "Cost lunar",
-      "yearlyCost": "Cost anual",
-      "costPerVehicle": "Cost / vehicul",
-      "costPerKm": "Cost / km",
-      "upcomingMaintenance": "Revizii apropiate",
-      "documentCount": "Număr de documente",
-      "serviceEvents": "Evenimente de service"
+      "vehicleCount": "Vehicule",
+      "documentTotal": "Total documente",
+      "documentThisMonth": "Documente (luna aceasta)",
+      "needsReview": "Necesită verificare",
+      "processing": "În procesare",
+      "confirmed": "Confirmate",
+      "invoiceGrossTotal": "Sumă facturată",
+      "invoiceCount": "Facturi procesate"
     },
     "units": {
       "currency": "RON",
       "perKm": "RON/km",
-      "items": "buc",
+      "items": "buc.",
       "events": "evenimente"
     },
-    "emptyHint": "Cifrele sunt ilustrative. Încărcați documente pentru datele reale."
+    "noData": "Nu există încă suficiente date. Încărcați documente și adăugați vehicule."
   },
   "vehicles": {
     "title": "Vehicule",
@@ -358,6 +360,33 @@
       "title": "Niciun vehicul încă",
       "description": "Adăugați un vehicul pentru a începe construirea istoricului de service.",
       "cta": "Adăugați primul vehicul"
+    },
+    "loading": "Se încarcă…",
+    "form": {
+      "addTitle": "Adăugare vehicul",
+      "editTitle": "Editare vehicul",
+      "plate": "Număr înmatriculare",
+      "platePlaceholder": "ex. ABC-123",
+      "make": "Marcă",
+      "makePlaceholder": "ex. Renault",
+      "model": "Model",
+      "modelPlaceholder": "ex. Master",
+      "year": "An fabricație",
+      "yearPlaceholder": "ex. 2020",
+      "vin": "Serie șasiu",
+      "vinPlaceholder": "VIN 17 caractere",
+      "odometerKm": "Kilometraj",
+      "odometerKmPlaceholder": "ex. 125000",
+      "save": "Salvare",
+      "saving": "Se salvează…",
+      "cancel": "Anulare"
+    },
+    "actions": {
+      "edit": "Editare",
+      "delete": "Ștergere",
+      "confirmDelete": "Sigur doriți să ștergeți acest vehicul? Acțiunea este ireversibilă.",
+      "deleting": "Se șterge…",
+      "deleteError": "Eroare la ștergere."
     }
   },
   "documents": {

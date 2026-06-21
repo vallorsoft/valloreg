@@ -246,3 +246,64 @@ export async function computeSha256(file: File): Promise<string> {
     .map((b) => b.toString(16).padStart(2, '0'))
     .join('');
 }
+
+// ── Vehicles ──────────────────────────────────────────────────────────────────
+
+export interface Vehicle {
+  id: string;
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  odometerKm: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateVehiclePayload {
+  plate?: string;
+  vin?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  odometerKm?: number;
+}
+
+export const vehiclesApi = {
+  list() {
+    return apiRequest<Vehicle[]>('/vehicles');
+  },
+  create(payload: CreateVehiclePayload) {
+    return apiRequest<Vehicle>('/vehicles', { method: 'POST', json: payload });
+  },
+  update(id: string, payload: CreateVehiclePayload) {
+    return apiRequest<Vehicle>(`/vehicles/${id}`, { method: 'PATCH', json: payload });
+  },
+  remove(id: string) {
+    return apiRequest<void>(`/vehicles/${id}`, { method: 'DELETE' });
+  },
+};
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+export interface DashboardStats {
+  vehicles: { total: number };
+  documents: {
+    total: number;
+    thisMonth: number;
+    needsReview: number;
+    processing: number;
+    confirmed: number;
+  };
+  invoices: {
+    grossTotal: string | null;
+    count: number;
+  };
+}
+
+export const statsApi = {
+  getDashboard() {
+    return apiRequest<DashboardStats>('/stats');
+  },
+};
