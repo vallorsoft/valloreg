@@ -1,6 +1,7 @@
 'use client';
 
-import type { ApiErrorBody, ErrorCode } from '@valloreg/shared';
+import { ErrorCode } from '@valloreg/shared';
+import type { ApiErrorBody } from '@valloreg/shared';
 import {
   getAccessToken,
   getActiveTenantId,
@@ -43,6 +44,39 @@ export class ApiError extends Error {
     this.status = status;
     this.details = details;
   }
+}
+
+/**
+ * Az auth.errors i18n blokkban LÉTEZŐ kulcsok (minden ErrorCode + NETWORK_ERROR).
+ * Ha a backend ezen kívüli kódot ad vissza, INTERNAL_ERROR-ra esünk, hogy a
+ * fordító (`te`) ne dobjon hiányzó-kulcs hibát.
+ */
+const KNOWN_ERROR_KEYS = new Set<string>([
+  ...Object.values(ErrorCode),
+  'NETWORK_ERROR',
+]);
+
+/** Egy ismert i18n hibakulcs egy tetszőleges hibából (fallback: INTERNAL_ERROR). */
+export function resolveErrorKey(err: unknown): ErrorCode | 'NETWORK_ERROR' {
+  if (err instanceof ApiError && KNOWN_ERROR_KEYS.has(err.code)) {
+    return err.code;
+  }
+  return ErrorCode.INTERNAL_ERROR;
+}
+
+/**
+ * Diagnosztikai utótag a technikai (nem üzleti) hibákhoz: a HTTP státusz, hogy
+ * megkülönböztethető legyen a szerver 500 (INTERNAL_ERROR) a rossz API-URL /
+ * 404 / elérhetetlen háttér esetektől. Üzleti hibáknál üres.
+ */
+export function errorDebugSuffix(err: unknown): string {
+  if (
+    err instanceof ApiError &&
+    (err.code === 'INTERNAL_ERROR' || err.code === 'NETWORK_ERROR')
+  ) {
+    return err.status ? ` (HTTP ${err.status})` : ' (nincs válasz)';
+  }
+  return '';
 }
 
 interface RequestOptions extends Omit<RequestInit, 'body'> {

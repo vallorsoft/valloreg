@@ -8,7 +8,7 @@ import {
 } from '@nestjs/common';
 import { ErrorCode } from '@valloreg/shared';
 import type { ApiErrorBody } from '@valloreg/shared';
-import type { Response } from 'express';
+import type { Request, Response } from 'express';
 import { AppException } from '../exceptions/app.exception';
 
 /**
@@ -22,12 +22,21 @@ export class AllExceptionsFilter implements ExceptionFilter {
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
+    const request = ctx.getRequest<Request>();
 
     const { status, body } = this.toErrorResponse(exception);
 
     if (status >= 500) {
+      // A kérés metódusa + útvonala + a TÉNYLEGES hiba a logba kerül, hogy a
+      // generikus INTERNAL_ERROR mögötti valódi ok (pl. hiányzó tábla, DB hiba)
+      // azonosítható legyen a Render logokból.
+      const where = `${request?.method ?? '?'} ${request?.originalUrl ?? request?.url ?? '?'}`;
+      const detail =
+        exception instanceof Error
+          ? `${exception.name}: ${exception.message}`
+          : String(exception);
       this.logger.error(
-        `${body.code}: ${body.message}`,
+        `[${where}] ${body.code}: ${detail}`,
         exception instanceof Error ? exception.stack : undefined,
       );
     }
