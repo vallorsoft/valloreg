@@ -180,6 +180,50 @@ export class UsersService {
     };
   }
 
+  /** Függőben lévő (el nem fogadott, nem lejárt) meghívók listája. */
+  async listInvitations(tenantId: string) {
+    void tenantId; // a scope-olt kliens a tenantId-t maga injektálja
+    return this.prisma.scoped.invitation.findMany({
+      where: { acceptedAt: null, expiresAt: { gt: new Date() } },
+      orderBy: { createdAt: 'desc' },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        expiresAt: true,
+        createdAt: true,
+      },
+    });
+  }
+
+  /** Függő meghívó visszavonása. */
+  async revokeInvitation(
+    tenantId: string,
+    actorUserId: string,
+    invitationId: string,
+  ): Promise<void> {
+    const invitation = await this.prisma.scoped.invitation.findFirst({
+      where: { id: invitationId },
+    });
+    if (!invitation) {
+      throw AppException.notFound('A meghívó nem található.');
+    }
+    if (invitation.acceptedAt) {
+      throw AppException.validation('Egy elfogadott meghívó nem vonható vissza.');
+    }
+
+    await this.prisma.scoped.invitation.delete({ where: { id: invitationId } });
+
+    await this.audit.log({
+      tenantId,
+      userId: actorUserId,
+      action: 'user.invite_revoked',
+      resourceType: 'Invitation',
+      resourceId: invitationId,
+      metadata: { email: invitation.email },
+    });
+  }
+
   /** Tag szerepkörének módosítása. */
   async changeMemberRole(
     tenantId: string,

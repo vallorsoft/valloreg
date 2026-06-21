@@ -355,3 +355,49 @@ export const statsApi = {
     return apiRequest<DashboardStats>('/stats');
   },
 };
+
+// ── Team / users ────────────────────────────────────────────────────────────
+
+export interface TeamMember {
+  membershipId: string;
+  role: string;
+  user: { id: string; email: string; name: string | null };
+  createdAt: string;
+}
+
+export interface PendingInvitation {
+  id: string;
+  email: string;
+  role: string;
+  expiresAt: string;
+  createdAt?: string;
+}
+
+export const usersApi = {
+  listMembers() {
+    return apiRequest<TeamMember[]>('/users/members');
+  },
+  invite(payload: { email: string; role: string }) {
+    return apiRequest<PendingInvitation>('/users/invite', {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  listInvitations() {
+    return apiRequest<PendingInvitation[]>('/users/invitations');
+  },
+  revokeInvitation(id: string) {
+    return apiRequest<void>(`/users/invitations/${id}`, { method: 'DELETE' });
+  },
+  changeRole(membershipId: string, role: string) {
+    return apiRequest<{ membershipId: string; role: string }>(
+      `/users/members/${membershipId}/role`,
+      { method: 'PATCH', json: { role } },
+    );
+  },
+  removeMember(membershipId: string) {
+    return apiRequest<void>(`/users/members/${membershipId}`, {
+      method: 'DELETE',
+    });
+  },
+};

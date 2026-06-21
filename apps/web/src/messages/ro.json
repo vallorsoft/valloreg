@@ -312,6 +312,7 @@
       "dashboard": "Panou de control",
       "vehicles": "Vehicule",
       "documents": "Documente",
+      "team": "Echipă",
       "logout": "Deconectare"
     },
     "header": {
@@ -480,6 +481,52 @@
         "unassigned": "Neatribuit",
         "assignError": "Atribuirea a eșuat."
       }
+    }
+  },
+  "team": {
+    "title": "Echipă",
+    "subtitle": "Gestionați membrii și invitațiile.",
+    "loading": "Se încarcă…",
+    "roles": {
+      "OWNER": "Proprietar",
+      "FLEET_MANAGER": "Manager de flotă",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Contabil",
+      "VIEWER": "Vizualizator"
+    },
+    "members": {
+      "title": "Membri",
+      "name": "Nume",
+      "email": "E-mail",
+      "role": "Rol",
+      "actions": "Acțiuni",
+      "you": "dvs.",
+      "remove": "Eliminare",
+      "confirmRemove": "Sigur doriți să eliminați {email}?",
+      "removeError": "Eliminarea a eșuat.",
+      "roleError": "Schimbarea rolului a eșuat."
+    },
+    "invite": {
+      "title": "Invitați un membru nou",
+      "email": "E-mail",
+      "emailPlaceholder": "membru.nou@companie.ro",
+      "role": "Rol",
+      "submit": "Invitare",
+      "sending": "Se trimite…",
+      "success": "Invitația a fost trimisă.",
+      "error": "Invitarea a eșuat.",
+      "note": "Persoana invitată primește un e-mail cu un link de alăturare."
+    },
+    "invitations": {
+      "title": "Invitații în așteptare",
+      "email": "E-mail",
+      "role": "Rol",
+      "expires": "Expiră",
+      "actions": "Acțiuni",
+      "revoke": "Revocare",
+      "empty": "Nicio invitație în așteptare.",
+      "confirmRevoke": "Revocați invitația pentru {email}?",
+      "revokeError": "Revocarea a eșuat."
     }
   }
 }
