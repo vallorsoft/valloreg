@@ -527,3 +527,26 @@ export const adminApi = {
     });
   },
 };
+
+// ── Billing ─────────────────────────────────────────────────────────────────
+
+export interface BillingOverview {
+  plan: string;
+  status: string | null;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+  limits: {
+    maxVehicles: number;
+    maxUsers: number;
+    maxDocumentsPerMonth: number;
+    maxStorageBytes: number;
+  };
+  usage: { vehicles: number; users: number; documentsThisMonth: number };
+  features: string[];
+}
+
+export const billingApi = {
+  getOverview() {
+    return apiRequest<BillingOverview>('/billing/overview');
+  },
+};

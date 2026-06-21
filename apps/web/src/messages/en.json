@@ -314,6 +314,7 @@
       "documents": "Documents",
       "reports": "Reports",
       "team": "Team",
+      "billing": "Billing",
       "admin": "Super Admin",
       "logout": "Log out"
     },
@@ -634,6 +635,37 @@
       "name": "Name",
       "email": "Email",
       "role": "Role"
+    }
+  },
+  "billing": {
+    "title": "Billing",
+    "subtitle": "Overview of your plan, usage and features.",
+    "loading": "Loading…",
+    "plan": "Plan",
+    "trialEnds": "Trial ends: {date}",
+    "periodEnds": "Current period ends: {date}",
+    "manageNote": "Plan changes are currently handled by the operator.",
+    "plans": {
+      "STARTER": "Starter",
+      "STANDARD": "Standard",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business"
+    },
+    "statuses": {
+      "TRIALING": "Trial",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Past due",
+      "CANCELED": "Canceled"
+    },
+    "usage": {
+      "title": "Usage",
+      "vehicles": "Vehicles",
+      "users": "Users",
+      "documents": "Documents (this month)"
+    },
+    "features": {
+      "title": "Available features",
+      "none": "No features enabled."
     }
   }
 }

@@ -13,6 +13,7 @@ const NAV = [
   { href: '/documents', key: 'documents' },
   { href: '/reports', key: 'reports' },
   { href: '/team', key: 'team' },
+  { href: '/billing', key: 'billing' },
 ] as const;
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {

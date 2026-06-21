@@ -314,6 +314,7 @@
       "documents": "Dokumentumok",
       "reports": "Riportok",
       "team": "Csapat",
+      "billing": "Előfizetés",
       "admin": "Super Admin",
       "logout": "Kijelentkezés"
     },
@@ -634,6 +635,37 @@
       "name": "Név",
       "email": "E-mail",
       "role": "Szerepkör"
+    }
+  },
+  "billing": {
+    "title": "Előfizetés",
+    "subtitle": "A csomag, a használat és a funkciók áttekintése.",
+    "loading": "Betöltés…",
+    "plan": "Csomag",
+    "trialEnds": "A próbaidőszak vége: {date}",
+    "periodEnds": "A jelenlegi időszak vége: {date}",
+    "manageNote": "A csomagváltás jelenleg az üzemeltetőnél igényelhető.",
+    "plans": {
+      "STARTER": "Starter",
+      "STANDARD": "Standard",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business"
+    },
+    "statuses": {
+      "TRIALING": "Próbaidőszak",
+      "ACTIVE": "Aktív",
+      "PAST_DUE": "Lejárt fizetés",
+      "CANCELED": "Lemondva"
+    },
+    "usage": {
+      "title": "Használat",
+      "vehicles": "Járművek",
+      "users": "Felhasználók",
+      "documents": "Dokumentumok (ez a hónap)"
+    },
+    "features": {
+      "title": "Elérhető funkciók",
+      "none": "Nincs engedélyezett funkció."
     }
   }
 }
