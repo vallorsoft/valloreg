@@ -550,3 +550,31 @@ export const billingApi = {
     return apiRequest<BillingOverview>('/billing/overview');
   },
 };
+
+// ── Notifications (Web Push) ────────────────────────────────────────────────
+
+export interface PushSubscriptionPayload {
+  endpoint: string;
+  keys: { p256dh: string; auth: string };
+  userAgent?: string;
+}
+
+export const notificationsApi = {
+  getVapidKey() {
+    return apiRequest<{ publicKey: string; enabled: boolean }>(
+      '/notifications/vapid-key',
+    );
+  },
+  subscribe(payload: PushSubscriptionPayload) {
+    return apiRequest<{ ok: true }>('/notifications/subscribe', {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  unsubscribe(endpoint: string) {
+    return apiRequest<{ ok: true }>('/notifications/unsubscribe', {
+      method: 'POST',
+      json: { endpoint },
+    });
+  },
+};

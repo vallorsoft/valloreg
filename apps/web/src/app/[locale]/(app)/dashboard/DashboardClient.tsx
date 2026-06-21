@@ -6,6 +6,7 @@ import { useLocale } from 'next-intl';
 import { statsApi, type DashboardStats } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
+import { PushOptIn } from '@/components/app/PushOptIn';
 
 function StatCard({ label, value, unit }: { label: string; value: string | number; unit?: string }) {
   return (
@@ -45,6 +46,10 @@ export function DashboardClient() {
   return (
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
+
+      <div className="mb-6">
+        <PushOptIn />
+      </div>
 
       {loading ? (
         <div className="py-10 text-center text-sm text-anthracite-500">{t('loading')}</div>

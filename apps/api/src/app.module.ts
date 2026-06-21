@@ -18,6 +18,7 @@ import { StatsModule } from './stats/stats.module';
 import { ReportsModule } from './reports/reports.module';
 import { AdminModule } from './admin/admin.module';
 import { BillingModule } from './billing/billing.module';
+import { NotificationsModule } from './notifications/notifications.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -31,6 +32,7 @@ import { BillingModule } from './billing/billing.module';
     AuditModule,
     StorageModule,
     FeatureFlagsModule,
+    NotificationsModule,
 
     // Feldolgozó pipeline
     OcrModule,

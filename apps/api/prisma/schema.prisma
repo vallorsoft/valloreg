@@ -112,10 +112,30 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  memberships   Membership[]
-  refreshTokens RefreshToken[]
+  memberships       Membership[]
+  refreshTokens     RefreshToken[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
+}
+
+// Web Push feliratkozás (böngésző PushManager). GLOBÁLIS (user-höz kötött),
+// a tenantId opcionális segéd a cég-szintű értesítésekhez.
+model PushSubscription {
+  id        String   @id @default(uuid())
+  userId    String
+  tenantId  String?
+  endpoint  String   @unique
+  p256dh    String
+  auth      String
+  userAgent String?
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tenantId])
+  @@map("push_subscriptions")
 }
 
 // Felhasználó ↔ cég kapcsolat egy szerepkörrel.

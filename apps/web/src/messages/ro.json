@@ -667,5 +667,16 @@
       "title": "Funcții disponibile",
       "none": "Nicio funcție activată."
     }
+  },
+  "notifications": {
+    "title": "Notificări push",
+    "description": "Primiți o notificare când procesarea unui document este gata.",
+    "enabled": "Notificările sunt activate pe acest dispozitiv.",
+    "denied": "Notificările sunt blocate în browser. Activați-le din setările browserului.",
+    "unavailable": "Notificările nu sunt disponibile momentan.",
+    "enable": "Activare",
+    "disable": "Dezactivare",
+    "working": "Se procesează…",
+    "error": "A apărut o eroare, încercați din nou."
   }
 }

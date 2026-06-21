@@ -667,5 +667,16 @@
       "title": "Available features",
       "none": "No features enabled."
     }
+  },
+  "notifications": {
+    "title": "Push notifications",
+    "description": "Get notified when a document finishes processing.",
+    "enabled": "Notifications are enabled on this device.",
+    "denied": "Notifications are blocked in your browser. Enable them in your browser settings.",
+    "unavailable": "Notifications are currently unavailable.",
+    "enable": "Enable",
+    "disable": "Disable",
+    "working": "Working…",
+    "error": "Something went wrong, please try again."
   }
 }
