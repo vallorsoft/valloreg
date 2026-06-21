@@ -312,6 +312,7 @@
       "dashboard": "Vezérlőpult",
       "vehicles": "Járművek",
       "documents": "Dokumentumok",
+      "team": "Csapat",
       "logout": "Kijelentkezés"
     },
     "header": {
@@ -480,6 +481,52 @@
         "unassigned": "Nincs hozzárendelve",
         "assignError": "A hozzárendelés sikertelen."
       }
+    }
+  },
+  "team": {
+    "title": "Csapat",
+    "subtitle": "Tagok és meghívók kezelése.",
+    "loading": "Betöltés…",
+    "roles": {
+      "OWNER": "Tulajdonos",
+      "FLEET_MANAGER": "Flottamenedzser",
+      "ADMIN": "Adminisztrátor",
+      "ACCOUNTANT": "Könyvelő",
+      "VIEWER": "Megtekintő"
+    },
+    "members": {
+      "title": "Tagok",
+      "name": "Név",
+      "email": "E-mail",
+      "role": "Szerepkör",
+      "actions": "Műveletek",
+      "you": "Ön",
+      "remove": "Eltávolítás",
+      "confirmRemove": "Biztosan eltávolítja a következő tagot: {email}?",
+      "removeError": "Az eltávolítás sikertelen.",
+      "roleError": "A szerepkör módosítása sikertelen."
+    },
+    "invite": {
+      "title": "Új tag meghívása",
+      "email": "E-mail",
+      "emailPlaceholder": "uj.tag@cegnev.hu",
+      "role": "Szerepkör",
+      "submit": "Meghívás",
+      "sending": "Küldés…",
+      "success": "A meghívót elküldtük.",
+      "error": "A meghívás sikertelen.",
+      "note": "A meghívott e-mailben kap egy linket a csatlakozáshoz."
+    },
+    "invitations": {
+      "title": "Függő meghívók",
+      "email": "E-mail",
+      "role": "Szerepkör",
+      "expires": "Lejárat",
+      "actions": "Műveletek",
+      "revoke": "Visszavonás",
+      "empty": "Nincs függő meghívó.",
+      "confirmRevoke": "Visszavonja a meghívót: {email}?",
+      "revokeError": "A visszavonás sikertelen."
     }
   }
 }

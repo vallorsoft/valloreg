@@ -312,6 +312,7 @@
       "dashboard": "Dashboard",
       "vehicles": "Vehicles",
       "documents": "Documents",
+      "team": "Team",
       "logout": "Log out"
     },
     "header": {
@@ -480,6 +481,52 @@
         "unassigned": "Unassigned",
         "assignError": "Assignment failed."
       }
+    }
+  },
+  "team": {
+    "title": "Team",
+    "subtitle": "Manage members and invitations.",
+    "loading": "Loading…",
+    "roles": {
+      "OWNER": "Owner",
+      "FLEET_MANAGER": "Fleet manager",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Accountant",
+      "VIEWER": "Viewer"
+    },
+    "members": {
+      "title": "Members",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role",
+      "actions": "Actions",
+      "you": "you",
+      "remove": "Remove",
+      "confirmRemove": "Are you sure you want to remove {email}?",
+      "removeError": "Removal failed.",
+      "roleError": "Role change failed."
+    },
+    "invite": {
+      "title": "Invite a new member",
+      "email": "Email",
+      "emailPlaceholder": "new.member@company.com",
+      "role": "Role",
+      "submit": "Invite",
+      "sending": "Sending…",
+      "success": "Invitation sent.",
+      "error": "Invitation failed.",
+      "note": "The invitee receives an email with a link to join."
+    },
+    "invitations": {
+      "title": "Pending invitations",
+      "email": "Email",
+      "role": "Role",
+      "expires": "Expires",
+      "actions": "Actions",
+      "revoke": "Revoke",
+      "empty": "No pending invitations.",
+      "confirmRevoke": "Revoke the invitation for {email}?",
+      "revokeError": "Revoke failed."
     }
   }
 }

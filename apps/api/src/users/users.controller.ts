@@ -50,6 +50,31 @@ export class UsersController {
     return this.usersService.invite(tenant.tenantId, user.userId, dto);
   }
 
+  /** Függőben lévő meghívók listája (OWNER, ADMIN). */
+  @Get('invitations')
+  @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+  @Roles(TenantRole.OWNER, TenantRole.ADMIN)
+  listInvitations(@CurrentTenant() tenant: ActiveTenant) {
+    return this.usersService.listInvitations(tenant.tenantId);
+  }
+
+  /** Függő meghívó visszavonása (OWNER, ADMIN). */
+  @Delete('invitations/:invitationId')
+  @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
+  @Roles(TenantRole.OWNER, TenantRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async revokeInvitation(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Param('invitationId') invitationId: string,
+  ): Promise<void> {
+    await this.usersService.revokeInvitation(
+      tenant.tenantId,
+      user.userId,
+      invitationId,
+    );
+  }
+
   /**
    * Meghívó elfogadása. Publikus (a meghívott még nem tag) – a token azonosít.
    */
