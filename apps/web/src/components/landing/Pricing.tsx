@@ -1,5 +1,11 @@
 import { useTranslations } from 'next-intl';
-import { PLAN_LIMITS, PlanTier, UNLIMITED } from '@valloreg/shared';
+import {
+  PLAN_LIMITS,
+  PLAN_PRICES,
+  PLAN_CURRENCY,
+  PlanTier,
+  UNLIMITED,
+} from '@valloreg/shared';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Link } from '@/i18n/routing';
@@ -23,6 +29,9 @@ export function Pricing() {
     <section id="pricing" className="scroll-mt-20 bg-white py-20">
       <div className="container-page">
         <SectionHeading title={t('title')} subtitle={t('subtitle')} />
+        <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-anthracite-500">
+          {t('transferNote')}
+        </p>
         <div className="mt-12 grid gap-6 lg:grid-cols-4">
           {PLAN_ORDER.map((tier) => {
             const limits = PLAN_LIMITS[tier];
@@ -60,6 +69,16 @@ export function Pricing() {
                 </h3>
                 <p className="mt-2 min-h-[3rem] text-sm text-anthracite-600">
                   {t(`plans.${tier}.description`)}
+                </p>
+
+                <p className="mt-4 flex items-baseline gap-1.5">
+                  <span className="text-3xl font-bold text-anthracite-900">
+                    {PLAN_PRICES[tier].toLocaleString('hu-HU')} {PLAN_CURRENCY}
+                  </span>
+                  <span className="text-sm text-anthracite-400">{t('perMonth')}</span>
+                </p>
+                <p className="mt-1 text-xs font-medium text-primary-700">
+                  {t('freeTrial')}
                 </p>
 
                 <ul className="mt-6 flex-1 space-y-3 text-sm text-anthracite-700">
