@@ -464,3 +464,66 @@ export const reportsApi = {
     return apiRequest<ExportRow[]>(`/reports/export${reportQuery(from, to)}`);
   },
 };
+
+// ── Admin (platform) ────────────────────────────────────────────────────────
+
+export interface AdminSubscription {
+  id?: string;
+  planTier: string;
+  status: string;
+  trialEndsAt: string | null;
+  currentPeriodEnd: string | null;
+}
+
+export interface AdminTenantListItem {
+  id: string;
+  name: string;
+  email: string | null;
+  createdAt: string;
+  subscription: AdminSubscription | null;
+  counts: { members: number; vehicles: number; documents: number };
+}
+
+export interface AdminTenantDetail {
+  id: string;
+  name: string;
+  taxNumber: string | null;
+  contactName: string | null;
+  email: string | null;
+  phone: string | null;
+  createdAt: string;
+  subscription: AdminSubscription | null;
+  members: {
+    membershipId: string;
+    role: string;
+    user: { id: string; email: string; name: string | null };
+  }[];
+  featureOverrides: { key: string; enabled: boolean }[];
+  counts: { members: number; vehicles: number; documents: number; invoices: number };
+}
+
+export const adminApi = {
+  listTenants() {
+    return apiRequest<AdminTenantListItem[]>('/admin/tenants');
+  },
+  getTenant(id: string) {
+    return apiRequest<AdminTenantDetail>(`/admin/tenants/${id}`);
+  },
+  setSubscription(id: string, payload: { planTier: string; status: string }) {
+    return apiRequest<AdminSubscription>(`/admin/tenants/${id}/subscription`, {
+      method: 'PUT',
+      json: payload,
+    });
+  },
+  setFeature(id: string, key: string, enabled: boolean) {
+    return apiRequest<{ key: string; enabled: boolean }>(
+      `/admin/tenants/${id}/features/${key}`,
+      { method: 'PUT', json: { enabled } },
+    );
+  },
+  removeFeature(id: string, key: string) {
+    return apiRequest<void>(`/admin/tenants/${id}/features/${key}`, {
+      method: 'DELETE',
+    });
+  },
+};

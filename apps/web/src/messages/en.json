@@ -314,6 +314,7 @@
       "documents": "Documents",
       "reports": "Reports",
       "team": "Team",
+      "admin": "Super Admin",
       "logout": "Log out"
     },
     "header": {
@@ -576,6 +577,63 @@
       "office": "Office",
       "fleet_general": "Fleet general",
       "other": "Other"
+    }
+  },
+  "admin": {
+    "title": "Super Admin",
+    "subtitle": "Manage companies, subscriptions and features.",
+    "loading": "Loading…",
+    "forbidden": "You do not have platform admin access.",
+    "notFound": "Company not found.",
+    "back": "Back to companies",
+    "empty": "No companies.",
+    "table": {
+      "name": "Company",
+      "plan": "Plan",
+      "status": "Status",
+      "members": "Members",
+      "vehicles": "Vehicles",
+      "documents": "Documents",
+      "invoices": "Invoices"
+    },
+    "plans": {
+      "STARTER": "Starter",
+      "STANDARD": "Standard",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business"
+    },
+    "statuses": {
+      "TRIALING": "Trial",
+      "ACTIVE": "Active",
+      "PAST_DUE": "Past due",
+      "CANCELED": "Canceled"
+    },
+    "subscription": {
+      "title": "Subscription",
+      "plan": "Plan",
+      "status": "Status",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Subscription saved.",
+      "error": "Save failed."
+    },
+    "features": {
+      "title": "Features (feature flags)",
+      "feature": "Feature",
+      "planDefault": "Plan default",
+      "override": "Override",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "useDefault": "Default",
+      "forceOn": "On",
+      "forceOff": "Off",
+      "error": "Update failed."
+    },
+    "members": {
+      "title": "Members",
+      "name": "Name",
+      "email": "Email",
+      "role": "Role"
     }
   }
 }
