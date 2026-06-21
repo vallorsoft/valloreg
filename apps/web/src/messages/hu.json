@@ -312,6 +312,7 @@
       "dashboard": "Vezérlőpult",
       "vehicles": "Járművek",
       "documents": "Dokumentumok",
+      "reports": "Riportok",
       "team": "Csapat",
       "logout": "Kijelentkezés"
     },
@@ -527,6 +528,54 @@
       "empty": "Nincs függő meghívó.",
       "confirmRevoke": "Visszavonja a meghívót: {email}?",
       "revokeError": "A visszavonás sikertelen."
+    }
+  },
+  "reports": {
+    "title": "Riportok",
+    "subtitle": "Költségek elemzése és export.",
+    "loading": "Betöltés…",
+    "error": "A riport betöltése sikertelen.",
+    "empty": "Nincs adat a kiválasztott időszakra.",
+    "from": "Tól",
+    "to": "Ig",
+    "apply": "Alkalmaz",
+    "clear": "Szűrő törlése",
+    "exportCsv": "CSV export",
+    "exporting": "Exportálás…",
+    "unassigned": "Nincs hozzárendelve",
+    "totals": {
+      "grossTotal": "Bruttó összeg (számlák)",
+      "itemTotal": "Tételek összege",
+      "invoiceCount": "Számlák",
+      "itemCount": "Tételek"
+    },
+    "byVehicle": {
+      "title": "Költség járművenként",
+      "vehicle": "Jármű",
+      "count": "Tételek",
+      "total": "Összeg"
+    },
+    "byCategory": {
+      "title": "Költség kategóriánként",
+      "category": "Kategória",
+      "count": "Tételek",
+      "total": "Összeg"
+    },
+    "byMonth": {
+      "title": "Költség havonta",
+      "month": "Hónap",
+      "total": "Összeg"
+    },
+    "categories": {
+      "part": "Alkatrész",
+      "labor": "Munkadíj",
+      "service": "Szerviz",
+      "consumable": "Fogyóeszköz",
+      "tool": "Szerszám",
+      "workshop_equipment": "Műhelyfelszerelés",
+      "office": "Iroda",
+      "fleet_general": "Flotta általános",
+      "other": "Egyéb"
     }
   }
 }

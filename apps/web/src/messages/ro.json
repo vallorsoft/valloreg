@@ -312,6 +312,7 @@
       "dashboard": "Panou de control",
       "vehicles": "Vehicule",
       "documents": "Documente",
+      "reports": "Rapoarte",
       "team": "Echipă",
       "logout": "Deconectare"
     },
@@ -527,6 +528,54 @@
       "empty": "Nicio invitație în așteptare.",
       "confirmRevoke": "Revocați invitația pentru {email}?",
       "revokeError": "Revocarea a eșuat."
+    }
+  },
+  "reports": {
+    "title": "Rapoarte",
+    "subtitle": "Analiza costurilor și export.",
+    "loading": "Se încarcă…",
+    "error": "Încărcarea raportului a eșuat.",
+    "empty": "Nu există date pentru perioada selectată.",
+    "from": "De la",
+    "to": "Până la",
+    "apply": "Aplică",
+    "clear": "Șterge filtrul",
+    "exportCsv": "Export CSV",
+    "exporting": "Se exportă…",
+    "unassigned": "Neatribuit",
+    "totals": {
+      "grossTotal": "Total brut (facturi)",
+      "itemTotal": "Total articole",
+      "invoiceCount": "Facturi",
+      "itemCount": "Articole"
+    },
+    "byVehicle": {
+      "title": "Cost pe vehicul",
+      "vehicle": "Vehicul",
+      "count": "Articole",
+      "total": "Total"
+    },
+    "byCategory": {
+      "title": "Cost pe categorie",
+      "category": "Categorie",
+      "count": "Articole",
+      "total": "Total"
+    },
+    "byMonth": {
+      "title": "Cost pe lună",
+      "month": "Lună",
+      "total": "Total"
+    },
+    "categories": {
+      "part": "Piesă",
+      "labor": "Manoperă",
+      "service": "Service",
+      "consumable": "Consumabil",
+      "tool": "Unealtă",
+      "workshop_equipment": "Echipament atelier",
+      "office": "Birou",
+      "fleet_general": "Flotă general",
+      "other": "Altele"
     }
   }
 }

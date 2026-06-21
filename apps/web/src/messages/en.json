@@ -312,6 +312,7 @@
       "dashboard": "Dashboard",
       "vehicles": "Vehicles",
       "documents": "Documents",
+      "reports": "Reports",
       "team": "Team",
       "logout": "Log out"
     },
@@ -527,6 +528,54 @@
       "empty": "No pending invitations.",
       "confirmRevoke": "Revoke the invitation for {email}?",
       "revokeError": "Revoke failed."
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "subtitle": "Cost analysis and export.",
+    "loading": "Loading…",
+    "error": "Failed to load the report.",
+    "empty": "No data for the selected period.",
+    "from": "From",
+    "to": "To",
+    "apply": "Apply",
+    "clear": "Clear filter",
+    "exportCsv": "Export CSV",
+    "exporting": "Exporting…",
+    "unassigned": "Unassigned",
+    "totals": {
+      "grossTotal": "Gross total (invoices)",
+      "itemTotal": "Items total",
+      "invoiceCount": "Invoices",
+      "itemCount": "Items"
+    },
+    "byVehicle": {
+      "title": "Cost by vehicle",
+      "vehicle": "Vehicle",
+      "count": "Items",
+      "total": "Total"
+    },
+    "byCategory": {
+      "title": "Cost by category",
+      "category": "Category",
+      "count": "Items",
+      "total": "Total"
+    },
+    "byMonth": {
+      "title": "Cost by month",
+      "month": "Month",
+      "total": "Total"
+    },
+    "categories": {
+      "part": "Part",
+      "labor": "Labor",
+      "service": "Service",
+      "consumable": "Consumable",
+      "tool": "Tool",
+      "workshop_equipment": "Workshop equipment",
+      "office": "Office",
+      "fleet_general": "Fleet general",
+      "other": "Other"
     }
   }
 }

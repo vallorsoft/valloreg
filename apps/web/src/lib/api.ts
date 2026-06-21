@@ -401,3 +401,61 @@ export const usersApi = {
     });
   },
 };
+
+// ── Reports ─────────────────────────────────────────────────────────────────
+
+export interface ReportRow {
+  key: string;
+  label: string;
+  total: string;
+  count: number;
+}
+
+export interface MonthRow {
+  month: string;
+  total: string;
+}
+
+export interface ReportSummary {
+  totals: {
+    grossTotal: string;
+    itemTotal: string;
+    itemCount: number;
+    invoiceCount: number;
+    currency: string | null;
+  };
+  byVehicle: ReportRow[];
+  byCategory: ReportRow[];
+  byMonth: MonthRow[];
+}
+
+export interface ExportRow {
+  date: string;
+  supplier: string;
+  invoiceNumber: string;
+  vehicle: string;
+  item: string;
+  category: string;
+  type: string;
+  quantity: number;
+  unitPrice: string;
+  price: string;
+  currency: string;
+}
+
+function reportQuery(from?: string, to?: string): string {
+  const q = new URLSearchParams();
+  if (from) q.set('from', from);
+  if (to) q.set('to', to);
+  const qs = q.toString();
+  return qs ? `?${qs}` : '';
+}
+
+export const reportsApi = {
+  getSummary(from?: string, to?: string) {
+    return apiRequest<ReportSummary>(`/reports/summary${reportQuery(from, to)}`);
+  },
+  getExport(from?: string, to?: string) {
+    return apiRequest<ExportRow[]>(`/reports/export${reportQuery(from, to)}`);
+  },
+};
