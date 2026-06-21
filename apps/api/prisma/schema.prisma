@@ -1,0 +1,397 @@
+// Valloreg – Prisma séma (PostgreSQL, Neon-ready).
+//
+// FONTOS – multi-tenant izoláció:
+//   Minden ÜZLETI modell tartalmaz `tenantId`-t és `@@index([tenantId])`-et.
+//   A futásidejű szűrést a PrismaService tenant-scope kiterjesztése végzi
+//   (lásd: src/prisma/prisma.service.ts). A séma szintjén csak az adatmodell
+//   és az indexek vannak; a fail-closed szűrés kódszinten történik.
+//
+//   `User`, `RefreshToken` GLOBÁLIS (nem tenant-scope) – auth-hoz kellenek.
+//
+// Enumok: a string értékek PONTOSAN egyeznek a @valloreg/shared konstansokkal.
+// Az ItemType / ItemCategory / PartType String oszlopként tárolódik, hogy
+// tükrözze a shared string-union típusokat (pl. "vehicle", "part", "brakes").
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled URL az alkalmazásnak (Neon pooler), direct URL a migrációkhoz.
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Enumok (a @valloreg/shared értékeivel string-azonosak)
+// ──────────────────────────────────────────────────────────────────────────
+
+enum TenantRole {
+  OWNER
+  FLEET_MANAGER
+  ADMIN
+  ACCOUNTANT
+  VIEWER
+}
+
+enum PlanTier {
+  STARTER
+  STANDARD
+  PROFESSIONAL
+  BUSINESS
+}
+
+enum DocumentStatus {
+  UPLOADED
+  QUEUED
+  OCR_RUNNING
+  EXTRACTING
+  NEEDS_REVIEW
+  AUTO_OK
+  CONFIRMED
+  FAILED
+  ARCHIVED
+}
+
+enum SubscriptionStatus {
+  TRIALING
+  ACTIVE
+  PAST_DUE
+  CANCELED
+}
+
+enum SupportAccessStatus {
+  ACTIVE
+  EXPIRED
+  REVOKED
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Cég (tenant) – minden üzleti adat gyökere
+// ──────────────────────────────────────────────────────────────────────────
+
+model Tenant {
+  id          String   @id @default(uuid())
+  name        String
+  taxNumber   String?
+  contactName String?
+  email       String?
+  phone       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  memberships          Membership[]
+  invitations          Invitation[]
+  subscription         Subscription?
+  featureFlagOverrides FeatureFlagOverride[]
+  suppliers            Supplier[]
+  vehicles             Vehicle[]
+  documents            Document[]
+  invoices             Invoice[]
+  invoiceItems         InvoiceItem[]
+  auditLogs            AuditLog[]
+  supportAccesses      SupportAccess[]
+  supplierVehicleMappings SupplierVehicleMapping[]
+  itemCategoryMappings ItemCategoryMapping[]
+
+  @@map("tenants")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Felhasználó – GLOBÁLIS (több cég tagja lehet membership-eken keresztül)
+// ──────────────────────────────────────────────────────────────────────────
+
+model User {
+  id              String   @id @default(uuid())
+  email           String   @unique
+  passwordHash    String
+  name            String?
+  isPlatformAdmin Boolean  @default(false)
+  twoFactorSecret String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  memberships   Membership[]
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+// Felhasználó ↔ cég kapcsolat egy szerepkörrel.
+model Membership {
+  id        String     @id @default(uuid())
+  tenantId  String
+  userId    String
+  role      TenantRole
+  createdAt DateTime   @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, userId])
+  @@index([tenantId])
+  @@index([userId])
+  @@map("memberships")
+}
+
+// Email meghívó egy céghez, szerepkörrel.
+model Invitation {
+  id         String     @id @default(uuid())
+  tenantId   String
+  email      String
+  role       TenantRole
+  token      String     @unique
+  expiresAt  DateTime
+  acceptedAt DateTime?
+  createdAt  DateTime   @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([email])
+  @@map("invitations")
+}
+
+// Refresh token (hash-elve tárolva), rotációhoz/visszavonáshoz.
+model RefreshToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("refresh_tokens")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Előfizetés és feature flag-ek
+// ──────────────────────────────────────────────────────────────────────────
+
+model Subscription {
+  id               String             @id @default(uuid())
+  tenantId         String             @unique
+  planTier         PlanTier
+  status           SubscriptionStatus
+  trialEndsAt      DateTime?
+  currentPeriodEnd DateTime?
+  createdAt        DateTime           @default(now())
+  updatedAt        DateTime           @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("subscriptions")
+}
+
+// Cégenkénti feature flag felülbírálás (a csomag alapját módosítja).
+model FeatureFlagOverride {
+  id        String   @id @default(uuid())
+  tenantId  String
+  key       String
+  enabled   Boolean
+  createdAt DateTime @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@map("feature_flag_overrides")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Üzleti adatok
+// ──────────────────────────────────────────────────────────────────────────
+
+model Supplier {
+  id             String   @id @default(uuid())
+  tenantId       String
+  name           String
+  normalizedName String
+  createdAt      DateTime @default(now())
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoices Invoice[]
+  supplierVehicleMappings SupplierVehicleMapping[]
+  itemCategoryMappings ItemCategoryMapping[]
+
+  @@index([tenantId])
+  @@index([tenantId, normalizedName])
+  @@map("suppliers")
+}
+
+model Vehicle {
+  id         String   @id @default(uuid())
+  tenantId   String
+  plate      String?
+  vin        String?
+  make       String?
+  model      String?
+  year       Int?
+  odometerKm Int?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoiceItems InvoiceItem[]
+  supplierVehicleMappings SupplierVehicleMapping[]
+
+  @@index([tenantId])
+  @@index([tenantId, plate])
+  @@map("vehicles")
+}
+
+model Document {
+  id           String         @id @default(uuid())
+  tenantId     String
+  uploadedById String
+  fileName     String
+  mimeType     String
+  sizeBytes    Int
+  storageKey   String
+  sha256       String
+  status       DocumentStatus @default(UPLOADED)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice Invoice?
+
+  @@unique([tenantId, sha256]) // idempotencia: ugyanaz a fájl egyszer
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@map("documents")
+}
+
+model Invoice {
+  id            String   @id @default(uuid())
+  tenantId      String
+  documentId    String   @unique
+  supplierId    String?
+  invoiceNumber String?
+  date          DateTime?
+  currency      String?
+  odometerKm    Int?
+  netTotal      Decimal?
+  taxTotal      Decimal?
+  grossTotal    Decimal?
+  confidence    Float    @default(0)
+  extractionRaw Json?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  tenant   Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  document Document      @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  supplier Supplier?     @relation(fields: [supplierId], references: [id])
+  items    InvoiceItem[]
+
+  @@index([tenantId])
+  @@index([tenantId, date])
+  @@map("invoices")
+}
+
+model InvoiceItem {
+  id         String   @id @default(uuid())
+  tenantId   String
+  invoiceId  String
+  name       String
+  category   String // ItemCategory string union (part, labor, …)
+  partType   String? // PartType string union (brakes, engine, …)
+  type       String // ItemType string union (vehicle, tool, general)
+  vehicleId  String?
+  quantity   Float    @default(1)
+  unitPrice  Decimal?
+  price      Decimal  @default(0)
+  confidence Float    @default(0)
+  createdAt  DateTime @default(now())
+
+  tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  invoice Invoice  @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  vehicle Vehicle? @relation(fields: [vehicleId], references: [id])
+
+  @@index([tenantId])
+  @@index([invoiceId])
+  @@map("invoice_items")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Audit, support access, tanuló mappingek
+// ──────────────────────────────────────────────────────────────────────────
+
+// Audit log – tenantId opcionális (platform-szintű események is ide kerülnek).
+model AuditLog {
+  id           String   @id @default(uuid())
+  tenantId     String?
+  userId       String?
+  action       String
+  resourceType String
+  resourceId   String?
+  metadata     Json?
+  ip           String?
+  createdAt    DateTime @default(now())
+
+  tenant Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
+// Ideiglenes support hozzáférés (1h/24h/7d), lejárattal, naplózva.
+model SupportAccess {
+  id                String              @id @default(uuid())
+  tenantId          String
+  grantedByUserId   String
+  grantedToUserId   String?
+  grantedToEmail    String?
+  status            SupportAccessStatus @default(ACTIVE)
+  expiresAt         DateTime
+  revokedAt         DateTime?
+  createdAt         DateTime            @default(now())
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("support_accesses")
+}
+
+// Tanulás: beszállító → jármű asszociáció (súlyozva).
+model SupplierVehicleMapping {
+  id         String   @id @default(uuid())
+  tenantId   String
+  supplierId String
+  vehicleId  String
+  weight     Int      @default(1)
+  createdAt  DateTime @default(now())
+
+  tenant   Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  vehicle  Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, supplierId, vehicleId])
+  @@index([tenantId])
+  @@map("supplier_vehicle_mappings")
+}
+
+// Tanulás: tétel-minta → kategória/típus asszociáció (súlyozva).
+model ItemCategoryMapping {
+  id         String   @id @default(uuid())
+  tenantId   String
+  supplierId String?
+  pattern    String
+  category   String
+  type       String
+  weight     Int      @default(1)
+  createdAt  DateTime @default(now())
+
+  tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  supplier Supplier? @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, pattern])
+  @@map("item_category_mappings")
+}
