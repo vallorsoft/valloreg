@@ -142,9 +142,11 @@ export const authApi = {
     });
   },
   register(payload: RegisterPayload): Promise<AuthResponse> {
+    const { taxId, ...rest } = payload;
     return apiRequest<AuthResponse>('/auth/register', {
       method: 'POST',
-      json: payload,
+      // A backend `taxNumber` mezőt vár (a DB oszlop neve), a form `taxId`-t használ.
+      json: { ...rest, taxNumber: taxId },
       anonymous: true,
     });
   },
