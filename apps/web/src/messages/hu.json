@@ -314,6 +314,7 @@
       "documents": "Dokumentumok",
       "reports": "Riportok",
       "team": "Csapat",
+      "admin": "Super Admin",
       "logout": "Kijelentkezés"
     },
     "header": {
@@ -576,6 +577,63 @@
       "office": "Iroda",
       "fleet_general": "Flotta általános",
       "other": "Egyéb"
+    }
+  },
+  "admin": {
+    "title": "Super Admin",
+    "subtitle": "Cégek, előfizetések és funkciók kezelése.",
+    "loading": "Betöltés…",
+    "forbidden": "Nincs platform admin jogosultságod.",
+    "notFound": "A cég nem található.",
+    "back": "Vissza a cégekhez",
+    "empty": "Nincs cég.",
+    "table": {
+      "name": "Cég",
+      "plan": "Csomag",
+      "status": "Állapot",
+      "members": "Tagok",
+      "vehicles": "Járművek",
+      "documents": "Dokumentumok",
+      "invoices": "Számlák"
+    },
+    "plans": {
+      "STARTER": "Starter",
+      "STANDARD": "Standard",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business"
+    },
+    "statuses": {
+      "TRIALING": "Próbaidőszak",
+      "ACTIVE": "Aktív",
+      "PAST_DUE": "Lejárt fizetés",
+      "CANCELED": "Lemondva"
+    },
+    "subscription": {
+      "title": "Előfizetés",
+      "plan": "Csomag",
+      "status": "Állapot",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "saved": "Az előfizetés mentve.",
+      "error": "A mentés sikertelen."
+    },
+    "features": {
+      "title": "Funkciók (feature flag-ek)",
+      "feature": "Funkció",
+      "planDefault": "Csomag alapértelmezés",
+      "override": "Felülbírálás",
+      "enabled": "Engedélyezve",
+      "disabled": "Tiltva",
+      "useDefault": "Alapértelmezett",
+      "forceOn": "Bekapcsolva",
+      "forceOff": "Kikapcsolva",
+      "error": "A módosítás sikertelen."
+    },
+    "members": {
+      "title": "Tagok",
+      "name": "Név",
+      "email": "E-mail",
+      "role": "Szerepkör"
     }
   }
 }

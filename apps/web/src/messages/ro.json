@@ -314,6 +314,7 @@
       "documents": "Documente",
       "reports": "Rapoarte",
       "team": "Echipă",
+      "admin": "Super Admin",
       "logout": "Deconectare"
     },
     "header": {
@@ -576,6 +577,63 @@
       "office": "Birou",
       "fleet_general": "Flotă general",
       "other": "Altele"
+    }
+  },
+  "admin": {
+    "title": "Super Admin",
+    "subtitle": "Gestionați companiile, abonamentele și funcțiile.",
+    "loading": "Se încarcă…",
+    "forbidden": "Nu aveți acces de administrator de platformă.",
+    "notFound": "Compania nu a fost găsită.",
+    "back": "Înapoi la companii",
+    "empty": "Nicio companie.",
+    "table": {
+      "name": "Companie",
+      "plan": "Plan",
+      "status": "Stare",
+      "members": "Membri",
+      "vehicles": "Vehicule",
+      "documents": "Documente",
+      "invoices": "Facturi"
+    },
+    "plans": {
+      "STARTER": "Starter",
+      "STANDARD": "Standard",
+      "PROFESSIONAL": "Professional",
+      "BUSINESS": "Business"
+    },
+    "statuses": {
+      "TRIALING": "Perioadă de probă",
+      "ACTIVE": "Activ",
+      "PAST_DUE": "Plată restantă",
+      "CANCELED": "Anulat"
+    },
+    "subscription": {
+      "title": "Abonament",
+      "plan": "Plan",
+      "status": "Stare",
+      "save": "Salvare",
+      "saving": "Se salvează…",
+      "saved": "Abonamentul a fost salvat.",
+      "error": "Salvarea a eșuat."
+    },
+    "features": {
+      "title": "Funcții (feature flags)",
+      "feature": "Funcție",
+      "planDefault": "Implicit plan",
+      "override": "Suprascriere",
+      "enabled": "Activat",
+      "disabled": "Dezactivat",
+      "useDefault": "Implicit",
+      "forceOn": "Pornit",
+      "forceOff": "Oprit",
+      "error": "Actualizarea a eșuat."
+    },
+    "members": {
+      "title": "Membri",
+      "name": "Nume",
+      "email": "E-mail",
+      "role": "Rol"
     }
   }
 }

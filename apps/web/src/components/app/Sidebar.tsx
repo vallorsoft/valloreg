@@ -1,9 +1,11 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { Link, usePathname } from '@/i18n/routing';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/cn';
+import { authApi } from '@/lib/api';
 
 const NAV = [
   { href: '/dashboard', key: 'dashboard' },
@@ -16,6 +18,18 @@ const NAV = [
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const t = useTranslations('app.nav');
   const pathname = usePathname();
+  const [isAdmin, setIsAdmin] = useState(false);
+
+  useEffect(() => {
+    authApi
+      .me()
+      .then((me) => setIsAdmin(me.user.isPlatformAdmin))
+      .catch(() => setIsAdmin(false));
+  }, []);
+
+  const items = isAdmin
+    ? [...NAV, { href: '/admin', key: 'admin' } as const]
+    : NAV;
 
   return (
     <div className="flex h-full flex-col">
@@ -25,7 +39,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         </Link>
       </div>
       <nav className="flex-1 space-y-1 px-3 py-4" aria-label={t('dashboard')}>
-        {NAV.map((item) => {
+        {items.map((item) => {
           // Active when the current path ends with this section (locale-stripped).
           const active = pathname.startsWith(item.href);
           return (
