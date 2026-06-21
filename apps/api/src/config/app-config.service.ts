@@ -47,6 +47,22 @@ export class AppConfigService {
   }
 
   /**
+   * A webes frontend nyilvános URL-je (záró / nélkül). A jelszó-visszaállító
+   * e-mail linkje ehhez fűzi a /reset-password útvonalat. Ha a WEB_APP_URL üres,
+   * a CORS_ORIGINS első eleme a fallback, végső soron a localhost.
+   */
+  get webAppUrl(): string {
+    const explicit = this.get('WEB_APP_URL').trim();
+    const url = explicit || this.corsOrigins[0] || 'http://localhost:3000';
+    return url.replace(/\/+$/, '');
+  }
+
+  /** Jelszó-visszaállító token élettartama másodpercben. */
+  get passwordResetTtl(): number {
+    return this.get('PASSWORD_RESET_TTL');
+  }
+
+  /**
    * Redis kapcsolat (BullMQ/ioredis). Ha REDIS_URL adott, abból parse-olunk
    * (rediss:// → TLS); különben a külön host/port/password mezőkből.
    */

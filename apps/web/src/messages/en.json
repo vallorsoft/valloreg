@@ -283,7 +283,8 @@
       "emailInvalid": "Please enter a valid email address.",
       "passwordTooShort": "Password must be at least 8 characters long.",
       "taxIdInvalid": "Please enter a valid tax ID.",
-      "phoneInvalid": "Please enter a valid phone number."
+      "phoneInvalid": "Please enter a valid phone number.",
+      "passwordsMismatch": "The two passwords do not match."
     },
     "errors": {
       "AUTH_INVALID_CREDENTIALS": "Incorrect email or password.",
@@ -307,6 +308,28 @@
       "NOT_FOUND": "Resource not found.",
       "INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
       "NETWORK_ERROR": "Network error. Check your connection."
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email and we will send you a link to reset your password.",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "submit": "Send reset link",
+      "backToLogin": "Back to login",
+      "success": "If an account exists for this email, we have sent a reset link. Please check your inbox (and spam folder)."
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "subtitle": "Enter a new password for your account.",
+      "password": "New password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Change password",
+      "backToLogin": "Back to login",
+      "success": "Your password has been changed. You can now log in with your new password.",
+      "goToLogin": "Log in",
+      "invalidLink": "The reset link is invalid or missing. Please request a new one."
     }
   },
   "app": {
