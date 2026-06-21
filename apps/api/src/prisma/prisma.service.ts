@@ -76,8 +76,27 @@ export class PrismaService
   public readonly scoped: PrismaClient;
 
   constructor(private readonly tenantContext: TenantContextService) {
-    super();
+    // Neon pooler URL-eknél (hostname tartalmaz "-pooler."-t) a Prisma extended
+    // protokollt (prepared statements) használ alapból, amit a pgbouncer
+    // transaction mode nem tud kezelni → minden lekérdezés 500-zal esik el.
+    // A pgbouncer=true paraméter simple protokollra vált (nincs prepared statement),
+    // és Prisma 5.10+ esetén a $transaction() automatikusan a DIRECT_URL-t veszi.
+    const rawUrl = process.env.DATABASE_URL ?? '';
+    const dbUrl = PrismaService.withPgBouncer(rawUrl);
+    super({ datasources: { db: { url: dbUrl || rawUrl } } });
     this.scoped = this.buildScopedClient();
+  }
+
+  /**
+   * Ha a DATABASE_URL Neon pooler URL (tartalmaz "-pooler."-t) és még nincs
+   * rajta pgbouncer=true, automatikusan hozzáadja. Más URL-eket változatlanul hagy.
+   */
+  private static withPgBouncer(url: string): string {
+    if (!url || !url.includes('-pooler.') || url.includes('pgbouncer=true')) {
+      return url;
+    }
+    const sep = url.includes('?') ? '&' : '?';
+    return `${url}${sep}pgbouncer=true`;
   }
 
   async onModuleInit(): Promise<void> {
