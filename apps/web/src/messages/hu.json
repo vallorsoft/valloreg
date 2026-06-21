@@ -283,7 +283,8 @@
       "emailInvalid": "Adjon meg érvényes e-mail címet.",
       "passwordTooShort": "A jelszónak legalább 8 karakterből kell állnia.",
       "taxIdInvalid": "Adjon meg érvényes adószámot.",
-      "phoneInvalid": "Adjon meg érvényes telefonszámot."
+      "phoneInvalid": "Adjon meg érvényes telefonszámot.",
+      "passwordsMismatch": "A két jelszó nem egyezik."
     },
     "errors": {
       "AUTH_INVALID_CREDENTIALS": "Hibás e-mail cím vagy jelszó.",
@@ -307,6 +308,28 @@
       "NOT_FOUND": "Az erőforrás nem található.",
       "INTERNAL_ERROR": "Váratlan hiba történt. Kérjük, próbálja újra.",
       "NETWORK_ERROR": "Hálózati hiba. Ellenőrizze a kapcsolatot."
+    },
+    "forgotPassword": {
+      "title": "Elfelejtett jelszó",
+      "subtitle": "Adja meg az e-mail címét, és küldünk egy linket a jelszó visszaállításához.",
+      "email": "E-mail",
+      "emailPlaceholder": "on@cegnev.hu",
+      "submit": "Visszaállító link küldése",
+      "backToLogin": "Vissza a bejelentkezéshez",
+      "success": "Ha létezik fiók ezzel az e-mail címmel, elküldtük a visszaállító linket. Kérjük, nézze meg a postaládáját (a spam mappát is)."
+    },
+    "resetPassword": {
+      "title": "Új jelszó beállítása",
+      "subtitle": "Adjon meg egy új jelszót a fiókjához.",
+      "password": "Új jelszó",
+      "passwordPlaceholder": "Legalább 8 karakter",
+      "confirmPassword": "Jelszó megerősítése",
+      "confirmPasswordPlaceholder": "Írja be újra a jelszót",
+      "submit": "Jelszó módosítása",
+      "backToLogin": "Vissza a bejelentkezéshez",
+      "success": "A jelszavát sikeresen módosítottuk. Most már bejelentkezhet az új jelszavával.",
+      "goToLogin": "Bejelentkezés",
+      "invalidLink": "A visszaállító link érvénytelen vagy hiányzik. Kérjen újat."
     }
   },
   "app": {

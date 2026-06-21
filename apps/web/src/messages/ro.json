@@ -283,7 +283,8 @@
       "emailInvalid": "Introduceți o adresă de e-mail validă.",
       "passwordTooShort": "Parola trebuie să aibă cel puțin 8 caractere.",
       "taxIdInvalid": "Introduceți un cod fiscal valid.",
-      "phoneInvalid": "Introduceți un număr de telefon valid."
+      "phoneInvalid": "Introduceți un număr de telefon valid.",
+      "passwordsMismatch": "Cele două parole nu coincid."
     },
     "errors": {
       "AUTH_INVALID_CREDENTIALS": "Adresă de e-mail sau parolă incorectă.",
@@ -307,6 +308,28 @@
       "NOT_FOUND": "Resursa nu a fost găsită.",
       "INTERNAL_ERROR": "A apărut o eroare neașteptată. Vă rugăm să încercați din nou.",
       "NETWORK_ERROR": "Eroare de rețea. Verificați conexiunea."
+    },
+    "forgotPassword": {
+      "title": "Ați uitat parola",
+      "subtitle": "Introduceți adresa de e-mail și vă vom trimite un link pentru resetarea parolei.",
+      "email": "E-mail",
+      "emailPlaceholder": "dvs@companie.ro",
+      "submit": "Trimite linkul de resetare",
+      "backToLogin": "Înapoi la autentificare",
+      "success": "Dacă există un cont cu această adresă, am trimis linkul de resetare. Verificați-vă căsuța de e-mail (și folderul spam)."
+    },
+    "resetPassword": {
+      "title": "Setați o parolă nouă",
+      "subtitle": "Introduceți o parolă nouă pentru contul dumneavoastră.",
+      "password": "Parolă nouă",
+      "passwordPlaceholder": "Cel puțin 8 caractere",
+      "confirmPassword": "Confirmați parola",
+      "confirmPasswordPlaceholder": "Introduceți din nou parola",
+      "submit": "Schimbă parola",
+      "backToLogin": "Înapoi la autentificare",
+      "success": "Parola a fost schimbată cu succes. Acum vă puteți autentifica cu noua parolă.",
+      "goToLogin": "Autentificare",
+      "invalidLink": "Linkul de resetare este invalid sau lipsește. Solicitați unul nou."
     }
   },
   "app": {

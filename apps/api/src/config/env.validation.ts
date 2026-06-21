@@ -28,6 +28,9 @@ export const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(4000),
   API_GLOBAL_PREFIX: z.string().default('api'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  // A webes frontend nyilvános URL-je (a jelszó-visszaállító e-mail linkjéhez).
+  // Ha üres, a CORS_ORIGINS első eleme a fallback.
+  WEB_APP_URL: z.string().optional().default(''),
 
   // PostgreSQL – a DIRECT_URL opcionális (Neon-nál külön); ha nincs, a
   // PrismaService a DATABASE_URL-t használja a migrációkhoz is.
@@ -47,6 +50,8 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET kötelező'),
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
   JWT_REFRESH_TTL: z.coerce.number().int().positive().default(1209600),
+  // Jelszó-visszaállító token élettartama másodpercben (alap: 1 óra).
+  PASSWORD_RESET_TTL: z.coerce.number().int().positive().default(3600),
 
   // S3 / MinIO
   S3_ENDPOINT: z.string().default('http://localhost:9000'),

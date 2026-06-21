@@ -187,6 +187,22 @@ export const authApi = {
   me(): Promise<AuthSession> {
     return apiRequest<AuthSession>('/auth/me');
   },
+  /** Jelszó-visszaállítás kérése. A `locale` az e-mail nyelvéhez. */
+  forgotPassword(email: string, locale?: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/forgot-password', {
+      method: 'POST',
+      json: locale ? { email, locale } : { email },
+      anonymous: true,
+    });
+  },
+  /** Új jelszó beállítása a visszaállító tokennel. */
+  resetPassword(token: string, password: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/reset-password', {
+      method: 'POST',
+      json: { token, password },
+      anonymous: true,
+    });
+  },
 };
 
 /** Persist tokens and select the active tenant after a successful auth call. */

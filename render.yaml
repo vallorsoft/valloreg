@@ -77,6 +77,10 @@ services:
       # A web origin a CORS-hoz (igazítsd, ha más a web URL):
       - key: CORS_ORIGINS
         value: https://valloreg-web.onrender.com
+      # A webes frontend nyilvános URL-je a jelszó-visszaállító e-mail linkjéhez.
+      # (Ha üres, a CORS_ORIGINS első elemére esik vissza.)
+      - key: WEB_APP_URL
+        value: https://valloreg-web.onrender.com
       # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
       - key: S3_ENDPOINT
         sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
