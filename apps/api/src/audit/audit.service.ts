@@ -61,8 +61,10 @@ export class AuditService {
     return this.prisma.system.auditLog.findMany({
       where: { tenantId },
       orderBy: { createdAt: 'desc' },
-      take: Math.min(take, 500),
-      skip,
+      // Negatív/túl nagy értékeket lekorlátozunk: a Prisma negatív skip/take-re
+      // 500-zal dobna (pl. ?skip=-5 query paraméternél).
+      take: Math.max(1, Math.min(take, 500)),
+      skip: Math.max(0, skip),
     });
   }
 }
