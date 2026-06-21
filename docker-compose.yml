@@ -1,0 +1,80 @@
+# Helyi fejlesztői infrastruktúra: PostgreSQL, Redis, MinIO (S3), MailHog.
+# Indítás: `pnpm infra:up`  ·  Leállítás: `pnpm infra:down`
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: valloreg-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: valloreg
+      POSTGRES_PASSWORD: valloreg
+      POSTGRES_DB: valloreg
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U valloreg"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: valloreg-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  minio:
+    image: minio/minio:latest
+    container_name: valloreg-minio
+    restart: unless-stopped
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: valloreg
+      MINIO_ROOT_PASSWORD: valloreg-secret
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - minio-data:/data
+    healthcheck:
+      test: ["CMD", "mc", "ready", "local"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  # Létrehozza az induló bucketet a MinIO-ban
+  minio-init:
+    image: minio/mc:latest
+    depends_on:
+      minio:
+        condition: service_healthy
+    entrypoint: >
+      /bin/sh -c "
+      mc alias set local http://minio:9000 valloreg valloreg-secret;
+      mc mb --ignore-existing local/valloreg-documents;
+      mc anonymous set none local/valloreg-documents;
+      exit 0;
+      "
+
+  mailhog:
+    image: mailhog/mailhog:latest
+    container_name: valloreg-mailhog
+    restart: unless-stopped
+    ports:
+      - "1025:1025"
+      - "8025:8025"
+
+volumes:
+  postgres-data:
+  redis-data:
+  minio-data:

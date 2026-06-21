@@ -1,0 +1,128 @@
+# ──────────────────────────────────────────────────────────────────────────
+# Render Blueprint – Valloreg
+#
+# Egyetlen fájlból létrehozza a 3 szolgáltatást egy ÚJ Render projektben,
+# teljesen KÜLÖN a meglévő dolgaidtól:
+#   - valloreg-redis  : Key Value (Redis) a BullMQ feldolgozó sorhoz
+#   - valloreg-api    : NestJS backend (REST API + worker)
+#   - valloreg-web    : Next.js PWA frontend
+#
+# A titkokat (DATABASE_URL, R2 kulcsok, stb.) NEM tartalmazza – azokat a Render
+# felületén állítod be (sync: false), vagy a Render generálja (generateValue).
+# Lépésről lépésre: docs/DEPLOY.md
+#
+# MEGJEGYZÉS: ha a Render nem fogadja el a `type: keyvalue` értéket (régebbi
+# fiók), írd át `redis`-re. A többi változatlan.
+# ──────────────────────────────────────────────────────────────────────────
+
+services:
+  # ── Redis / Key Value (BullMQ) ──────────────────────────────────────────
+  - type: keyvalue
+    name: valloreg-redis
+    plan: free
+    region: frankfurt
+    ipAllowList: [] # csak belső (Render hálózaton belüli) hozzáférés
+    maxmemoryPolicy: noeviction
+
+  # ── API (NestJS) ────────────────────────────────────────────────────────
+  - type: web
+    name: valloreg-api
+    runtime: node
+    region: frankfurt
+    plan: free
+    # A monorepo gyökeréből telepítünk és buildelünk. A Prisma migráció a
+    # buildben fut (idempotens), hogy ingyenes csomagon is működjön.
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @valloreg/shared build &&
+      pnpm --filter @valloreg/api prisma:generate &&
+      pnpm --filter @valloreg/api build &&
+      pnpm --filter @valloreg/api prisma:deploy
+    startCommand: pnpm --filter @valloreg/api start:prod
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: API_GLOBAL_PREFIX
+        value: api
+      # Neon – kézzel állítsd be (sync: false):
+      #   DATABASE_URL = POOLED (-pooler) connection string ?sslmode=require
+      #   DIRECT_URL   = DIRECT connection string ?sslmode=require (migrációhoz)
+      - key: DATABASE_URL
+        sync: false
+      - key: DIRECT_URL
+        sync: false
+      # Redis a társszolgáltatásból (automatikus):
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: valloreg-redis
+          property: connectionString
+      # JWT + titkosító kulcs – a Render generálja:
+      - key: JWT_ACCESS_SECRET
+        generateValue: true
+      - key: JWT_REFRESH_SECRET
+        generateValue: true
+      - key: INTEGRATION_ENC_KEY
+        generateValue: true
+      # A web origin a CORS-hoz (igazítsd, ha más a web URL):
+      - key: CORS_ORIGINS
+        value: https://valloreg-web.onrender.com
+      # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
+      - key: S3_ENDPOINT
+        sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
+      - key: S3_REGION
+        value: auto
+      - key: S3_ACCESS_KEY
+        sync: false
+      - key: S3_SECRET_KEY
+        sync: false
+      - key: S3_BUCKET
+        value: valloreg-documents
+      - key: S3_FORCE_PATH_STYLE
+        value: "true"
+      # AI / OCR – Fázis 1-ben stub; Fázis 2-ben állítsd `gemini`-re + add meg a kulcsot:
+      - key: EXTRACTION_PROVIDER
+        value: stub
+      - key: OCR_PROVIDER
+        value: stub
+      - key: GEMINI_API_KEY
+        sync: false
+      # E-mail (Brevo) – opcionális, meghívókhoz:
+      - key: BREVO_API_KEY
+        sync: false
+      - key: BREVO_SENDER
+        sync: false
+      - key: MAIL_FROM
+        sync: false
+      # Web Push (VAPID) – opcionális:
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_EMAIL
+        sync: false
+
+  # ── Web (Next.js PWA) ───────────────────────────────────────────────────
+  - type: web
+    name: valloreg-web
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: >-
+      corepack enable &&
+      pnpm install --frozen-lockfile &&
+      pnpm --filter @valloreg/shared build &&
+      pnpm --filter @valloreg/web build
+    startCommand: pnpm --filter @valloreg/web start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # A build-időben beépül a bundle-be; igazítsd, ha más az API URL:
+      - key: NEXT_PUBLIC_API_URL
+        value: https://valloreg-api.onrender.com/api
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Valloreg
+      - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
+        sync: false

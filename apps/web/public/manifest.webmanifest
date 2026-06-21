@@ -1,0 +1,27 @@
+{
+  "name": "Valloreg",
+  "short_name": "Valloreg",
+  "description": "OCR + AI alapú szervizmenedzsment fuvarozóknak és flottakezelőknek.",
+  "lang": "hu",
+  "dir": "ltr",
+  "theme_color": "#F97316",
+  "background_color": "#F8FAFC",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "start_url": "/",
+  "scope": "/",
+  "icons": [
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "/icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}

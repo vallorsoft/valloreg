@@ -1,0 +1,357 @@
+'use client';
+
+import type { ApiErrorBody, ErrorCode } from '@valloreg/shared';
+import {
+  getAccessToken,
+  getActiveTenantId,
+  setTokens,
+  type AuthTokens,
+  type CurrentUser,
+} from './auth';
+
+/**
+ * Thin fetch wrapper around the Valloreg REST API.
+ *
+ * - Base URL comes from NEXT_PUBLIC_API_URL.
+ * - Attaches `Authorization: Bearer <access>` and `x-tenant-id` when available.
+ * - Parses the shared `ApiErrorBody` shape and throws a typed `ApiError`.
+ *
+ * TODO (later phase): automatic refresh-token rotation on 401.
+ */
+
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+
+/** Typed error carrying the machine-readable code for i18n mapping. */
+export class ApiError extends Error {
+  readonly code: ErrorCode | 'NETWORK_ERROR';
+  readonly status: number;
+  readonly details?: Record<string, string[]>;
+
+  constructor(
+    code: ErrorCode | 'NETWORK_ERROR',
+    status: number,
+    message: string,
+    details?: Record<string, string[]>,
+  ) {
+    super(message);
+    this.name = 'ApiError';
+    this.code = code;
+    this.status = status;
+    this.details = details;
+  }
+}
+
+interface RequestOptions extends Omit<RequestInit, 'body'> {
+  /** JSON-serializable body; set automatically with the correct header. */
+  json?: unknown;
+  /** Skip attaching the Authorization header (e.g. login/register). */
+  anonymous?: boolean;
+}
+
+function buildHeaders(options: RequestOptions): Headers {
+  const headers = new Headers(options.headers);
+  if (options.json !== undefined && !headers.has('Content-Type')) {
+    headers.set('Content-Type', 'application/json');
+  }
+  if (!options.anonymous) {
+    const token = getAccessToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    const tenantId = getActiveTenantId();
+    if (tenantId) headers.set('x-tenant-id', tenantId);
+  }
+  return headers;
+}
+
+async function parseError(response: Response): Promise<ApiError> {
+  let body: Partial<ApiErrorBody> | undefined;
+  try {
+    body = (await response.json()) as Partial<ApiErrorBody>;
+  } catch {
+    // Non-JSON error body – fall through to a generic error.
+  }
+  const code = (body?.code as ErrorCode | undefined) ?? 'INTERNAL_ERROR';
+  const message = body?.message ?? response.statusText;
+  return new ApiError(code, response.status, message, body?.details);
+}
+
+/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const { json, anonymous: _anonymous, ...init } = options;
+  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+
+  let response: Response;
+  try {
+    response = await fetch(url, {
+      ...init,
+      headers: buildHeaders(options),
+      body: json !== undefined ? JSON.stringify(json) : undefined,
+    });
+  } catch (cause) {
+    throw new ApiError(
+      'NETWORK_ERROR',
+      0,
+      cause instanceof Error ? cause.message : 'Network request failed',
+    );
+  }
+
+  if (!response.ok) {
+    throw await parseError(response);
+  }
+
+  if (response.status === 204) {
+    return undefined as T;
+  }
+
+  return (await response.json()) as T;
+}
+
+// ── Typed endpoint helpers (Phase 1 contracts; backend wiring later) ─────────
+
+export interface LoginPayload {
+  email: string;
+  password: string;
+}
+
+export interface RegisterPayload {
+  companyName: string;
+  taxId: string;
+  contactName: string;
+  email: string;
+  phone: string;
+  password: string;
+}
+
+export interface AuthResponse extends AuthTokens {
+  user: CurrentUser;
+}
+
+export const authApi = {
+  login(payload: LoginPayload): Promise<AuthResponse> {
+    return apiRequest<AuthResponse>('/auth/login', {
+      method: 'POST',
+      json: payload,
+      anonymous: true,
+    });
+  },
+  register(payload: RegisterPayload): Promise<AuthResponse> {
+    return apiRequest<AuthResponse>('/auth/register', {
+      method: 'POST',
+      json: payload,
+      anonymous: true,
+    });
+  },
+  me(): Promise<CurrentUser> {
+    return apiRequest<CurrentUser>('/auth/me');
+  },
+};
+
+/** Persist tokens after a successful auth call. */
+export function storeAuth(response: AuthResponse): void {
+  setTokens({
+    accessToken: response.accessToken,
+    refreshToken: response.refreshToken,
+  });
+}
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+
+export interface DocumentListItem {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  name: string;
+  category: string;
+  partType: string | null;
+  type: string;
+  vehicleId: string | null;
+  quantity: number;
+  unitPrice: string | null;
+  price: string;
+  confidence: number;
+}
+
+export interface DocumentInvoice {
+  id: string;
+  invoiceNumber: string | null;
+  date: string | null;
+  currency: string | null;
+  odometerKm: number | null;
+  netTotal: string | null;
+  taxTotal: string | null;
+  grossTotal: string | null;
+  confidence: number;
+  extractionRaw: Record<string, unknown> | null;
+  supplier: { id: string; name: string } | null;
+  items: InvoiceItem[];
+}
+
+export interface DocumentDetail extends DocumentListItem {
+  storageKey: string;
+  sha256: string;
+  invoice: DocumentInvoice | null;
+}
+
+export const documentsApi = {
+  presign(payload: { fileName: string; mimeType: string }) {
+    return apiRequest<{ documentId: string; storageKey: string; uploadUrl: string }>(
+      '/documents/presign',
+      { method: 'POST', json: payload },
+    );
+  },
+  register(payload: {
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storageKey: string;
+    sha256: string;
+  }) {
+    return apiRequest<DocumentListItem>('/documents', {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  list() {
+    return apiRequest<DocumentListItem[]>('/documents');
+  },
+  getById(id: string) {
+    return apiRequest<DocumentDetail>(`/documents/${id}`);
+  },
+  getDownloadUrl(id: string) {
+    return apiRequest<{ downloadUrl: string }>(`/documents/${id}/download`);
+  },
+  confirm(id: string) {
+    return apiRequest<DocumentListItem>(`/documents/${id}/confirm`, {
+      method: 'PATCH',
+    });
+  },
+};
+
+// ── Invoices ────────────────────────────────────────────────────────────────
+
+export interface UpdateInvoiceItemPayload {
+  /** Jármű azonosító; `null` = hozzárendelés törlése. */
+  vehicleId?: string | null;
+  category?: string;
+  type?: string;
+  partType?: string | null;
+}
+
+export const invoicesApi = {
+  updateItem(itemId: string, payload: UpdateInvoiceItemPayload) {
+    return apiRequest<InvoiceItem>(`/invoices/items/${itemId}`, {
+      method: 'PATCH',
+      json: payload,
+    });
+  },
+};
+
+/** SHA-256 hash kiszámítása a fájl ArrayBuffer-éből (Web Crypto API). */
+export async function computeSha256(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
+
+// ── Vehicles ──────────────────────────────────────────────────────────────────
+
+export interface Vehicle {
+  id: string;
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  odometerKm: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface CreateVehiclePayload {
+  plate?: string;
+  vin?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  odometerKm?: number;
+}
+
+export interface ServiceHistoryItem extends InvoiceItem {
+  invoice: {
+    id: string;
+    documentId: string;
+    invoiceNumber: string | null;
+    date: string | null;
+    currency: string | null;
+    supplier: { id: string; name: string } | null;
+  } | null;
+}
+
+export interface VehicleServiceHistory {
+  vehicle: Vehicle;
+  summary: {
+    totalSpent: string;
+    itemCount: number;
+    invoiceCount: number;
+    lastServiceDate: string | null;
+    currency: string | null;
+  };
+  items: ServiceHistoryItem[];
+}
+
+export const vehiclesApi = {
+  list() {
+    return apiRequest<Vehicle[]>('/vehicles');
+  },
+  getById(id: string) {
+    return apiRequest<Vehicle>(`/vehicles/${id}`);
+  },
+  getHistory(id: string) {
+    return apiRequest<VehicleServiceHistory>(`/vehicles/${id}/history`);
+  },
+  create(payload: CreateVehiclePayload) {
+    return apiRequest<Vehicle>('/vehicles', { method: 'POST', json: payload });
+  },
+  update(id: string, payload: CreateVehiclePayload) {
+    return apiRequest<Vehicle>(`/vehicles/${id}`, { method: 'PATCH', json: payload });
+  },
+  remove(id: string) {
+    return apiRequest<void>(`/vehicles/${id}`, { method: 'DELETE' });
+  },
+};
+
+// ── Stats ─────────────────────────────────────────────────────────────────────
+
+export interface DashboardStats {
+  vehicles: { total: number };
+  documents: {
+    total: number;
+    thisMonth: number;
+    needsReview: number;
+    processing: number;
+    confirmed: number;
+  };
+  invoices: {
+    grossTotal: string | null;
+    count: number;
+  };
+}
+
+export const statsApi = {
+  getDashboard() {
+    return apiRequest<DashboardStats>('/stats');
+  },
+};

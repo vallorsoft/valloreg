@@ -1,0 +1,485 @@
+{
+  "common": {
+    "appName": "Valloreg",
+    "tagline": "Szervizszámlából digitális szerviztörténet – OCR és AI segítségével.",
+    "nav": {
+      "features": "Funkciók",
+      "pricing": "Árak",
+      "faq": "GYIK",
+      "contact": "Kapcsolat",
+      "login": "Bejelentkezés",
+      "register": "Regisztráció",
+      "dashboard": "Vezérlőpult"
+    },
+    "actions": {
+      "startTrial": "Próbálja ki ingyen",
+      "requestDemo": "Demó kérése",
+      "learnMore": "Tudjon meg többet",
+      "submit": "Küldés",
+      "cancel": "Mégse",
+      "save": "Mentés",
+      "back": "Vissza",
+      "next": "Tovább",
+      "loading": "Betöltés…"
+    },
+    "language": {
+      "label": "Nyelv",
+      "hu": "Magyar",
+      "ro": "Román",
+      "en": "Angol"
+    },
+    "footer": {
+      "rights": "Minden jog fenntartva.",
+      "product": "Termék",
+      "company": "Cég",
+      "legal": "Jogi",
+      "privacy": "Adatvédelem",
+      "terms": "Felhasználási feltételek",
+      "about": "Rólunk",
+      "tagline": "Flottakezelés okosan – kevesebb adminisztráció, több átláthatóság."
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "OCR + AI alapú szervizmenedzsment",
+      "headline": "A szervizszámlák feldolgozása automatikusan, percek alatt",
+      "subtitle": "Töltse fel a számlát, a Valloreg kiolvassa, kategorizálja és járműhöz rendeli. Ön csak ellenőriz – a szerviztörténet magától épül.",
+      "ctaPrimary": "Próbálja ki ingyen",
+      "ctaSecondary": "Demó kérése",
+      "trustNote": "Bankkártya nélkül indítható · 14 napos próbaidőszak"
+    },
+    "problem": {
+      "title": "Ismerős a probléma?",
+      "subtitle": "A flották szervizadatai papíron, mappákban és fejekben szétszórva élnek.",
+      "items": {
+        "scattered": {
+          "title": "Szétszórt adatok",
+          "description": "A számlák cipősdobozban, e-mailben és táblázatokban – senki nem látja az egészet."
+        },
+        "manual": {
+          "title": "Kézi rögzítés",
+          "description": "Tételenkénti gépelés órákat vesz el, és tele van elgépeléssel."
+        },
+        "noInsight": {
+          "title": "Nincs rálátás",
+          "description": "Nem tudni, melyik jármű mennyibe kerül, és mikor jön a következő karbantartás."
+        }
+      }
+    },
+    "solution": {
+      "title": "A Valloreg megoldása",
+      "subtitle": "Egy feltöltés, és a rendszer elvégzi a nehéz munkát.",
+      "steps": {
+        "upload": {
+          "title": "1. Feltöltés",
+          "description": "Húzza be a PDF-et vagy fotózza le a számlát mobilról."
+        },
+        "extract": {
+          "title": "2. Kiolvasás",
+          "description": "Az OCR és az AI tételenként értelmezi és kategorizálja a számlát."
+        },
+        "review": {
+          "title": "3. Ellenőrzés",
+          "description": "Csak a bizonytalan mezőket erősíti meg – pár kattintás."
+        },
+        "history": {
+          "title": "4. Szerviztörténet",
+          "description": "A jármű digitális élettörténete automatikusan frissül."
+        }
+      }
+    },
+    "features": {
+      "title": "Minden, ami a flotta szervizéhez kell",
+      "subtitle": "Egyetlen platform a feldolgozástól a riportokig.",
+      "items": {
+        "ocr": {
+          "title": "OCR feldolgozás",
+          "description": "Pontos szövegkiolvasás PDF-ből, JPG-ből és PNG-ből, akár mobilfotóról is."
+        },
+        "ai": {
+          "title": "AI kategorizálás",
+          "description": "Tételenkénti besorolás: alkatrész, munkadíj, szerviz – emberi munka nélkül."
+        },
+        "multiVehicle": {
+          "title": "Több jármű kezelése",
+          "description": "Rendszám és alvázszám alapján a megfelelő járműhöz rendelve."
+        },
+        "serviceBook": {
+          "title": "Digitális szervizkönyv",
+          "description": "Minden javítás, alkatrész és költség egy helyen, időrendben."
+        },
+        "dashboard": {
+          "title": "Költség-dashboard",
+          "description": "Havi és éves költségek, költség/km, közelgő karbantartások egy nézetben."
+        },
+        "multiTenant": {
+          "title": "Több cég, biztonságosan",
+          "description": "Teljes tenant-izoláció és szerepkör-alapú jogosultság minden adathoz."
+        }
+      }
+    },
+    "preview": {
+      "title": "Átlátható vezérlőpult",
+      "subtitle": "A flotta minden fontos száma egy pillantásra.",
+      "stats": {
+        "monthlyCost": "Havi költség",
+        "yearlyCost": "Éves költség",
+        "costPerVehicle": "Költség / jármű",
+        "upcoming": "Közelgő karbantartás"
+      },
+      "note": "Illusztratív előnézet – a valós adatok bejelentkezés után jelennek meg."
+    },
+    "benefits": {
+      "title": "Miért a Valloreg?",
+      "subtitle": "Kevesebb adminisztráció, jobb döntések.",
+      "items": {
+        "time": {
+          "title": "Időmegtakarítás",
+          "description": "A kézi rögzítés órái helyett percek – a feldolgozás automatikus."
+        },
+        "accuracy": {
+          "title": "Kevesebb hiba",
+          "description": "Az AI kiszűri az elgépeléseket, a confidence jelzi, mit kell ellenőrizni."
+        },
+        "transparency": {
+          "title": "Teljes átláthatóság",
+          "description": "Járművenkénti és flottaszintű költségek valós időben."
+        },
+        "scalable": {
+          "title": "Skálázható",
+          "description": "Két járműtől a korlátlan flottáig – a csomag Önnel együtt nő."
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Amit ügyfeleink mondanak",
+      "subtitle": "Fuvarozók és flottakezelők, akik már a Valloreggel dolgoznak.",
+      "items": {
+        "first": {
+          "quote": "Korábban egy könyvelő egész napját elvitte a számlák rögzítése. Most pár perc az egész.",
+          "author": "Kovács Gábor",
+          "role": "Ügyvezető, regionális fuvarozó"
+        },
+        "second": {
+          "quote": "Végre látom járművenként a valós költségeket. A döntéseink sokkal megalapozottabbak.",
+          "author": "Nagy Anikó",
+          "role": "Flottamenedzser"
+        },
+        "third": {
+          "quote": "A mobilról fotózott számlát is hibátlanul felismeri. Egyszerűen működik.",
+          "author": "Szabó Péter",
+          "role": "Tulajdonos, kisflotta"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Átlátható árazás",
+      "subtitle": "Válassza a flottájához illő csomagot. Bármikor válthat.",
+      "perMonth": "/ hó",
+      "vehicles": "{count} jármű",
+      "vehiclesUnlimited": "Korlátlan jármű",
+      "users": "{count} felhasználó",
+      "usersUnlimited": "Korlátlan felhasználó",
+      "documents": "{count} dokumentum / hó",
+      "documentsUnlimited": "Korlátlan dokumentum / hó",
+      "mostPopular": "Legnépszerűbb",
+      "cta": "Kiválasztom",
+      "plans": {
+        "STARTER": {
+          "name": "Starter",
+          "description": "Kisebb flottáknak, az első lépésekhez."
+        },
+        "STANDARD": {
+          "name": "Standard",
+          "description": "Növekvő flottáknak, riportokkal és exporttal."
+        },
+        "PROFESSIONAL": {
+          "name": "Professional",
+          "description": "Aktív flottakezeléshez, teljes funkciókészlettel."
+        },
+        "BUSINESS": {
+          "name": "Business",
+          "description": "Nagy flottáknak, korlátok nélkül."
+        }
+      }
+    },
+    "faq": {
+      "title": "Gyakori kérdések",
+      "subtitle": "Amit a leggyakrabban kérdeznek tőlünk.",
+      "items": {
+        "fileTypes": {
+          "question": "Milyen fájlokat tölthetek fel?",
+          "answer": "PDF, JPG, JPEG és PNG formátumot támogatunk, fájlonként legfeljebb 25 MB méretig."
+        },
+        "accuracy": {
+          "question": "Mennyire pontos a felismerés?",
+          "answer": "Az AI minden mezőhöz megbízhatósági értéket ad. A bizonytalan mezőket kiemeljük, így csak azokat kell ellenőriznie."
+        },
+        "security": {
+          "question": "Biztonságban vannak az adataim?",
+          "answer": "Minden cég adata teljesen elkülönített (tenant-izoláció), a hozzáférést szerepkörök szabályozzák. Az üzemeltető nem látja a számlák tartalmát."
+        },
+        "languages": {
+          "question": "Milyen nyelveken érhető el?",
+          "answer": "A felület magyarul, románul és angolul használható; bármikor válthat a nyelvek között."
+        },
+        "cancel": {
+          "question": "Lemondhatom bármikor?",
+          "answer": "Igen, az előfizetés bármikor lemondható, és a csomagok között is szabadon válthat."
+        }
+      }
+    },
+    "contact": {
+      "title": "Lépjen kapcsolatba velünk",
+      "subtitle": "Kérdése van, vagy személyes bemutatót szeretne? Írjon nekünk.",
+      "name": "Név",
+      "namePlaceholder": "Az Ön neve",
+      "email": "E-mail",
+      "emailPlaceholder": "On@cegnev.hu",
+      "company": "Cég",
+      "companyPlaceholder": "Cég neve",
+      "message": "Üzenet",
+      "messagePlaceholder": "Miben segíthetünk?",
+      "submit": "Üzenet küldése",
+      "note": "Hamarosan válaszolunk. Az űrlap bekötése későbbi fázisban érkezik."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Bejelentkezés",
+      "subtitle": "Üdvözöljük újra! Jelentkezzen be a fiókjába.",
+      "email": "E-mail",
+      "emailPlaceholder": "on@cegnev.hu",
+      "password": "Jelszó",
+      "passwordPlaceholder": "Az Ön jelszava",
+      "submit": "Bejelentkezés",
+      "noAccount": "Még nincs fiókja?",
+      "registerLink": "Regisztráljon",
+      "forgotPassword": "Elfelejtett jelszó?"
+    },
+    "register": {
+      "title": "Regisztráció",
+      "subtitle": "Hozza létre cége fiókját pár perc alatt.",
+      "companyName": "Cégnév",
+      "companyNamePlaceholder": "Cég neve",
+      "taxId": "Adószám",
+      "taxIdPlaceholder": "12345678-1-23",
+      "contactName": "Kapcsolattartó neve",
+      "contactNamePlaceholder": "Vezetéknév Keresztnév",
+      "email": "E-mail",
+      "emailPlaceholder": "on@cegnev.hu",
+      "phone": "Telefonszám",
+      "phonePlaceholder": "+36 30 123 4567",
+      "password": "Jelszó",
+      "passwordPlaceholder": "Legalább 8 karakter",
+      "submit": "Fiók létrehozása",
+      "haveAccount": "Már van fiókja?",
+      "loginLink": "Jelentkezzen be"
+    },
+    "validation": {
+      "required": "Ez a mező kötelező.",
+      "emailInvalid": "Adjon meg érvényes e-mail címet.",
+      "passwordTooShort": "A jelszónak legalább 8 karakterből kell állnia.",
+      "taxIdInvalid": "Adjon meg érvényes adószámot.",
+      "phoneInvalid": "Adjon meg érvényes telefonszámot."
+    },
+    "errors": {
+      "AUTH_INVALID_CREDENTIALS": "Hibás e-mail cím vagy jelszó.",
+      "AUTH_EMAIL_TAKEN": "Ezzel az e-mail címmel már létezik fiók.",
+      "AUTH_TOKEN_EXPIRED": "A munkamenet lejárt, jelentkezzen be újra.",
+      "AUTH_TOKEN_INVALID": "Érvénytelen munkamenet, jelentkezzen be újra.",
+      "AUTH_UNAUTHORIZED": "A művelethez be kell jelentkeznie.",
+      "AUTH_FORBIDDEN": "Nincs jogosultsága ehhez a művelethez.",
+      "AUTH_2FA_REQUIRED": "Kétlépcsős azonosítás szükséges.",
+      "TENANT_NOT_FOUND": "A cég nem található.",
+      "TENANT_ACCESS_DENIED": "Nincs hozzáférése ehhez a céghez.",
+      "LIMIT_VEHICLES_REACHED": "Elérte a csomag jármű-limitjét.",
+      "LIMIT_USERS_REACHED": "Elérte a csomag felhasználó-limitjét.",
+      "LIMIT_STORAGE_REACHED": "Elérte a tárhely-limitet.",
+      "LIMIT_DOCUMENTS_REACHED": "Elérte a havi dokumentum-limitet.",
+      "FEATURE_DISABLED": "Ez a funkció nem érhető el az Ön csomagjában.",
+      "DOCUMENT_UNSUPPORTED_TYPE": "Nem támogatott fájltípus.",
+      "DOCUMENT_TOO_LARGE": "A fájl túl nagy.",
+      "PROCESSING_FAILED": "A feldolgozás nem sikerült.",
+      "VALIDATION_FAILED": "Az adatok ellenőrzése sikertelen.",
+      "NOT_FOUND": "Az erőforrás nem található.",
+      "INTERNAL_ERROR": "Váratlan hiba történt. Kérjük, próbálja újra.",
+      "NETWORK_ERROR": "Hálózati hiba. Ellenőrizze a kapcsolatot."
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Vezérlőpult",
+      "vehicles": "Járművek",
+      "documents": "Dokumentumok",
+      "logout": "Kijelentkezés"
+    },
+    "header": {
+      "tenantLabel": "Aktív cég",
+      "noTenant": "Nincs kiválasztott cég",
+      "menu": "Menü"
+    },
+    "phaseNote": "Demó nézet – a valós adatok bekötése a következő fázisokban érkezik."
+  },
+  "dashboard": {
+    "title": "Vezérlőpult",
+    "subtitle": "A flotta áttekintése.",
+    "loading": "Betöltés…",
+    "stats": {
+      "vehicleCount": "Járművek",
+      "documentTotal": "Dokumentumok összesen",
+      "documentThisMonth": "Dokumentum (ez a hónap)",
+      "needsReview": "Ellenőrzésre vár",
+      "processing": "Feldolgozás alatt",
+      "confirmed": "Jóváhagyva",
+      "invoiceGrossTotal": "Számlázott összeg",
+      "invoiceCount": "Feldolgozott számla"
+    },
+    "units": {
+      "currency": "Ft",
+      "perKm": "Ft/km",
+      "items": "db",
+      "events": "esemény"
+    },
+    "noData": "Még nincs elég adat. Töltson fel dokumentumokat és adjon hozzá járműveket."
+  },
+  "vehicles": {
+    "title": "Járművek",
+    "subtitle": "A flotta járműveinek kezelése.",
+    "addVehicle": "Új jármű",
+    "table": {
+      "plate": "Rendszám",
+      "make": "Gyártmány",
+      "model": "Modell",
+      "year": "Évjárat",
+      "odometer": "Km-óra",
+      "cost": "Összköltség",
+      "actions": "Műveletek"
+    },
+    "empty": {
+      "title": "Még nincs jármű",
+      "description": "Adjon hozzá egy járművet, hogy elkezdődhessen a szerviztörténet építése.",
+      "cta": "Első jármű hozzáadása"
+    },
+    "loading": "Betöltés…",
+    "form": {
+      "addTitle": "Új jármű hozzáadása",
+      "editTitle": "Jármű szerkesztése",
+      "plate": "Rendszám",
+      "platePlaceholder": "pl. ABC-123",
+      "make": "Gyártmány",
+      "makePlaceholder": "pl. Renault",
+      "model": "Modell",
+      "modelPlaceholder": "pl. Master",
+      "year": "Évjárat",
+      "yearPlaceholder": "pl. 2020",
+      "vin": "Alvázszám",
+      "vinPlaceholder": "17 karakteres VIN",
+      "odometerKm": "Km-óra állás",
+      "odometerKmPlaceholder": "pl. 125000",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "cancel": "Mégse"
+    },
+    "actions": {
+      "edit": "Szerkesztés",
+      "history": "Történet",
+      "delete": "Törlés",
+      "confirmDelete": "Biztosan törli ezt a járművet? Ez nem vonható vissza.",
+      "deleting": "Törlés…",
+      "deleteError": "Törlési hiba."
+    },
+    "history": {
+      "title": "Szerviztörténet",
+      "subtitle": "A járműhöz rendelt összes szervizköltség.",
+      "back": "Vissza a járművekhez",
+      "loading": "Betöltés…",
+      "notFound": "A jármű nem található.",
+      "empty": "Még nincs hozzárendelt szervizköltség ehhez a járműhöz.",
+      "summary": {
+        "totalSpent": "Összköltség",
+        "services": "Szervizek",
+        "items": "Tételek",
+        "lastService": "Utolsó szerviz",
+        "never": "Nincs"
+      },
+      "table": {
+        "title": "Szerviztételek",
+        "date": "Dátum",
+        "supplier": "Beszállító",
+        "item": "Tétel",
+        "category": "Kategória",
+        "amount": "Összeg"
+      }
+    }
+  },
+  "documents": {
+    "title": "Dokumentumok",
+    "subtitle": "Szervizszámlák feltöltése és feldolgozása.",
+    "loading": "Betöltés…",
+    "upload": {
+      "title": "Húzza ide a fájlokat",
+      "description": "vagy kattintson a tallózáshoz",
+      "hint": "PDF, JPG, JPEG, PNG – legfeljebb 25 MB",
+      "button": "Fájl kiválasztása",
+      "uploading": "Feltöltés folyamatban…",
+      "errorUpload": "Feltöltési hiba, próbálja újra.",
+      "errorGeneric": "Váratlan hiba, próbálja újra."
+    },
+    "table": {
+      "name": "Dokumentum",
+      "uploadedAt": "Feltöltve",
+      "status": "Állapot",
+      "actions": "Műveletek",
+      "view": "Megtekintés"
+    },
+    "status": {
+      "UPLOADED": "Feltöltve",
+      "QUEUED": "Sorban",
+      "OCR_RUNNING": "OCR folyamatban",
+      "EXTRACTING": "Kiolvasás",
+      "NEEDS_REVIEW": "Ellenőrzés szükséges",
+      "AUTO_OK": "Automatikusan kész",
+      "CONFIRMED": "Jóváhagyva",
+      "FAILED": "Sikertelen",
+      "ARCHIVED": "Archiválva"
+    },
+    "empty": {
+      "title": "Még nincs dokumentum",
+      "description": "Töltse fel az első szervizszámlát a feldolgozáshoz.",
+      "cta": "Dokumentum feltöltése"
+    },
+    "review": {
+      "title": "Dokumentum részletek",
+      "back": "Vissza a listához",
+      "confirm": "Jóváhagyás",
+      "confirming": "Jóváhagyás…",
+      "download": "Letöltés",
+      "notFound": "A dokumentum nem található.",
+      "errorConfirm": "Jóváhagyás sikertelen.",
+      "noInvoice": "A számla feldolgozás alatt áll.",
+      "invoice": {
+        "title": "Kinyert számlaadatok",
+        "supplier": "Szállító",
+        "invoiceNumber": "Számlaszám",
+        "date": "Dátum",
+        "currency": "Deviza",
+        "netTotal": "Nettó összeg",
+        "taxTotal": "ÁFA összeg",
+        "grossTotal": "Bruttó összeg",
+        "unknown": "Ismeretlen"
+      },
+      "items": {
+        "title": "Számlatételek",
+        "name": "Megnevezés",
+        "category": "Kategória",
+        "vehicle": "Jármű",
+        "quantity": "Mennyiség",
+        "price": "Ár",
+        "empty": "Nincsenek tételek.",
+        "unassigned": "Nincs hozzárendelve",
+        "assignError": "A hozzárendelés sikertelen."
+      }
+    }
+  }
+}

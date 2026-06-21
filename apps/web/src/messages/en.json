@@ -1,0 +1,485 @@
+{
+  "common": {
+    "appName": "Valloreg",
+    "tagline": "From service invoice to digital service history – powered by OCR and AI.",
+    "nav": {
+      "features": "Features",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "contact": "Contact",
+      "login": "Log in",
+      "register": "Sign up",
+      "dashboard": "Dashboard"
+    },
+    "actions": {
+      "startTrial": "Start free trial",
+      "requestDemo": "Request a demo",
+      "learnMore": "Learn more",
+      "submit": "Submit",
+      "cancel": "Cancel",
+      "save": "Save",
+      "back": "Back",
+      "next": "Next",
+      "loading": "Loading…"
+    },
+    "language": {
+      "label": "Language",
+      "hu": "Hungarian",
+      "ro": "Romanian",
+      "en": "English"
+    },
+    "footer": {
+      "rights": "All rights reserved.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "privacy": "Privacy",
+      "terms": "Terms of Service",
+      "about": "About us",
+      "tagline": "Smarter fleet management – less admin, more transparency."
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "OCR + AI powered service management",
+      "headline": "Process service invoices automatically, in minutes",
+      "subtitle": "Upload an invoice and Valloreg reads it, categorizes it, and matches it to the vehicle. You just review – the service history builds itself.",
+      "ctaPrimary": "Start free trial",
+      "ctaSecondary": "Request a demo",
+      "trustNote": "No credit card required · 14-day trial"
+    },
+    "problem": {
+      "title": "Sound familiar?",
+      "subtitle": "Fleet service data lives scattered across paper, folders, and people's heads.",
+      "items": {
+        "scattered": {
+          "title": "Scattered data",
+          "description": "Invoices in shoeboxes, emails, and spreadsheets – nobody sees the full picture."
+        },
+        "manual": {
+          "title": "Manual data entry",
+          "description": "Typing every line item takes hours and is full of typos."
+        },
+        "noInsight": {
+          "title": "No insight",
+          "description": "You can't tell what each vehicle costs or when the next maintenance is due."
+        }
+      }
+    },
+    "solution": {
+      "title": "The Valloreg solution",
+      "subtitle": "One upload, and the system does the heavy lifting.",
+      "steps": {
+        "upload": {
+          "title": "1. Upload",
+          "description": "Drag in the PDF or snap a photo of the invoice on your phone."
+        },
+        "extract": {
+          "title": "2. Extract",
+          "description": "OCR and AI interpret and categorize the invoice line by line."
+        },
+        "review": {
+          "title": "3. Review",
+          "description": "Confirm only the uncertain fields – just a few clicks."
+        },
+        "history": {
+          "title": "4. Service history",
+          "description": "The vehicle's digital history updates automatically."
+        }
+      }
+    },
+    "features": {
+      "title": "Everything you need for fleet servicing",
+      "subtitle": "A single platform, from processing to reports.",
+      "items": {
+        "ocr": {
+          "title": "OCR processing",
+          "description": "Accurate text extraction from PDF, JPG, and PNG – even from phone photos."
+        },
+        "ai": {
+          "title": "AI categorization",
+          "description": "Line-by-line classification: part, labor, service – with no manual work."
+        },
+        "multiVehicle": {
+          "title": "Multi-vehicle management",
+          "description": "Matched to the right vehicle by license plate and chassis number."
+        },
+        "serviceBook": {
+          "title": "Digital service book",
+          "description": "Every repair, part, and cost in one place, in chronological order."
+        },
+        "dashboard": {
+          "title": "Cost dashboard",
+          "description": "Monthly and yearly costs, cost/km, and upcoming maintenance in one view."
+        },
+        "multiTenant": {
+          "title": "Multiple companies, securely",
+          "description": "Full tenant isolation and role-based access for all data."
+        }
+      }
+    },
+    "preview": {
+      "title": "A transparent dashboard",
+      "subtitle": "All the fleet's key numbers at a glance.",
+      "stats": {
+        "monthlyCost": "Monthly cost",
+        "yearlyCost": "Yearly cost",
+        "costPerVehicle": "Cost / vehicle",
+        "upcoming": "Upcoming maintenance"
+      },
+      "note": "Illustrative preview – real data appears after you log in."
+    },
+    "benefits": {
+      "title": "Why Valloreg?",
+      "subtitle": "Less admin, better decisions.",
+      "items": {
+        "time": {
+          "title": "Time savings",
+          "description": "Minutes instead of hours of manual entry – processing is automatic."
+        },
+        "accuracy": {
+          "title": "Fewer errors",
+          "description": "AI filters out typos, and confidence scores show what needs checking."
+        },
+        "transparency": {
+          "title": "Full transparency",
+          "description": "Per-vehicle and fleet-wide costs in real time."
+        },
+        "scalable": {
+          "title": "Scalable",
+          "description": "From two vehicles to an unlimited fleet – your plan grows with you."
+        }
+      }
+    },
+    "testimonials": {
+      "title": "What our customers say",
+      "subtitle": "Carriers and fleet managers already working with Valloreg.",
+      "items": {
+        "first": {
+          "quote": "An accountant used to spend a whole day entering invoices. Now the whole thing takes minutes.",
+          "author": "Gábor Kovács",
+          "role": "Managing director, regional carrier"
+        },
+        "second": {
+          "quote": "I finally see the real costs per vehicle. Our decisions are far better grounded.",
+          "author": "Anikó Nagy",
+          "role": "Fleet manager"
+        },
+        "third": {
+          "quote": "It recognizes even invoices photographed on a phone flawlessly. It just works.",
+          "author": "Péter Szabó",
+          "role": "Owner, small fleet"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Transparent pricing",
+      "subtitle": "Choose the plan that fits your fleet. Switch anytime.",
+      "perMonth": "/ mo",
+      "vehicles": "{count} vehicles",
+      "vehiclesUnlimited": "Unlimited vehicles",
+      "users": "{count} users",
+      "usersUnlimited": "Unlimited users",
+      "documents": "{count} documents / mo",
+      "documentsUnlimited": "Unlimited documents / mo",
+      "mostPopular": "Most popular",
+      "cta": "Choose",
+      "plans": {
+        "STARTER": {
+          "name": "Starter",
+          "description": "For smaller fleets, to get started."
+        },
+        "STANDARD": {
+          "name": "Standard",
+          "description": "For growing fleets, with reports and export."
+        },
+        "PROFESSIONAL": {
+          "name": "Professional",
+          "description": "For active fleet management, with the full feature set."
+        },
+        "BUSINESS": {
+          "name": "Business",
+          "description": "For large fleets, with no limits."
+        }
+      }
+    },
+    "faq": {
+      "title": "Frequently asked questions",
+      "subtitle": "The questions we hear most often.",
+      "items": {
+        "fileTypes": {
+          "question": "What files can I upload?",
+          "answer": "We support PDF, JPG, JPEG, and PNG formats, up to 25 MB per file."
+        },
+        "accuracy": {
+          "question": "How accurate is the recognition?",
+          "answer": "The AI assigns a confidence score to every field. Uncertain fields are highlighted, so you only need to check those."
+        },
+        "security": {
+          "question": "Is my data secure?",
+          "answer": "Each company's data is fully isolated (tenant isolation), and access is governed by roles. The platform operator cannot see invoice contents."
+        },
+        "languages": {
+          "question": "Which languages are available?",
+          "answer": "The interface is available in Hungarian, Romanian, and English; you can switch languages anytime."
+        },
+        "cancel": {
+          "question": "Can I cancel anytime?",
+          "answer": "Yes, your subscription can be canceled at any time, and you can freely switch between plans."
+        }
+      }
+    },
+    "contact": {
+      "title": "Get in touch",
+      "subtitle": "Have a question or want a personal walkthrough? Write to us.",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "company": "Company",
+      "companyPlaceholder": "Company name",
+      "message": "Message",
+      "messagePlaceholder": "How can we help?",
+      "submit": "Send message",
+      "note": "We'll get back to you soon. Form wiring lands in a later phase."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Log in",
+      "subtitle": "Welcome back! Sign in to your account.",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "password": "Password",
+      "passwordPlaceholder": "Your password",
+      "submit": "Log in",
+      "noAccount": "Don't have an account?",
+      "registerLink": "Sign up",
+      "forgotPassword": "Forgot password?"
+    },
+    "register": {
+      "title": "Sign up",
+      "subtitle": "Create your company account in minutes.",
+      "companyName": "Company name",
+      "companyNamePlaceholder": "Company name",
+      "taxId": "Tax ID",
+      "taxIdPlaceholder": "12345678-1-23",
+      "contactName": "Contact person's name",
+      "contactNamePlaceholder": "First Last",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "phone": "Phone number",
+      "phonePlaceholder": "+1 555 123 4567",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "loginLink": "Log in"
+    },
+    "validation": {
+      "required": "This field is required.",
+      "emailInvalid": "Please enter a valid email address.",
+      "passwordTooShort": "Password must be at least 8 characters long.",
+      "taxIdInvalid": "Please enter a valid tax ID.",
+      "phoneInvalid": "Please enter a valid phone number."
+    },
+    "errors": {
+      "AUTH_INVALID_CREDENTIALS": "Incorrect email or password.",
+      "AUTH_EMAIL_TAKEN": "An account with this email already exists.",
+      "AUTH_TOKEN_EXPIRED": "Your session has expired, please log in again.",
+      "AUTH_TOKEN_INVALID": "Invalid session, please log in again.",
+      "AUTH_UNAUTHORIZED": "You need to log in for this action.",
+      "AUTH_FORBIDDEN": "You don't have permission for this action.",
+      "AUTH_2FA_REQUIRED": "Two-factor authentication is required.",
+      "TENANT_NOT_FOUND": "Company not found.",
+      "TENANT_ACCESS_DENIED": "You don't have access to this company.",
+      "LIMIT_VEHICLES_REACHED": "You've reached your plan's vehicle limit.",
+      "LIMIT_USERS_REACHED": "You've reached your plan's user limit.",
+      "LIMIT_STORAGE_REACHED": "You've reached the storage limit.",
+      "LIMIT_DOCUMENTS_REACHED": "You've reached the monthly document limit.",
+      "FEATURE_DISABLED": "This feature is not available on your plan.",
+      "DOCUMENT_UNSUPPORTED_TYPE": "Unsupported file type.",
+      "DOCUMENT_TOO_LARGE": "The file is too large.",
+      "PROCESSING_FAILED": "Processing failed.",
+      "VALIDATION_FAILED": "Data validation failed.",
+      "NOT_FOUND": "Resource not found.",
+      "INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
+      "NETWORK_ERROR": "Network error. Check your connection."
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Dashboard",
+      "vehicles": "Vehicles",
+      "documents": "Documents",
+      "logout": "Log out"
+    },
+    "header": {
+      "tenantLabel": "Active company",
+      "noTenant": "No company selected",
+      "menu": "Menu"
+    },
+    "phaseNote": "Demo view – real data wiring lands in later phases."
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Fleet overview.",
+    "loading": "Loading…",
+    "stats": {
+      "vehicleCount": "Vehicles",
+      "documentTotal": "Total documents",
+      "documentThisMonth": "Documents (this month)",
+      "needsReview": "Needs review",
+      "processing": "Processing",
+      "confirmed": "Confirmed",
+      "invoiceGrossTotal": "Invoiced amount",
+      "invoiceCount": "Processed invoices"
+    },
+    "units": {
+      "currency": "HUF",
+      "perKm": "HUF/km",
+      "items": "pcs",
+      "events": "events"
+    },
+    "noData": "Not enough data yet. Upload documents and add vehicles."
+  },
+  "vehicles": {
+    "title": "Vehicles",
+    "subtitle": "Manage your fleet's vehicles.",
+    "addVehicle": "New vehicle",
+    "table": {
+      "plate": "Plate",
+      "make": "Make",
+      "model": "Model",
+      "year": "Year",
+      "odometer": "Odometer",
+      "cost": "Total cost",
+      "actions": "Actions"
+    },
+    "empty": {
+      "title": "No vehicles yet",
+      "description": "Add a vehicle to start building its service history.",
+      "cta": "Add your first vehicle"
+    },
+    "loading": "Loading…",
+    "form": {
+      "addTitle": "Add vehicle",
+      "editTitle": "Edit vehicle",
+      "plate": "Plate number",
+      "platePlaceholder": "e.g. ABC-123",
+      "make": "Make",
+      "makePlaceholder": "e.g. Renault",
+      "model": "Model",
+      "modelPlaceholder": "e.g. Master",
+      "year": "Year",
+      "yearPlaceholder": "e.g. 2020",
+      "vin": "VIN",
+      "vinPlaceholder": "17-character VIN",
+      "odometerKm": "Odometer (km)",
+      "odometerKmPlaceholder": "e.g. 125000",
+      "save": "Save",
+      "saving": "Saving…",
+      "cancel": "Cancel"
+    },
+    "actions": {
+      "edit": "Edit",
+      "history": "History",
+      "delete": "Delete",
+      "confirmDelete": "Are you sure you want to delete this vehicle? This cannot be undone.",
+      "deleting": "Deleting…",
+      "deleteError": "Delete failed."
+    },
+    "history": {
+      "title": "Service history",
+      "subtitle": "All service costs assigned to this vehicle.",
+      "back": "Back to vehicles",
+      "loading": "Loading…",
+      "notFound": "Vehicle not found.",
+      "empty": "No service costs assigned to this vehicle yet.",
+      "summary": {
+        "totalSpent": "Total spent",
+        "services": "Services",
+        "items": "Items",
+        "lastService": "Last service",
+        "never": "None"
+      },
+      "table": {
+        "title": "Service items",
+        "date": "Date",
+        "supplier": "Supplier",
+        "item": "Item",
+        "category": "Category",
+        "amount": "Amount"
+      }
+    }
+  },
+  "documents": {
+    "title": "Documents",
+    "subtitle": "Upload and process service invoices.",
+    "loading": "Loading…",
+    "upload": {
+      "title": "Drag files here",
+      "description": "or click to browse",
+      "hint": "PDF, JPG, JPEG, PNG – up to 25 MB",
+      "button": "Choose file",
+      "uploading": "Uploading…",
+      "errorUpload": "Upload failed, please try again.",
+      "errorGeneric": "Unexpected error, please try again."
+    },
+    "table": {
+      "name": "Document",
+      "uploadedAt": "Uploaded",
+      "status": "Status",
+      "actions": "Actions",
+      "view": "View"
+    },
+    "status": {
+      "UPLOADED": "Uploaded",
+      "QUEUED": "Queued",
+      "OCR_RUNNING": "OCR running",
+      "EXTRACTING": "Extracting",
+      "NEEDS_REVIEW": "Needs review",
+      "AUTO_OK": "Auto-completed",
+      "CONFIRMED": "Confirmed",
+      "FAILED": "Failed",
+      "ARCHIVED": "Archived"
+    },
+    "empty": {
+      "title": "No documents yet",
+      "description": "Upload your first service invoice for processing.",
+      "cta": "Upload a document"
+    },
+    "review": {
+      "title": "Document details",
+      "back": "Back to list",
+      "confirm": "Confirm",
+      "confirming": "Confirming…",
+      "download": "Download",
+      "notFound": "Document not found.",
+      "errorConfirm": "Confirmation failed.",
+      "noInvoice": "Invoice is still being processed.",
+      "invoice": {
+        "title": "Extracted invoice data",
+        "supplier": "Supplier",
+        "invoiceNumber": "Invoice number",
+        "date": "Date",
+        "currency": "Currency",
+        "netTotal": "Net total",
+        "taxTotal": "VAT total",
+        "grossTotal": "Gross total",
+        "unknown": "Unknown"
+      },
+      "items": {
+        "title": "Invoice items",
+        "name": "Name",
+        "category": "Category",
+        "vehicle": "Vehicle",
+        "quantity": "Qty",
+        "price": "Price",
+        "empty": "No items.",
+        "unassigned": "Unassigned",
+        "assignError": "Assignment failed."
+      }
+    }
+  }
+}
