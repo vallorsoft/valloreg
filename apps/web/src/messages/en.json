@@ -363,17 +363,22 @@
   "documents": {
     "title": "Documents",
     "subtitle": "Upload and process service invoices.",
+    "loading": "Loading…",
     "upload": {
       "title": "Drag files here",
       "description": "or click to browse",
       "hint": "PDF, JPG, JPEG, PNG – up to 25 MB",
-      "button": "Choose file"
+      "button": "Choose file",
+      "uploading": "Uploading…",
+      "errorUpload": "Upload failed, please try again.",
+      "errorGeneric": "Unexpected error, please try again."
     },
     "table": {
       "name": "Document",
       "uploadedAt": "Uploaded",
       "status": "Status",
-      "actions": "Actions"
+      "actions": "Actions",
+      "view": "View"
     },
     "status": {
       "UPLOADED": "Uploaded",
@@ -390,6 +395,35 @@
       "title": "No documents yet",
       "description": "Upload your first service invoice for processing.",
       "cta": "Upload a document"
+    },
+    "review": {
+      "title": "Document details",
+      "back": "Back to list",
+      "confirm": "Confirm",
+      "confirming": "Confirming…",
+      "download": "Download",
+      "notFound": "Document not found.",
+      "errorConfirm": "Confirmation failed.",
+      "noInvoice": "Invoice is still being processed.",
+      "invoice": {
+        "title": "Extracted invoice data",
+        "supplier": "Supplier",
+        "invoiceNumber": "Invoice number",
+        "date": "Date",
+        "currency": "Currency",
+        "netTotal": "Net total",
+        "taxTotal": "VAT total",
+        "grossTotal": "Gross total",
+        "unknown": "Unknown"
+      },
+      "items": {
+        "title": "Invoice items",
+        "name": "Name",
+        "category": "Category",
+        "quantity": "Qty",
+        "price": "Price",
+        "empty": "No items."
+      }
     }
   }
 }

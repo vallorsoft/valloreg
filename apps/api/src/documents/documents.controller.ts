@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common';
@@ -70,5 +71,22 @@ export class DocumentsController {
   @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
   download(@Param('id') id: string) {
     return this.documentsService.getDownloadUrl(id);
+  }
+
+  /** Dokumentum jóváhagyása (AUTO_OK | NEEDS_REVIEW → CONFIRMED). */
+  @Patch(':id/confirm')
+  @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
+  @Roles(
+    TenantRole.OWNER,
+    TenantRole.FLEET_MANAGER,
+    TenantRole.ADMIN,
+    TenantRole.ACCOUNTANT,
+  )
+  confirm(
+    @Param('id') id: string,
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.documentsService.confirm(tenant.tenantId, user.userId, id);
   }
 }

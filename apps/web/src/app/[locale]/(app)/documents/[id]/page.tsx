@@ -1,6 +1,6 @@
 import type { Metadata } from 'next';
 import { setRequestLocale, getTranslations } from 'next-intl/server';
-import { DocumentsClient } from './DocumentsClient';
+import { DocumentReviewClient } from './DocumentReviewClient';
 
 export async function generateMetadata({
   params,
@@ -9,15 +9,15 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params;
   const t = await getTranslations({ locale, namespace: 'documents' });
-  return { title: t('title') };
+  return { title: t('review.title') };
 }
 
-export default async function DocumentsPage({
+export default async function DocumentReviewPage({
   params,
 }: {
-  params: Promise<{ locale: string }>;
+  params: Promise<{ locale: string; id: string }>;
 }) {
-  const { locale } = await params;
+  const { locale, id } = await params;
   setRequestLocale(locale);
-  return <DocumentsClient />;
+  return <DocumentReviewClient id={id} />;
 }

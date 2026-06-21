@@ -363,17 +363,22 @@
   "documents": {
     "title": "Documente",
     "subtitle": "Încărcarea și procesarea facturilor de service.",
+    "loading": "Se încarcă…",
     "upload": {
       "title": "Trageți fișierele aici",
       "description": "sau faceți clic pentru a răsfoi",
       "hint": "PDF, JPG, JPEG, PNG – maximum 25 MB",
-      "button": "Selectați fișierul"
+      "button": "Selectați fișierul",
+      "uploading": "Se încarcă…",
+      "errorUpload": "Eroare la încărcare, încercați din nou.",
+      "errorGeneric": "Eroare neașteptată, încercați din nou."
     },
     "table": {
       "name": "Document",
       "uploadedAt": "Încărcat",
       "status": "Stare",
-      "actions": "Acțiuni"
+      "actions": "Acțiuni",
+      "view": "Vizualizare"
     },
     "status": {
       "UPLOADED": "Încărcat",
@@ -390,6 +395,35 @@
       "title": "Niciun document încă",
       "description": "Încărcați prima factură de service pentru procesare.",
       "cta": "Încărcați un document"
+    },
+    "review": {
+      "title": "Detalii document",
+      "back": "Înapoi la listă",
+      "confirm": "Confirmare",
+      "confirming": "Se confirmă…",
+      "download": "Descărcare",
+      "notFound": "Documentul nu a fost găsit.",
+      "errorConfirm": "Confirmarea a eșuat.",
+      "noInvoice": "Factura este în curs de procesare.",
+      "invoice": {
+        "title": "Date factură extrase",
+        "supplier": "Furnizor",
+        "invoiceNumber": "Număr factură",
+        "date": "Dată",
+        "currency": "Monedă",
+        "netTotal": "Total net",
+        "taxTotal": "TVA",
+        "grossTotal": "Total brut",
+        "unknown": "Necunoscut"
+      },
+      "items": {
+        "title": "Articole factură",
+        "name": "Denumire",
+        "category": "Categorie",
+        "quantity": "Cant.",
+        "price": "Preț",
+        "empty": "Niciun articol."
+      }
     }
   }
 }

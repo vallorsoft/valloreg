@@ -6,6 +6,7 @@ import {
 } from '@aws-sdk/client-s3';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { AppConfigService } from '../config/app-config.service';
+import type { Readable } from 'node:stream';
 
 /**
  * S3 / MinIO objektumtár wrapper. Presigned PUT/GET URL-eket ad, és felépíti a
@@ -63,6 +64,18 @@ export class StorageService implements OnModuleInit {
     return getSignedUrl(this.client, command, {
       expiresIn: this.urlExpirySeconds,
     });
+  }
+
+  /** Fájl letöltése bufferbe (OCR provider-ek számára). */
+  async download(key: string): Promise<Buffer> {
+    const command = new GetObjectCommand({ Bucket: this.bucket, Key: key });
+    const response = await this.client.send(command);
+    const stream = response.Body as Readable;
+    const chunks: Buffer[] = [];
+    for await (const chunk of stream as AsyncIterable<Uint8Array>) {
+      chunks.push(Buffer.from(chunk));
+    }
+    return Buffer.concat(chunks);
   }
 
   /** Presigned GET URL letöltéshez. */

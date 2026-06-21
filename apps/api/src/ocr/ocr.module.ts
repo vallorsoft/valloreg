@@ -2,30 +2,27 @@ import { Module, Provider } from '@nestjs/common';
 import { AppConfigService } from '../config/app-config.service';
 import { OCR_PROVIDER } from './ocr.provider';
 import { StubOcrProvider } from './providers/stub-ocr.provider';
+import { GeminiOcrProvider } from './providers/gemini-ocr.provider';
 
-/**
- * OCR provider factory. Az OCR_PROVIDER env alapján választ implementációt.
- * Jelenleg csak a `stub` implementált; a `mistral`/`google` Fázis 2.
- */
 const ocrProviderFactory: Provider = {
   provide: OCR_PROVIDER,
-  inject: [AppConfigService, StubOcrProvider],
-  useFactory: (config: AppConfigService, stub: StubOcrProvider) => {
+  inject: [AppConfigService, StubOcrProvider, GeminiOcrProvider],
+  useFactory: (
+    config: AppConfigService,
+    stub: StubOcrProvider,
+    gemini: GeminiOcrProvider,
+  ) => {
     switch (config.ocrProvider) {
-      case 'stub':
-        return stub;
-      // TODO (Fázis 2): case 'gemini': GeminiOcrProvider – vision OCR a fájlból.
-      // TODO (Fázis 2): case 'mistral': MistralOcrProvider.
-      // TODO (Fázis 2): case 'google': GoogleDocumentAiOcrProvider.
+      case 'gemini':
+        return config.gemini.apiKey ? gemini : stub;
       default:
-        // Ismeretlen/még nem implementált provider → biztonságos fallback stubra.
         return stub;
     }
   },
 };
 
 @Module({
-  providers: [StubOcrProvider, ocrProviderFactory],
+  providers: [StubOcrProvider, GeminiOcrProvider, ocrProviderFactory],
   exports: [OCR_PROVIDER],
 })
 export class OcrModule {}

@@ -363,17 +363,22 @@
   "documents": {
     "title": "Dokumentumok",
     "subtitle": "Szervizszámlák feltöltése és feldolgozása.",
+    "loading": "Betöltés…",
     "upload": {
       "title": "Húzza ide a fájlokat",
       "description": "vagy kattintson a tallózáshoz",
       "hint": "PDF, JPG, JPEG, PNG – legfeljebb 25 MB",
-      "button": "Fájl kiválasztása"
+      "button": "Fájl kiválasztása",
+      "uploading": "Feltöltés folyamatban…",
+      "errorUpload": "Feltöltési hiba, próbálja újra.",
+      "errorGeneric": "Váratlan hiba, próbálja újra."
     },
     "table": {
       "name": "Dokumentum",
       "uploadedAt": "Feltöltve",
       "status": "Állapot",
-      "actions": "Műveletek"
+      "actions": "Műveletek",
+      "view": "Megtekintés"
     },
     "status": {
       "UPLOADED": "Feltöltve",
@@ -390,6 +395,35 @@
       "title": "Még nincs dokumentum",
       "description": "Töltse fel az első szervizszámlát a feldolgozáshoz.",
       "cta": "Dokumentum feltöltése"
+    },
+    "review": {
+      "title": "Dokumentum részletek",
+      "back": "Vissza a listához",
+      "confirm": "Jóváhagyás",
+      "confirming": "Jóváhagyás…",
+      "download": "Letöltés",
+      "notFound": "A dokumentum nem található.",
+      "errorConfirm": "Jóváhagyás sikertelen.",
+      "noInvoice": "A számla feldolgozás alatt áll.",
+      "invoice": {
+        "title": "Kinyert számlaadatok",
+        "supplier": "Szállító",
+        "invoiceNumber": "Számlaszám",
+        "date": "Dátum",
+        "currency": "Deviza",
+        "netTotal": "Nettó összeg",
+        "taxTotal": "ÁFA összeg",
+        "grossTotal": "Bruttó összeg",
+        "unknown": "Ismeretlen"
+      },
+      "items": {
+        "title": "Számlatételek",
+        "name": "Megnevezés",
+        "category": "Kategória",
+        "quantity": "Mennyiség",
+        "price": "Ár",
+        "empty": "Nincsenek tételek."
+      }
     }
   }
 }

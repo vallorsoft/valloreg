@@ -1,20 +1,23 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { useLocale } from 'next-intl';
 import { Sidebar } from './Sidebar';
 import { TopNav } from './TopNav';
 import { cn } from '@/lib/cn';
+import { isAuthenticated } from '@/lib/auth';
 
-/**
- * Authenticated app shell: fixed sidebar on desktop, a slide-over drawer on
- * mobile, and a sticky top bar.
- *
- * NOTE (Phase 1): this does not yet enforce authentication. A route guard /
- * server-side session check lands in a later phase; for now the shell renders
- * the demo UI regardless of token state.
- */
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const router = useRouter();
+  const locale = useLocale();
+
+  useEffect(() => {
+    if (!isAuthenticated()) {
+      router.replace(`/${locale}/login`);
+    }
+  }, [router, locale]);
 
   return (
     <div className="min-h-screen bg-light">

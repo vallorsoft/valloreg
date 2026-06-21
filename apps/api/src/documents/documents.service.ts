@@ -118,6 +118,42 @@ export class DocumentsService {
     return { ...document, status: DocumentStatus.QUEUED };
   }
 
+  /**
+   * Dokumentum jóváhagyása (AUTO_OK | NEEDS_REVIEW → CONFIRMED).
+   * Idempotens: már CONFIRMED dokumentum újra-jóváhagyása no-op.
+   */
+  async confirm(tenantId: string, userId: string, id: string) {
+    const document = await this.prisma.scoped.document.findFirst({ where: { id } });
+    if (!document) throw AppException.notFound('A dokumentum nem található.');
+
+    if (document.status === DocumentStatus.CONFIRMED) {
+      return document;
+    }
+
+    const confirmable = [DocumentStatus.AUTO_OK, DocumentStatus.NEEDS_REVIEW];
+    if (!confirmable.includes(document.status as (typeof confirmable)[number])) {
+      throw AppException.validation(
+        `A dokumentum ${document.status} állapotban nem hagyható jóvá.`,
+      );
+    }
+
+    await this.prisma.scoped.document.update({
+      where: { id },
+      data: { status: DocumentStatus.CONFIRMED },
+    });
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'document.confirmed',
+      resourceType: 'Document',
+      resourceId: id,
+      metadata: { previousStatus: document.status },
+    });
+
+    return { ...document, status: DocumentStatus.CONFIRMED };
+  }
+
   list() {
     return this.prisma.scoped.document.findMany({
       orderBy: { createdAt: 'desc' },

@@ -156,3 +156,93 @@ export function storeAuth(response: AuthResponse): void {
     refreshToken: response.refreshToken,
   });
 }
+
+// ── Documents ─────────────────────────────────────────────────────────────────
+
+export interface DocumentListItem {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  status: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InvoiceItem {
+  id: string;
+  name: string;
+  category: string;
+  partType: string | null;
+  type: string;
+  vehicleId: string | null;
+  quantity: number;
+  unitPrice: string | null;
+  price: string;
+  confidence: number;
+}
+
+export interface DocumentInvoice {
+  id: string;
+  invoiceNumber: string | null;
+  date: string | null;
+  currency: string | null;
+  odometerKm: number | null;
+  netTotal: string | null;
+  taxTotal: string | null;
+  grossTotal: string | null;
+  confidence: number;
+  extractionRaw: Record<string, unknown> | null;
+  supplier: { id: string; name: string } | null;
+  items: InvoiceItem[];
+}
+
+export interface DocumentDetail extends DocumentListItem {
+  storageKey: string;
+  sha256: string;
+  invoice: DocumentInvoice | null;
+}
+
+export const documentsApi = {
+  presign(payload: { fileName: string; mimeType: string }) {
+    return apiRequest<{ documentId: string; storageKey: string; uploadUrl: string }>(
+      '/documents/presign',
+      { method: 'POST', json: payload },
+    );
+  },
+  register(payload: {
+    fileName: string;
+    mimeType: string;
+    sizeBytes: number;
+    storageKey: string;
+    sha256: string;
+  }) {
+    return apiRequest<DocumentListItem>('/documents', {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  list() {
+    return apiRequest<DocumentListItem[]>('/documents');
+  },
+  getById(id: string) {
+    return apiRequest<DocumentDetail>(`/documents/${id}`);
+  },
+  getDownloadUrl(id: string) {
+    return apiRequest<{ downloadUrl: string }>(`/documents/${id}/download`);
+  },
+  confirm(id: string) {
+    return apiRequest<DocumentListItem>(`/documents/${id}/confirm`, {
+      method: 'PATCH',
+    });
+  },
+};
+
+/** SHA-256 hash kiszámítása a fájl ArrayBuffer-éből (Web Crypto API). */
+export async function computeSha256(file: File): Promise<string> {
+  const buffer = await file.arrayBuffer();
+  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
+  return Array.from(new Uint8Array(hashBuffer))
+    .map((b) => b.toString(16).padStart(2, '0'))
+    .join('');
+}
