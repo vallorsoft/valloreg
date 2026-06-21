@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
+import { useRouter } from 'next/navigation';
 import { vehiclesApi, ApiError, type Vehicle } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +11,8 @@ import { VehicleFormModal } from '@/components/app/VehicleFormModal';
 
 export function VehiclesClient() {
   const t = useTranslations('vehicles');
+  const locale = useLocale();
+  const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
@@ -122,7 +125,14 @@ export function VehiclesClient() {
               ) : (
                 vehicles.map((v) => (
                   <tr key={v.id} className="hover:bg-anthracite-50">
-                    <td className="px-4 py-3 font-medium text-anthracite-900">{v.plate ?? '-'}</td>
+                    <td className="px-4 py-3 font-medium">
+                      <button
+                        className="text-primary-600 hover:underline"
+                        onClick={() => router.push(`/${locale}/vehicles/${v.id}`)}
+                      >
+                        {v.plate ?? '-'}
+                      </button>
+                    </td>
                     <td className="px-4 py-3 text-anthracite-600">{v.make ?? '-'}</td>
                     <td className="px-4 py-3 text-anthracite-600">{v.model ?? '-'}</td>
                     <td className="px-4 py-3 text-anthracite-600">{v.year ?? '-'}</td>
@@ -131,6 +141,12 @@ export function VehiclesClient() {
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-3">
+                        <button
+                          className="text-sm text-primary-600 hover:underline"
+                          onClick={() => router.push(`/${locale}/vehicles/${v.id}`)}
+                        >
+                          {t('actions.history')}
+                        </button>
                         <button
                           className="text-sm text-primary-600 hover:underline"
                           onClick={() => openEdit(v)}

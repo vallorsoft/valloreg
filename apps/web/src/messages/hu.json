@@ -383,10 +383,34 @@
     },
     "actions": {
       "edit": "Szerkesztés",
+      "history": "Történet",
       "delete": "Törlés",
       "confirmDelete": "Biztosan törli ezt a járművet? Ez nem vonható vissza.",
       "deleting": "Törlés…",
       "deleteError": "Törlési hiba."
+    },
+    "history": {
+      "title": "Szerviztörténet",
+      "subtitle": "A járműhöz rendelt összes szervizköltség.",
+      "back": "Vissza a járművekhez",
+      "loading": "Betöltés…",
+      "notFound": "A jármű nem található.",
+      "empty": "Még nincs hozzárendelt szervizköltség ehhez a járműhöz.",
+      "summary": {
+        "totalSpent": "Összköltség",
+        "services": "Szervizek",
+        "items": "Tételek",
+        "lastService": "Utolsó szerviz",
+        "never": "Nincs"
+      },
+      "table": {
+        "title": "Szerviztételek",
+        "date": "Dátum",
+        "supplier": "Beszállító",
+        "item": "Tétel",
+        "category": "Kategória",
+        "amount": "Összeg"
+      }
     }
   },
   "documents": {
@@ -449,9 +473,12 @@
         "title": "Számlatételek",
         "name": "Megnevezés",
         "category": "Kategória",
+        "vehicle": "Jármű",
         "quantity": "Mennyiség",
         "price": "Ár",
-        "empty": "Nincsenek tételek."
+        "empty": "Nincsenek tételek.",
+        "unassigned": "Nincs hozzárendelve",
+        "assignError": "A hozzárendelés sikertelen."
       }
     }
   }

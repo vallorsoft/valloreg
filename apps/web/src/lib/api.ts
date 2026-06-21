@@ -238,6 +238,25 @@ export const documentsApi = {
   },
 };
 
+// ── Invoices ────────────────────────────────────────────────────────────────
+
+export interface UpdateInvoiceItemPayload {
+  /** Jármű azonosító; `null` = hozzárendelés törlése. */
+  vehicleId?: string | null;
+  category?: string;
+  type?: string;
+  partType?: string | null;
+}
+
+export const invoicesApi = {
+  updateItem(itemId: string, payload: UpdateInvoiceItemPayload) {
+    return apiRequest<InvoiceItem>(`/invoices/items/${itemId}`, {
+      method: 'PATCH',
+      json: payload,
+    });
+  },
+};
+
 /** SHA-256 hash kiszámítása a fájl ArrayBuffer-éből (Web Crypto API). */
 export async function computeSha256(file: File): Promise<string> {
   const buffer = await file.arrayBuffer();
@@ -270,9 +289,38 @@ export interface CreateVehiclePayload {
   odometerKm?: number;
 }
 
+export interface ServiceHistoryItem extends InvoiceItem {
+  invoice: {
+    id: string;
+    documentId: string;
+    invoiceNumber: string | null;
+    date: string | null;
+    currency: string | null;
+    supplier: { id: string; name: string } | null;
+  } | null;
+}
+
+export interface VehicleServiceHistory {
+  vehicle: Vehicle;
+  summary: {
+    totalSpent: string;
+    itemCount: number;
+    invoiceCount: number;
+    lastServiceDate: string | null;
+    currency: string | null;
+  };
+  items: ServiceHistoryItem[];
+}
+
 export const vehiclesApi = {
   list() {
     return apiRequest<Vehicle[]>('/vehicles');
+  },
+  getById(id: string) {
+    return apiRequest<Vehicle>(`/vehicles/${id}`);
+  },
+  getHistory(id: string) {
+    return apiRequest<VehicleServiceHistory>(`/vehicles/${id}/history`);
   },
   create(payload: CreateVehiclePayload) {
     return apiRequest<Vehicle>('/vehicles', { method: 'POST', json: payload });

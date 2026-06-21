@@ -383,10 +383,34 @@
     },
     "actions": {
       "edit": "Editare",
+      "history": "Istoric",
       "delete": "Ștergere",
       "confirmDelete": "Sigur doriți să ștergeți acest vehicul? Acțiunea este ireversibilă.",
       "deleting": "Se șterge…",
       "deleteError": "Eroare la ștergere."
+    },
+    "history": {
+      "title": "Istoric service",
+      "subtitle": "Toate costurile de service atribuite acestui vehicul.",
+      "back": "Înapoi la vehicule",
+      "loading": "Se încarcă…",
+      "notFound": "Vehiculul nu a fost găsit.",
+      "empty": "Niciun cost de service atribuit încă acestui vehicul.",
+      "summary": {
+        "totalSpent": "Cost total",
+        "services": "Service-uri",
+        "items": "Articole",
+        "lastService": "Ultimul service",
+        "never": "Niciunul"
+      },
+      "table": {
+        "title": "Articole de service",
+        "date": "Dată",
+        "supplier": "Furnizor",
+        "item": "Articol",
+        "category": "Categorie",
+        "amount": "Sumă"
+      }
     }
   },
   "documents": {
@@ -449,9 +473,12 @@
         "title": "Articole factură",
         "name": "Denumire",
         "category": "Categorie",
+        "vehicle": "Vehicul",
         "quantity": "Cant.",
         "price": "Preț",
-        "empty": "Niciun articol."
+        "empty": "Niciun articol.",
+        "unassigned": "Neatribuit",
+        "assignError": "Atribuirea a eșuat."
       }
     }
   }

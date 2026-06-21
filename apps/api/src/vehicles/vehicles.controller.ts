@@ -42,6 +42,12 @@ export class VehiclesController {
     return this.vehiclesService.getById(id);
   }
 
+  /** Szerviztörténet (hozzárendelt tételek + összegzés) – minden tag. */
+  @Get(':id/history')
+  history(@Param('id') id: string) {
+    return this.vehiclesService.getServiceHistory(id);
+  }
+
   /** Létrehozás – OWNER, FLEET_MANAGER, ADMIN. */
   @Post()
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)

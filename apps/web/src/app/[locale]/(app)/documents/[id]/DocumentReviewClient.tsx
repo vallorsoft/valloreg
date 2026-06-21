@@ -5,7 +5,14 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { DocumentStatus } from '@valloreg/shared';
-import { documentsApi, ApiError, type DocumentDetail } from '@/lib/api';
+import {
+  documentsApi,
+  vehiclesApi,
+  invoicesApi,
+  ApiError,
+  type DocumentDetail,
+  type Vehicle,
+} from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
@@ -34,14 +41,23 @@ function fmt(value: string | number | null | undefined, locale: string): string 
   return isNaN(n) ? String(value) : n.toLocaleString(locale);
 }
 
+function vehicleLabel(v: Vehicle): string {
+  const name = [v.make, v.model].filter(Boolean).join(' ');
+  const parts = [v.plate, name].filter(Boolean);
+  return parts.length > 0 ? parts.join(' · ') : v.id.slice(0, 8);
+}
+
 export function DocumentReviewClient({ id }: { id: string }) {
   const t = useTranslations('documents');
   const locale = useLocale();
   const router = useRouter();
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
+  const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [savingItemId, setSavingItemId] = useState<string | null>(null);
+  const [itemError, setItemError] = useState<string | null>(null);
 
   useEffect(() => {
     documentsApi
@@ -50,6 +66,15 @@ export function DocumentReviewClient({ id }: { id: string }) {
       .catch(() => setError(t('review.notFound')))
       .finally(() => setLoading(false));
   }, [id, t]);
+
+  useEffect(() => {
+    vehiclesApi
+      .list()
+      .then(setVehicles)
+      .catch(() => {
+        /* 401 → AppShell redirect; járművek nélkül a hozzárendelés rejtve marad */
+      });
+  }, []);
 
   async function handleConfirm() {
     if (!doc) return;
@@ -71,6 +96,30 @@ export function DocumentReviewClient({ id }: { id: string }) {
       window.open(downloadUrl, '_blank');
     } catch {
       // silent – presign errors are transient
+    }
+  }
+
+  async function handleAssignVehicle(itemId: string, vehicleId: string | null) {
+    setSavingItemId(itemId);
+    setItemError(null);
+    try {
+      const updated = await invoicesApi.updateItem(itemId, { vehicleId });
+      setDoc((prev) => {
+        if (!prev?.invoice) return prev;
+        return {
+          ...prev,
+          invoice: {
+            ...prev.invoice,
+            items: prev.invoice.items.map((it) =>
+              it.id === itemId ? { ...it, vehicleId: updated.vehicleId } : it,
+            ),
+          },
+        };
+      });
+    } catch (err) {
+      setItemError(err instanceof ApiError ? err.message : t('review.items.assignError'));
+    } finally {
+      setSavingItemId(null);
     }
   }
 
@@ -163,10 +212,11 @@ export function DocumentReviewClient({ id }: { id: string }) {
 
           {/* Tételek */}
           <Card className="overflow-hidden p-0">
-            <div className="border-b border-anthracite-100 px-4 py-3">
+            <div className="flex items-center justify-between border-b border-anthracite-100 px-4 py-3">
               <h2 className="text-base font-semibold text-anthracite-900">
                 {t('review.items.title')}
               </h2>
+              {itemError && <span className="text-xs text-red-600">{itemError}</span>}
             </div>
             {invoice.items.length === 0 ? (
               <p className="px-4 py-6 text-sm text-anthracite-500">{t('review.items.empty')}</p>
@@ -177,6 +227,7 @@ export function DocumentReviewClient({ id }: { id: string }) {
                     <tr>
                       <th className="px-4 py-3 font-semibold">{t('review.items.name')}</th>
                       <th className="px-4 py-3 font-semibold">{t('review.items.category')}</th>
+                      <th className="px-4 py-3 font-semibold">{t('review.items.vehicle')}</th>
                       <th className="px-4 py-3 font-semibold">{t('review.items.quantity')}</th>
                       <th className="px-4 py-3 font-semibold text-right">{t('review.items.price')}</th>
                     </tr>
@@ -193,6 +244,23 @@ export function DocumentReviewClient({ id }: { id: string }) {
                           )}
                         </td>
                         <td className="px-4 py-3 text-anthracite-600">{item.category}</td>
+                        <td className="px-4 py-3 text-anthracite-600">
+                          <select
+                            value={item.vehicleId ?? ''}
+                            disabled={savingItemId === item.id || vehicles.length === 0}
+                            onChange={(e) =>
+                              void handleAssignVehicle(item.id, e.target.value || null)
+                            }
+                            className="w-full max-w-[180px] rounded-lg border border-anthracite-200 bg-white px-2 py-1 text-sm text-anthracite-900 disabled:opacity-60"
+                          >
+                            <option value="">{t('review.items.unassigned')}</option>
+                            {vehicles.map((v) => (
+                              <option key={v.id} value={v.id}>
+                                {vehicleLabel(v)}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
                         <td className="px-4 py-3 text-anthracite-600">{item.quantity}</td>
                         <td className="px-4 py-3 text-right font-medium text-anthracite-900">
                           {fmt(item.price, locale)}

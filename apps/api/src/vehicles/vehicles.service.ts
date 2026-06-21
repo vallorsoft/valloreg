@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import {
   isWithinLimit,
   PLAN_LIMITS,
@@ -36,6 +37,66 @@ export class VehiclesService {
       throw AppException.notFound('A jármű nem található.');
     }
     return vehicle;
+  }
+
+  /**
+   * Jármű szerviztörténete: minden hozzárendelt számlatétel a számla
+   * metaadataival (dátum, beszállító, számlaszám), valamint összegzés
+   * (összköltség, tétel- és számlaszám, utolsó szerviz dátuma).
+   */
+  async getServiceHistory(id: string) {
+    const vehicle = await this.getById(id); // tenant-scope-olt létezés-ellenőrzés
+
+    const items = await this.prisma.scoped.invoiceItem.findMany({
+      where: { vehicleId: id },
+      include: {
+        invoice: {
+          select: {
+            id: true,
+            documentId: true,
+            invoiceNumber: true,
+            date: true,
+            currency: true,
+            supplier: { select: { id: true, name: true } },
+          },
+        },
+      },
+    });
+
+    // Összegzés + legutóbbi szerviz dátuma.
+    let totalSpent = new Prisma.Decimal(0);
+    let lastServiceDate: Date | null = null;
+    const invoiceIds = new Set<string>();
+    let currency: string | null = null;
+    for (const item of items) {
+      totalSpent = totalSpent.add(item.price);
+      invoiceIds.add(item.invoiceId);
+      const date = item.invoice?.date ?? null;
+      if (date && (!lastServiceDate || date > lastServiceDate)) {
+        lastServiceDate = date;
+      }
+      if (!currency && item.invoice?.currency) currency = item.invoice.currency;
+    }
+
+    // Legújabb szerviz elöl (számla dátuma, majd a tétel létrehozása szerint).
+    const sorted = [...items].sort((a, b) => {
+      const da = a.invoice?.date ? new Date(a.invoice.date).getTime() : 0;
+      const db = b.invoice?.date ? new Date(b.invoice.date).getTime() : 0;
+      if (db !== da) return db - da;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
+
+    return {
+      vehicle,
+      summary: {
+        totalSpent: totalSpent.toString(),
+        itemCount: items.length,
+        invoiceCount: invoiceIds.size,
+        lastServiceDate,
+        currency,
+      },
+      items: sorted,
+    };
   }
 
   async create(tenantId: string, userId: string, dto: CreateVehicleDto) {

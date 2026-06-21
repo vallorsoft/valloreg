@@ -383,10 +383,34 @@
     },
     "actions": {
       "edit": "Edit",
+      "history": "History",
       "delete": "Delete",
       "confirmDelete": "Are you sure you want to delete this vehicle? This cannot be undone.",
       "deleting": "Deleting…",
       "deleteError": "Delete failed."
+    },
+    "history": {
+      "title": "Service history",
+      "subtitle": "All service costs assigned to this vehicle.",
+      "back": "Back to vehicles",
+      "loading": "Loading…",
+      "notFound": "Vehicle not found.",
+      "empty": "No service costs assigned to this vehicle yet.",
+      "summary": {
+        "totalSpent": "Total spent",
+        "services": "Services",
+        "items": "Items",
+        "lastService": "Last service",
+        "never": "None"
+      },
+      "table": {
+        "title": "Service items",
+        "date": "Date",
+        "supplier": "Supplier",
+        "item": "Item",
+        "category": "Category",
+        "amount": "Amount"
+      }
     }
   },
   "documents": {
@@ -449,9 +473,12 @@
         "title": "Invoice items",
         "name": "Name",
         "category": "Category",
+        "vehicle": "Vehicle",
         "quantity": "Qty",
         "price": "Price",
-        "empty": "No items."
+        "empty": "No items.",
+        "unassigned": "Unassigned",
+        "assignError": "Assignment failed."
       }
     }
   }
