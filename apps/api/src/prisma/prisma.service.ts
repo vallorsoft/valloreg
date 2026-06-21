@@ -75,6 +75,10 @@ export class PrismaService
    */
   public readonly scoped: PrismaClient;
 
+  // Declared here for TypeScript; the actual value is set in the constructor
+  // as an own-property getter so it captures the Proxy returned by PrismaClient.
+  declare readonly system: PrismaClient;
+
   constructor(private readonly tenantContext: TenantContextService) {
     // Neon pooler URL-eknél (hostname tartalmaz "-pooler."-t) a Prisma extended
     // protokollt (prepared statements) használ alapból, amit a pgbouncer
@@ -84,6 +88,17 @@ export class PrismaService
     const rawUrl = process.env.DATABASE_URL ?? '';
     const dbUrl = PrismaService.withPgBouncer(rawUrl);
     super({ datasources: { db: { url: dbUrl || rawUrl } } });
+
+    // PrismaClient's constructor returns a Proxy. Prototype getters on subclasses
+    // are called by that Proxy with 'this' = the raw target (no model delegates).
+    // Defining 'system' as an own-property getter here captures 'this' = the
+    // Proxy via the arrow function, so system.user / system.tenant etc. work.
+    Object.defineProperty(this, 'system', {
+      get: (): PrismaClient => this as unknown as PrismaClient,
+      enumerable: false,
+      configurable: true,
+    });
+
     this.scoped = this.buildScopedClient();
   }
 
@@ -109,22 +124,11 @@ export class PrismaService
   }
 
   /**
-   * SYSTEM / platform kliens: a tenant-scope MEGKERÜLÉSE. Csak auth,
-   * regisztráció, super-admin és a tenant-feloldás (membership lookup) használja.
-   * Maga a `this` (kiterjesztetlen PrismaClient) a system kliens.
-   *
-   * Használat: `prisma.system.user.findUnique(...)`
-   */
-  get system(): PrismaClient {
-    return this;
-  }
-
-  /**
    * Explicit unscoped futtatás egy callback köré – olvashatóbb a hívás
    * helyén, ha jelezni akarjuk, hogy SZÁNDÉKOSAN kerüljük a scope-ot.
    */
   runUnscoped<T>(fn: (client: PrismaClient) => Promise<T>): Promise<T> {
-    return fn(this);
+    return fn(this.system);
   }
 
   private requireTenantId(model: string, operation: string): string {
