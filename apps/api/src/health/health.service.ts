@@ -51,9 +51,7 @@ export class HealthService {
   private async checkRedis(): Promise<'up' | 'down'> {
     const redis = this.config.redis;
     const client = new Redis({
-      host: redis.host,
-      port: redis.port,
-      password: redis.password,
+      ...redis,
       lazyConnect: true,
       maxRetriesPerRequest: 1,
       connectTimeout: 1500,

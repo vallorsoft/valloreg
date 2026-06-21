@@ -26,6 +26,15 @@ export class AppConfigService {
     return this.get('API_PORT');
   }
 
+  /**
+   * A tényleges listen port. PaaS (Render/Heroku) a PORT env-et injektálja és
+   * azt várja; ha nincs, az API_PORT-ra esünk vissza (helyi fejlesztés).
+   */
+  get port(): number {
+    const fromPaas = process.env.PORT;
+    return fromPaas ? Number(fromPaas) : this.apiPort;
+  }
+
   get apiGlobalPrefix(): string {
     return this.get('API_GLOBAL_PREFIX');
   }
@@ -37,7 +46,26 @@ export class AppConfigService {
       .filter(Boolean);
   }
 
-  get redis(): { host: string; port: number; password?: string } {
+  /**
+   * Redis kapcsolat (BullMQ/ioredis). Ha REDIS_URL adott, abból parse-olunk
+   * (rediss:// → TLS); különben a külön host/port/password mezőkből.
+   */
+  get redis(): {
+    host: string;
+    port: number;
+    password?: string;
+    tls?: Record<string, never>;
+  } {
+    const url = this.get('REDIS_URL');
+    if (url) {
+      const parsed = new URL(url);
+      return {
+        host: parsed.hostname,
+        port: parsed.port ? Number(parsed.port) : 6379,
+        password: parsed.password ? decodeURIComponent(parsed.password) : undefined,
+        tls: parsed.protocol === 'rediss:' ? {} : undefined,
+      };
+    }
     const password = this.get('REDIS_PASSWORD');
     return {
       host: this.get('REDIS_HOST'),

@@ -16,11 +16,7 @@ export const documentsQueueProvider: Provider = {
   useFactory: (config: AppConfigService): Queue => {
     const redis = config.redis;
     return new Queue(DOCUMENTS_QUEUE, {
-      connection: {
-        host: redis.host,
-        port: redis.port,
-        password: redis.password,
-      },
+      connection: redis,
       defaultJobOptions: {
         attempts: 3,
         backoff: { type: 'exponential', delay: 5000 },

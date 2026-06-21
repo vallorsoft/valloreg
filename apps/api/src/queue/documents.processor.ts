@@ -61,11 +61,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       DOCUMENTS_QUEUE,
       (job) => this.process(job),
       {
-        connection: {
-          host: redis.host,
-          port: redis.port,
-          password: redis.password,
-        },
+        connection: redis,
         concurrency: 2,
       },
     );

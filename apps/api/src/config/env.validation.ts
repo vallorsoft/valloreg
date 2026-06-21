@@ -34,7 +34,10 @@ export const envSchema = z.object({
   DATABASE_URL: z.string().min(1, 'DATABASE_URL kötelező'),
   DIRECT_URL: z.string().optional(),
 
-  // Redis / BullMQ
+  // Redis / BullMQ. Ha REDIS_URL meg van adva (pl. Render Key Value
+  // connection string: redis:// vagy rediss://), az elsőbbséget élvez a
+  // külön host/port/password fölött.
+  REDIS_URL: z.string().optional().default(''),
   REDIS_HOST: z.string().default('localhost'),
   REDIS_PORT: z.coerce.number().int().positive().default(6379),
   REDIS_PASSWORD: z.string().optional().default(''),

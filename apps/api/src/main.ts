@@ -39,9 +39,10 @@ async function bootstrap(): Promise<void> {
   // Tiszta leállás (Prisma onModuleDestroy, BullMQ worker close).
   app.enableShutdownHooks();
 
-  await app.listen(config.apiPort);
+  // Render (és más PaaS) a PORT env-et adja; arra kell figyelni, 0.0.0.0-n.
+  await app.listen(config.port, '0.0.0.0');
   logger.log(
-    `Valloreg API fut a ${config.apiPort} porton (prefix: /${config.apiGlobalPrefix}).`,
+    `Valloreg API fut a ${config.port} porton (prefix: /${config.apiGlobalPrefix}).`,
   );
 }
 
