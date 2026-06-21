@@ -47,8 +47,10 @@ services:
       - key: API_GLOBAL_PREFIX
         value: api
       # Neon – kézzel állítsd be (sync: false):
-      #   DATABASE_URL = POOLED (-pooler) connection string ?sslmode=require
-      #   DIRECT_URL   = DIRECT connection string ?sslmode=require (migrációhoz)
+      #   DATABASE_URL = POOLED (-pooler) string + KÖTELEZŐ pgbouncer=true
+      #                  pl. ...neon.tech/neondb?sslmode=require&pgbouncer=true
+      #                  (e nélkül a regisztráció 500-zal elszáll a pooleren!)
+      #   DIRECT_URL   = DIRECT (pooler NÉLKÜLI) string ?sslmode=require (migrációhoz)
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL
