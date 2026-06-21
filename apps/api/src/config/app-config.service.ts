@@ -164,6 +164,23 @@ export class AppConfigService {
     };
   }
 
+  /** Utalásos fizetés banki adatai + a fejlesztői értesítési e-mail. */
+  get bankTransfer(): {
+    beneficiary: string;
+    iban: string;
+    bank: string;
+    swift: string;
+    notifyEmail: string;
+  } {
+    return {
+      beneficiary: this.get('BANK_TRANSFER_BENEFICIARY'),
+      iban: this.get('BANK_TRANSFER_IBAN'),
+      bank: this.get('BANK_TRANSFER_BANK'),
+      swift: this.get('BANK_TRANSFER_SWIFT'),
+      notifyEmail: this.get('BILLING_NOTIFY_EMAIL'),
+    };
+  }
+
   get maxDocumentSizeBytes(): number {
     return this.get('MAX_DOCUMENT_SIZE_BYTES');
   }

@@ -103,6 +103,17 @@ services:
         sync: false
       - key: VAPID_EMAIL
         sync: false
+      # Utalásos fizetés – bankszámla adatok + fejlesztői értesítési e-mail:
+      - key: BANK_TRANSFER_BENEFICIARY
+        sync: false
+      - key: BANK_TRANSFER_IBAN
+        sync: false
+      - key: BANK_TRANSFER_BANK
+        sync: false
+      - key: BANK_TRANSFER_SWIFT
+        sync: false
+      - key: BILLING_NOTIFY_EMAIL
+        sync: false
 
   # ── Web (Next.js PWA) ───────────────────────────────────────────────────
   - type: web

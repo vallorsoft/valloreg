@@ -84,6 +84,14 @@ export const envSchema = z.object({
   VAPID_PRIVATE_KEY: z.string().optional().default(''),
   VAPID_EMAIL: z.string().default('mailto:admin@valloreg.local'),
 
+  // Utalásos fizetés – a fejlesztő/üzemeltető bankszámla adatai. Ezeket a
+  // kliens megkapja előfizetéskor; a BILLING_NOTIFY_EMAIL kapja az értesítést.
+  BANK_TRANSFER_BENEFICIARY: z.string().optional().default(''),
+  BANK_TRANSFER_IBAN: z.string().optional().default(''),
+  BANK_TRANSFER_BANK: z.string().optional().default(''),
+  BANK_TRANSFER_SWIFT: z.string().optional().default(''),
+  BILLING_NOTIFY_EMAIL: z.string().optional().default(''),
+
   // Feldolgozási limit
   MAX_DOCUMENT_SIZE_BYTES: z.coerce
     .number()

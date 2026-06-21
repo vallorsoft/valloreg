@@ -74,3 +74,19 @@ export function isWithinLimit(current: number, limit: number): boolean {
   if (limit === UNLIMITED) return true;
   return current < limit;
 }
+
+/**
+ * Csomag-árak (havi, nettó) az utalásos előfizetéshez. A `PLAN_CURRENCY` a
+ * pénznem. Ezek alapértelmezett értékek – az üzemeltető igazíthatja.
+ */
+export const PLAN_CURRENCY = 'HUF';
+
+export const PLAN_PRICES: Record<PlanTier, number> = {
+  [PlanTier.STARTER]: 9900,
+  [PlanTier.STANDARD]: 19900,
+  [PlanTier.PROFESSIONAL]: 39900,
+  [PlanTier.BUSINESS]: 79900,
+};
+
+/** A próbaidőszak hossza napokban (a regisztráció ennyit ad ingyen). */
+export const TRIAL_DAYS = 14;

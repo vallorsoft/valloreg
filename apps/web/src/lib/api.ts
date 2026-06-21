@@ -545,9 +545,24 @@ export interface BillingOverview {
   features: string[];
 }
 
+export interface SubscriptionRequestResult {
+  plan: string;
+  amount: number;
+  currency: string;
+  reference: string;
+  bank: { beneficiary: string; iban: string; bank: string; swift: string };
+  emailedTo: string | null;
+}
+
 export const billingApi = {
   getOverview() {
     return apiRequest<BillingOverview>('/billing/overview');
+  },
+  requestSubscription(planTier: string) {
+    return apiRequest<SubscriptionRequestResult>('/billing/request-subscription', {
+      method: 'POST',
+      json: { planTier },
+    });
   },
 };
 
