@@ -41,7 +41,7 @@ export function TeamClient() {
   const load = useCallback(async () => {
     try {
       const me = await authApi.me();
-      setCurrentUserId(me.id);
+      setCurrentUserId(me.user.id);
       const tenantId = getActiveTenantId();
       const membership = me.memberships.find((m) => m.tenantId === tenantId);
       const manage = membership ? MANAGER_ROLES.has(membership.role) : false;

@@ -29,7 +29,13 @@ export interface TenantMembership {
 export interface CurrentUser {
   id: string;
   email: string;
-  name: string;
+  name: string | null;
+  isPlatformAdmin: boolean;
+}
+
+/** The `/auth/me` (and login/register) session payload. */
+export interface AuthSession {
+  user: CurrentUser;
   memberships: TenantMembership[];
 }
 
@@ -83,13 +89,13 @@ export function setActiveTenantId(tenantId: string): void {
  * first membership and persisting it.
  */
 export function resolveActiveTenant(
-  user: CurrentUser,
+  memberships: TenantMembership[],
 ): TenantMembership | null {
-  if (user.memberships.length === 0) return null;
+  if (memberships.length === 0) return null;
   const storedId = getActiveTenantId();
-  const stored = user.memberships.find((m) => m.tenantId === storedId);
+  const stored = memberships.find((m) => m.tenantId === storedId);
   if (stored) return stored;
-  const first = user.memberships[0]!;
+  const first = memberships[0]!;
   setActiveTenantId(first.tenantId);
   return first;
 }

@@ -5,8 +5,11 @@ import {
   getAccessToken,
   getActiveTenantId,
   setTokens,
+  resolveActiveTenant,
   type AuthTokens,
+  type AuthSession,
   type CurrentUser,
+  type TenantMembership,
 } from './auth';
 
 /**
@@ -127,6 +130,7 @@ export interface RegisterPayload {
 
 export interface AuthResponse extends AuthTokens {
   user: CurrentUser;
+  memberships: TenantMembership[];
 }
 
 export const authApi = {
@@ -144,17 +148,18 @@ export const authApi = {
       anonymous: true,
     });
   },
-  me(): Promise<CurrentUser> {
-    return apiRequest<CurrentUser>('/auth/me');
+  me(): Promise<AuthSession> {
+    return apiRequest<AuthSession>('/auth/me');
   },
 };
 
-/** Persist tokens after a successful auth call. */
+/** Persist tokens and select the active tenant after a successful auth call. */
 export function storeAuth(response: AuthResponse): void {
   setTokens({
     accessToken: response.accessToken,
     refreshToken: response.refreshToken,
   });
+  resolveActiveTenant(response.memberships);
 }
 
 // ── Documents ─────────────────────────────────────────────────────────────────
