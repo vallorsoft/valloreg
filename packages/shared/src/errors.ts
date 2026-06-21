@@ -1,0 +1,47 @@
+/**
+ * Gépi hibakódok. A backend ezeket adja vissza, a frontend i18n-eli őket,
+ * hogy ne legyen hardcode-olt hibaszöveg.
+ */
+export const ErrorCode = {
+  // Auth
+  AUTH_INVALID_CREDENTIALS: 'AUTH_INVALID_CREDENTIALS',
+  AUTH_EMAIL_TAKEN: 'AUTH_EMAIL_TAKEN',
+  AUTH_TOKEN_EXPIRED: 'AUTH_TOKEN_EXPIRED',
+  AUTH_TOKEN_INVALID: 'AUTH_TOKEN_INVALID',
+  AUTH_UNAUTHORIZED: 'AUTH_UNAUTHORIZED',
+  AUTH_FORBIDDEN: 'AUTH_FORBIDDEN',
+  AUTH_2FA_REQUIRED: 'AUTH_2FA_REQUIRED',
+
+  // Tenant / hozzáférés
+  TENANT_NOT_FOUND: 'TENANT_NOT_FOUND',
+  TENANT_ACCESS_DENIED: 'TENANT_ACCESS_DENIED',
+
+  // Limitek
+  LIMIT_VEHICLES_REACHED: 'LIMIT_VEHICLES_REACHED',
+  LIMIT_USERS_REACHED: 'LIMIT_USERS_REACHED',
+  LIMIT_STORAGE_REACHED: 'LIMIT_STORAGE_REACHED',
+  LIMIT_DOCUMENTS_REACHED: 'LIMIT_DOCUMENTS_REACHED',
+
+  // Feature flag
+  FEATURE_DISABLED: 'FEATURE_DISABLED',
+
+  // Dokumentum / feldolgozás
+  DOCUMENT_UNSUPPORTED_TYPE: 'DOCUMENT_UNSUPPORTED_TYPE',
+  DOCUMENT_TOO_LARGE: 'DOCUMENT_TOO_LARGE',
+  PROCESSING_FAILED: 'PROCESSING_FAILED',
+
+  // Általános
+  VALIDATION_FAILED: 'VALIDATION_FAILED',
+  NOT_FOUND: 'NOT_FOUND',
+  INTERNAL_ERROR: 'INTERNAL_ERROR',
+} as const;
+
+export type ErrorCode = (typeof ErrorCode)[keyof typeof ErrorCode];
+
+/** Egységes API hibaválasz alakja. */
+export interface ApiErrorBody {
+  code: ErrorCode;
+  message: string;
+  /** Mezőszintű részletek validációhoz. */
+  details?: Record<string, string[]>;
+}

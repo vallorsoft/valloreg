@@ -1,0 +1,59 @@
+# Biztonság és adatvédelem
+
+## Multi-tenant izoláció
+
+- **Minden üzleti rekord** tartalmaz `tenantId`-t (cégazonosító).
+- A request életciklusban a hitelesített tokenből kerül a tenant kontextusba.
+- A Prisma kliens egy **tenant-scope kiterjesztéssel** automatikusan hozzáadja a
+  `tenantId` szűrőt minden tenant-hez kötött modell lekérdezéséhez. Ha üzleti modellt
+  tenant nélkül próbálnánk lekérdezni, a kiterjesztés hibát dob (fail-closed).
+- Cross-tenant hozzáférés kódszinten kizárt; a teszteknek ezt expliciten ellenőrizniük kell.
+
+## Hitelesítés és jogosultság
+
+- **JWT** access (rövid életű) + refresh (hosszú életű) token.
+- Jelszavak `argon2`/`bcrypt` hash-sel, soha nem plaintextben.
+- **RBAC**: `OWNER`, `FLEET_MANAGER`, `ADMIN`, `ACCOUNTANT`, `VIEWER` (cég),
+  `SUPER_ADMIN` (platform). A guard a `@valloreg/shared` szerepköreit használja.
+- **2FA** (Fázis 4) és opcionális Google login.
+- Felhasználók email meghívással kerülnek a céghez.
+
+## Adatvédelem – az üzemeltető mit lát
+
+A platform üzemeltetője (Super Admin) **alapértelmezés szerint NEM látja**:
+
+- számlák tartalmát, dokumentumokat, javításokat, költségeket, járműadatokat.
+
+Csak ezeket látja: rendszeradatok, statisztikák, előfizetések, hibák, audit logok.
+
+### Support access
+
+A cég adminisztrátora **ideiglenes** hozzáférést adhat support célra:
+`1 óra` / `24 óra` / `7 nap`. Minden ilyen hozzáférés:
+
+- lejárati idővel jön létre,
+- teljesen naplózott (ki, mikor, meddig, mit nézett),
+- automatikusan megszűnik a lejáratkor.
+
+## Audit log
+
+Minden érzékeny művelet naplózva: ki (user), melyik cég (tenant), mit (action),
+melyik erőforráson (resource), mikor, milyen eredménnyel. Az AI/OCR döntések is
+ide kerülnek (Fázis 2), hogy a feldolgozás visszakövethető legyen.
+
+## Adattárolás
+
+- Dokumentumok S3-kompatibilis tárban, hozzáférés presigned URL-lel, tenant-prefixszel.
+- Titkosítás nyugalmi állapotban (tároló szint) és átvitel közben (TLS).
+- Titkok soha nem a repóban: `.env` (helyi) és secret manager (prod, pl. Render env).
+
+## Limitek és visszaélés-védelem
+
+- Csomag-limitek (jármű/felhasználó/tárhely/dokumentum) szerver oldalon kényszerítve.
+- Feltöltés: MIME + méret ellenőrzés (PDF/JPG/PNG, max 25 MB).
+- Rate limiting és input-validáció (zod / class-validator) minden végponton.
+
+## Feature flag-ek
+
+Cégenként engedélyezhető/tiltható funkciók (OCR, AI, Dashboard, Riportok, API, Export,
+Emlékeztetők, Dokumentumtár). A tiltott funkció a backenden is elutasít (nem csak UI).
