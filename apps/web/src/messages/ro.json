@@ -1,0 +1,395 @@
+{
+  "common": {
+    "appName": "Valloreg",
+    "tagline": "Din factura de service la istoric digital – cu OCR și AI.",
+    "nav": {
+      "features": "Funcții",
+      "pricing": "Prețuri",
+      "faq": "Întrebări frecvente",
+      "contact": "Contact",
+      "login": "Autentificare",
+      "register": "Înregistrare",
+      "dashboard": "Panou de control"
+    },
+    "actions": {
+      "startTrial": "Încercați gratuit",
+      "requestDemo": "Solicitați un demo",
+      "learnMore": "Aflați mai multe",
+      "submit": "Trimite",
+      "cancel": "Anulează",
+      "save": "Salvează",
+      "back": "Înapoi",
+      "next": "Continuă",
+      "loading": "Se încarcă…"
+    },
+    "language": {
+      "label": "Limbă",
+      "hu": "Maghiară",
+      "ro": "Română",
+      "en": "Engleză"
+    },
+    "footer": {
+      "rights": "Toate drepturile rezervate.",
+      "product": "Produs",
+      "company": "Companie",
+      "legal": "Legal",
+      "privacy": "Confidențialitate",
+      "terms": "Termeni și condiții",
+      "about": "Despre noi",
+      "tagline": "Gestionarea flotei inteligent – mai puțină birocrație, mai multă transparență."
+    }
+  },
+  "landing": {
+    "hero": {
+      "badge": "Gestionarea service-ului bazată pe OCR + AI",
+      "headline": "Procesați facturile de service automat, în câteva minute",
+      "subtitle": "Încărcați factura, iar Valloreg o citește, o clasifică și o asociază vehiculului. Dumneavoastră doar verificați – istoricul de service se construiește singur.",
+      "ctaPrimary": "Încercați gratuit",
+      "ctaSecondary": "Solicitați un demo",
+      "trustNote": "Fără card bancar · perioadă de probă de 14 zile"
+    },
+    "problem": {
+      "title": "Vă sună cunoscut?",
+      "subtitle": "Datele de service ale flotelor sunt împrăștiate pe hârtie, în dosare și în mintea oamenilor.",
+      "items": {
+        "scattered": {
+          "title": "Date împrăștiate",
+          "description": "Facturi prin cutii, e-mailuri și tabele – nimeni nu vede imaginea de ansamblu."
+        },
+        "manual": {
+          "title": "Introducere manuală",
+          "description": "Tastarea fiecărei poziții durează ore și este plină de greșeli."
+        },
+        "noInsight": {
+          "title": "Lipsă de vizibilitate",
+          "description": "Nu se știe cât costă fiecare vehicul și când urmează următoarea revizie."
+        }
+      }
+    },
+    "solution": {
+      "title": "Soluția Valloreg",
+      "subtitle": "O singură încărcare și sistemul face munca grea.",
+      "steps": {
+        "upload": {
+          "title": "1. Încărcare",
+          "description": "Trageți PDF-ul sau fotografiați factura de pe telefon."
+        },
+        "extract": {
+          "title": "2. Extragere",
+          "description": "OCR-ul și AI-ul interpretează și clasifică factura poziție cu poziție."
+        },
+        "review": {
+          "title": "3. Verificare",
+          "description": "Confirmați doar câmpurile nesigure – câteva clicuri."
+        },
+        "history": {
+          "title": "4. Istoric de service",
+          "description": "Istoricul digital al vehiculului se actualizează automat."
+        }
+      }
+    },
+    "features": {
+      "title": "Tot ce vă trebuie pentru service-ul flotei",
+      "subtitle": "O singură platformă, de la procesare la rapoarte.",
+      "items": {
+        "ocr": {
+          "title": "Procesare OCR",
+          "description": "Citire precisă a textului din PDF, JPG și PNG, chiar și din poze de pe telefon."
+        },
+        "ai": {
+          "title": "Clasificare AI",
+          "description": "Încadrarea fiecărei poziții: piesă, manoperă, service – fără muncă manuală."
+        },
+        "multiVehicle": {
+          "title": "Gestionarea mai multor vehicule",
+          "description": "Asociate vehiculului corect pe baza numărului de înmatriculare și a seriei de șasiu."
+        },
+        "serviceBook": {
+          "title": "Carnet de service digital",
+          "description": "Toate reparațiile, piesele și costurile într-un singur loc, în ordine cronologică."
+        },
+        "dashboard": {
+          "title": "Panou de costuri",
+          "description": "Costuri lunare și anuale, cost/km, revizii apropiate – într-o singură vizualizare."
+        },
+        "multiTenant": {
+          "title": "Mai multe companii, în siguranță",
+          "description": "Izolare completă pe companie și acces bazat pe roluri pentru toate datele."
+        }
+      }
+    },
+    "preview": {
+      "title": "Panou de control transparent",
+      "subtitle": "Toate cifrele importante ale flotei dintr-o privire.",
+      "stats": {
+        "monthlyCost": "Cost lunar",
+        "yearlyCost": "Cost anual",
+        "costPerVehicle": "Cost / vehicul",
+        "upcoming": "Revizii apropiate"
+      },
+      "note": "Previzualizare ilustrativă – datele reale apar după autentificare."
+    },
+    "benefits": {
+      "title": "De ce Valloreg?",
+      "subtitle": "Mai puțină birocrație, decizii mai bune.",
+      "items": {
+        "time": {
+          "title": "Economie de timp",
+          "description": "În loc de ore de introducere manuală – minute, procesarea este automată."
+        },
+        "accuracy": {
+          "title": "Mai puține erori",
+          "description": "AI-ul elimină greșelile de tastare, iar gradul de încredere arată ce trebuie verificat."
+        },
+        "transparency": {
+          "title": "Transparență totală",
+          "description": "Costuri pe vehicul și la nivel de flotă, în timp real."
+        },
+        "scalable": {
+          "title": "Scalabil",
+          "description": "De la două vehicule la o flotă nelimitată – pachetul crește odată cu dumneavoastră."
+        }
+      }
+    },
+    "testimonials": {
+      "title": "Ce spun clienții noștri",
+      "subtitle": "Transportatori și manageri de flotă care lucrează deja cu Valloreg.",
+      "items": {
+        "first": {
+          "quote": "Înainte, un contabil pierdea o zi întreagă cu înregistrarea facturilor. Acum totul durează câteva minute.",
+          "author": "Gábor Kovács",
+          "role": "Administrator, transportator regional"
+        },
+        "second": {
+          "quote": "În sfârșit văd costurile reale pe fiecare vehicul. Deciziile noastre sunt mult mai fundamentate.",
+          "author": "Anikó Nagy",
+          "role": "Manager de flotă"
+        },
+        "third": {
+          "quote": "Recunoaște perfect chiar și factura fotografiată cu telefonul. Pur și simplu funcționează.",
+          "author": "Péter Szabó",
+          "role": "Proprietar, flotă mică"
+        }
+      }
+    },
+    "pricing": {
+      "title": "Prețuri transparente",
+      "subtitle": "Alegeți pachetul potrivit flotei dumneavoastră. Puteți schimba oricând.",
+      "perMonth": "/ lună",
+      "vehicles": "{count} vehicule",
+      "vehiclesUnlimited": "Vehicule nelimitate",
+      "users": "{count} utilizatori",
+      "usersUnlimited": "Utilizatori nelimitați",
+      "documents": "{count} documente / lună",
+      "documentsUnlimited": "Documente nelimitate / lună",
+      "mostPopular": "Cel mai popular",
+      "cta": "Alege",
+      "plans": {
+        "STARTER": {
+          "name": "Starter",
+          "description": "Pentru flote mici, pentru primii pași."
+        },
+        "STANDARD": {
+          "name": "Standard",
+          "description": "Pentru flote în creștere, cu rapoarte și export."
+        },
+        "PROFESSIONAL": {
+          "name": "Professional",
+          "description": "Pentru gestionarea activă a flotei, cu set complet de funcții."
+        },
+        "BUSINESS": {
+          "name": "Business",
+          "description": "Pentru flote mari, fără limite."
+        }
+      }
+    },
+    "faq": {
+      "title": "Întrebări frecvente",
+      "subtitle": "Cele mai frecvente întrebări pe care le primim.",
+      "items": {
+        "fileTypes": {
+          "question": "Ce fișiere pot încărca?",
+          "answer": "Acceptăm formatele PDF, JPG, JPEG și PNG, cu o dimensiune maximă de 25 MB per fișier."
+        },
+        "accuracy": {
+          "question": "Cât de precisă este recunoașterea?",
+          "answer": "AI-ul oferă un grad de încredere pentru fiecare câmp. Câmpurile nesigure sunt evidențiate, așa că verificați doar pe acelea."
+        },
+        "security": {
+          "question": "Sunt datele mele în siguranță?",
+          "answer": "Datele fiecărei companii sunt complet izolate (izolare pe tenant), iar accesul este controlat prin roluri. Operatorul platformei nu vede conținutul facturilor."
+        },
+        "languages": {
+          "question": "În ce limbi este disponibilă?",
+          "answer": "Interfața este disponibilă în maghiară, română și engleză; puteți comuta oricând între limbi."
+        },
+        "cancel": {
+          "question": "Pot anula oricând?",
+          "answer": "Da, abonamentul poate fi anulat oricând și puteți schimba liber între pachete."
+        }
+      }
+    },
+    "contact": {
+      "title": "Contactați-ne",
+      "subtitle": "Aveți o întrebare sau doriți o prezentare personală? Scrieți-ne.",
+      "name": "Nume",
+      "namePlaceholder": "Numele dumneavoastră",
+      "email": "E-mail",
+      "emailPlaceholder": "dvs@companie.ro",
+      "company": "Companie",
+      "companyPlaceholder": "Numele companiei",
+      "message": "Mesaj",
+      "messagePlaceholder": "Cu ce vă putem ajuta?",
+      "submit": "Trimite mesajul",
+      "note": "Vă răspundem în curând. Conectarea formularului va veni într-o fază ulterioară."
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Autentificare",
+      "subtitle": "Bine ați revenit! Conectați-vă la contul dumneavoastră.",
+      "email": "E-mail",
+      "emailPlaceholder": "dvs@companie.ro",
+      "password": "Parolă",
+      "passwordPlaceholder": "Parola dumneavoastră",
+      "submit": "Autentificare",
+      "noAccount": "Nu aveți cont?",
+      "registerLink": "Înregistrați-vă",
+      "forgotPassword": "Ați uitat parola?"
+    },
+    "register": {
+      "title": "Înregistrare",
+      "subtitle": "Creați contul companiei în câteva minute.",
+      "companyName": "Numele companiei",
+      "companyNamePlaceholder": "Numele companiei",
+      "taxId": "Cod fiscal",
+      "taxIdPlaceholder": "RO12345678",
+      "contactName": "Numele persoanei de contact",
+      "contactNamePlaceholder": "Nume Prenume",
+      "email": "E-mail",
+      "emailPlaceholder": "dvs@companie.ro",
+      "phone": "Număr de telefon",
+      "phonePlaceholder": "+40 700 123 456",
+      "password": "Parolă",
+      "passwordPlaceholder": "Cel puțin 8 caractere",
+      "submit": "Creați contul",
+      "haveAccount": "Aveți deja cont?",
+      "loginLink": "Autentificați-vă"
+    },
+    "validation": {
+      "required": "Acest câmp este obligatoriu.",
+      "emailInvalid": "Introduceți o adresă de e-mail validă.",
+      "passwordTooShort": "Parola trebuie să aibă cel puțin 8 caractere.",
+      "taxIdInvalid": "Introduceți un cod fiscal valid.",
+      "phoneInvalid": "Introduceți un număr de telefon valid."
+    },
+    "errors": {
+      "AUTH_INVALID_CREDENTIALS": "Adresă de e-mail sau parolă incorectă.",
+      "AUTH_EMAIL_TAKEN": "Există deja un cont cu această adresă de e-mail.",
+      "AUTH_TOKEN_EXPIRED": "Sesiunea a expirat, autentificați-vă din nou.",
+      "AUTH_TOKEN_INVALID": "Sesiune invalidă, autentificați-vă din nou.",
+      "AUTH_UNAUTHORIZED": "Pentru această acțiune trebuie să vă autentificați.",
+      "AUTH_FORBIDDEN": "Nu aveți permisiunea pentru această acțiune.",
+      "AUTH_2FA_REQUIRED": "Este necesară autentificarea în doi pași.",
+      "TENANT_NOT_FOUND": "Compania nu a fost găsită.",
+      "TENANT_ACCESS_DENIED": "Nu aveți acces la această companie.",
+      "LIMIT_VEHICLES_REACHED": "Ați atins limita de vehicule a pachetului.",
+      "LIMIT_USERS_REACHED": "Ați atins limita de utilizatori a pachetului.",
+      "LIMIT_STORAGE_REACHED": "Ați atins limita de stocare.",
+      "LIMIT_DOCUMENTS_REACHED": "Ați atins limita lunară de documente.",
+      "FEATURE_DISABLED": "Această funcție nu este disponibilă în pachetul dumneavoastră.",
+      "DOCUMENT_UNSUPPORTED_TYPE": "Tip de fișier neacceptat.",
+      "DOCUMENT_TOO_LARGE": "Fișierul este prea mare.",
+      "PROCESSING_FAILED": "Procesarea a eșuat.",
+      "VALIDATION_FAILED": "Validarea datelor a eșuat.",
+      "NOT_FOUND": "Resursa nu a fost găsită.",
+      "INTERNAL_ERROR": "A apărut o eroare neașteptată. Vă rugăm să încercați din nou.",
+      "NETWORK_ERROR": "Eroare de rețea. Verificați conexiunea."
+    }
+  },
+  "app": {
+    "nav": {
+      "dashboard": "Panou de control",
+      "vehicles": "Vehicule",
+      "documents": "Documente",
+      "logout": "Deconectare"
+    },
+    "header": {
+      "tenantLabel": "Compania activă",
+      "noTenant": "Nicio companie selectată",
+      "menu": "Meniu"
+    },
+    "phaseNote": "Vizualizare demo – conectarea datelor reale va veni în fazele următoare."
+  },
+  "dashboard": {
+    "title": "Panou de control",
+    "subtitle": "Privire de ansamblu asupra costurilor flotei.",
+    "stats": {
+      "monthlyCost": "Cost lunar",
+      "yearlyCost": "Cost anual",
+      "costPerVehicle": "Cost / vehicul",
+      "costPerKm": "Cost / km",
+      "upcomingMaintenance": "Revizii apropiate",
+      "documentCount": "Număr de documente",
+      "serviceEvents": "Evenimente de service"
+    },
+    "units": {
+      "currency": "RON",
+      "perKm": "RON/km",
+      "items": "buc",
+      "events": "evenimente"
+    },
+    "emptyHint": "Cifrele sunt ilustrative. Încărcați documente pentru datele reale."
+  },
+  "vehicles": {
+    "title": "Vehicule",
+    "subtitle": "Gestionarea vehiculelor din flotă.",
+    "addVehicle": "Vehicul nou",
+    "table": {
+      "plate": "Număr de înmatriculare",
+      "make": "Marcă",
+      "model": "Model",
+      "year": "An fabricație",
+      "odometer": "Kilometraj",
+      "cost": "Cost total",
+      "actions": "Acțiuni"
+    },
+    "empty": {
+      "title": "Niciun vehicul încă",
+      "description": "Adăugați un vehicul pentru a începe construirea istoricului de service.",
+      "cta": "Adăugați primul vehicul"
+    }
+  },
+  "documents": {
+    "title": "Documente",
+    "subtitle": "Încărcarea și procesarea facturilor de service.",
+    "upload": {
+      "title": "Trageți fișierele aici",
+      "description": "sau faceți clic pentru a răsfoi",
+      "hint": "PDF, JPG, JPEG, PNG – maximum 25 MB",
+      "button": "Selectați fișierul"
+    },
+    "table": {
+      "name": "Document",
+      "uploadedAt": "Încărcat",
+      "status": "Stare",
+      "actions": "Acțiuni"
+    },
+    "status": {
+      "UPLOADED": "Încărcat",
+      "QUEUED": "În coadă",
+      "OCR_RUNNING": "OCR în curs",
+      "EXTRACTING": "Extragere",
+      "NEEDS_REVIEW": "Necesită verificare",
+      "AUTO_OK": "Finalizat automat",
+      "CONFIRMED": "Confirmat",
+      "FAILED": "Eșuat",
+      "ARCHIVED": "Arhivat"
+    },
+    "empty": {
+      "title": "Niciun document încă",
+      "description": "Încărcați prima factură de service pentru procesare.",
+      "cta": "Încărcați un document"
+    }
+  }
+}
