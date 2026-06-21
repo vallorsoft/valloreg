@@ -18,6 +18,7 @@ import { EXTRACTION_PROVIDER } from '../extraction/extraction.provider';
 import type { ExtractionProvider } from '../extraction/extraction.provider';
 import { MatchingService } from '../matching/matching.service';
 import type { VehicleMatch } from '../matching/matching.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   DOCUMENTS_QUEUE,
   ProcessDocumentJobData,
@@ -56,6 +57,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
     @Inject(EXTRACTION_PROVIDER)
     private readonly extraction: ExtractionProvider,
     private readonly matching: MatchingService,
+    private readonly notifications: NotificationsService,
   ) {}
 
   onModuleInit(): void {
@@ -172,6 +174,25 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
           matchSource: vehicleMatch.source,
         },
       });
+
+      // 7) Push értesítés a feltöltőnek (ha feliratkozott). A push hibája soha
+      //    nem buktathatja meg a feldolgozást, ezért külön try/catch.
+      try {
+        const needsReview = nextStatus === DocumentStatus.NEEDS_REVIEW;
+        await this.notifications.sendToUser(document.uploadedById, {
+          title: needsReview
+            ? 'Dokumentum ellenőrzésre vár'
+            : 'Dokumentum feldolgozva',
+          body: needsReview
+            ? `A(z) "${document.fileName}" feldolgozása kész, de ellenőrzést igényel.`
+            : `A(z) "${document.fileName}" automatikusan feldolgozva.`,
+          url: `/documents/${documentId}`,
+        });
+      } catch (err) {
+        this.logger.warn(
+          `Push értesítés sikertelen (${documentId}): ${(err as Error).message}`,
+        );
+      }
     } catch (err) {
       await this.setStatus(tenantId, documentId, DocumentStatus.FAILED);
       await this.audit.log({

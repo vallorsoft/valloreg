@@ -667,5 +667,16 @@
       "title": "Elérhető funkciók",
       "none": "Nincs engedélyezett funkció."
     }
+  },
+  "notifications": {
+    "title": "Push értesítések",
+    "description": "Kapj értesítést, amikor egy dokumentum feldolgozása elkészül.",
+    "enabled": "Az értesítések be vannak kapcsolva ezen az eszközön.",
+    "denied": "Az értesítések le vannak tiltva a böngészőben. Engedélyezd a böngésző beállításaiban.",
+    "unavailable": "Az értesítések most nem érhetők el.",
+    "enable": "Bekapcsolás",
+    "disable": "Kikapcsolás",
+    "working": "Folyamatban…",
+    "error": "Hiba történt, próbáld újra."
   }
 }
