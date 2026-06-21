@@ -88,7 +88,7 @@ export async function apiRequest<T>(
     response = await fetch(url, {
       ...init,
       headers: buildHeaders(options),
-      body: json !== undefined ? JSON.stringify(json) : init.body,
+      body: json !== undefined ? JSON.stringify(json) : undefined,
     });
   } catch (cause) {
     throw new ApiError(

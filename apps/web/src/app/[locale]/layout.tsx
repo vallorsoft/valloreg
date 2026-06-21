@@ -2,15 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
-import { Inter } from 'next/font/google';
 import { isSupportedLocale, SUPPORTED_LOCALES } from '@valloreg/shared';
 import '../globals.css';
-
-const inter = Inter({
-  subsets: ['latin', 'latin-ext'],
-  variable: '--font-sans',
-  display: 'swap',
-});
 
 export const metadata: Metadata = {
   title: {
@@ -61,7 +54,7 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale} className={inter.variable} suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className="min-h-screen bg-light font-sans text-anthracite-900 antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}

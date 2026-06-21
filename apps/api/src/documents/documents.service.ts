@@ -82,7 +82,9 @@ export class DocumentsService {
 
     // Létrehozás UPLOADED státusszal, majd QUEUED-re állítás és sorbavétel.
     const document = await this.prisma.scoped.document.create({
+      // tenantId-t a scoped kliens is injektálja; explicit a típusbiztonságért.
       data: {
+        tenantId,
         uploadedById: userId,
         fileName: dto.fileName,
         mimeType: dto.mimeType,

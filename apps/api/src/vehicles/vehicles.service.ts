@@ -42,7 +42,10 @@ export class VehiclesService {
     await this.assertVehicleLimit(tenantId);
 
     const vehicle = await this.prisma.scoped.vehicle.create({
+      // tenantId-t a scoped kliens is injektálja; explicit átadjuk a típus-
+      // biztonságért (az érték azonos, így nincs ütközés).
       data: {
+        tenantId,
         plate: dto.plate ?? null,
         vin: dto.vin ?? null,
         make: dto.make ?? null,

@@ -24,9 +24,7 @@ const nextConfig = {
   // The shared workspace package ships TypeScript-compiled CJS; transpile it so
   // Next can bundle it consistently across server and client.
   transpilePackages: ['@valloreg/shared'],
-  experimental: {
-    typedRoutes: false,
-  },
+  typedRoutes: false,
 };
 
 export default withPWA(withNextIntl(nextConfig));

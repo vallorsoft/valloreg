@@ -16,6 +16,15 @@
 
   --color-bg: var(--color-light);
   --color-fg: var(--color-anthracite);
+
+  /*
+   * Modern system font stack – no build-time/runtime download. Fast, privacy-
+   * friendly, and renders natively on every platform. (A self-hosted brand font
+   * can be added later via next/font/local without touching the rest.)
+   */
+  --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji',
+    'Segoe UI Emoji';
 }
 
 @layer base {

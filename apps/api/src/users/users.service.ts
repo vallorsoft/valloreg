@@ -75,7 +75,9 @@ export class UsersService {
     );
 
     const invitation = await this.prisma.scoped.invitation.create({
+      // tenantId-t a scoped kliens is injektálja; explicit a típusbiztonságért.
       data: {
+        tenantId,
         email,
         role: dto.role,
         token,
