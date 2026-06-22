@@ -453,6 +453,8 @@
       "button": "Fájl kiválasztása",
       "uploading": "Feltöltés folyamatban…",
       "errorUpload": "Feltöltési hiba, próbálja újra.",
+      "errorUnsupported": "Nem támogatott fájltípus. Engedélyezett: PDF, JPG, JPEG, PNG.",
+      "errorTooLarge": "A fájl túl nagy (legfeljebb 25 MB).",
       "errorGeneric": "Váratlan hiba, próbálja újra."
     },
     "table": {
