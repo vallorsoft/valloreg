@@ -200,10 +200,66 @@ async function main(): Promise<void> {
     });
   }
 
+  // ── Demó emlékeztetők (proaktív karbantartás + lejárat-figyelés) ───────────
+  const DAY = 24 * 60 * 60 * 1000;
+  const now = Date.now();
+  // Lejárt műszaki vizsga (overdue), hamarosan esedékes olajcsere (km-alapú),
+  // és egy később esedékes biztosítás (ok).
+  await ensureReminder(tenant.id, vehicle1.id, 'inspection', {
+    kind: 'compliance',
+    title: 'Műszaki vizsga',
+    dueDate: new Date(now - 10 * DAY),
+    intervalDays: 365,
+  });
+  await ensureReminder(tenant.id, vehicle1.id, 'oil_change', {
+    kind: 'maintenance',
+    title: 'Olajcsere',
+    dueOdometerKm: 153000, // a jármű 152340 km-en áll → ~660 km múlva
+    intervalKm: 15000,
+  });
+  await ensureReminder(tenant.id, vehicle1.id, 'insurance', {
+    kind: 'compliance',
+    title: 'Kötelező biztosítás',
+    dueDate: new Date(now + 120 * DAY),
+    intervalDays: 365,
+  });
+
   console.log('Seed kész.');
   console.log(`  Super admin: admin@valloreg.local / SuperAdmin123!`);
   console.log(`  Demo owner:  demo@valloreg.local / Demo1234!`);
   console.log(`  Tenant id:   ${tenant.id}`);
+}
+
+async function ensureReminder(
+  tenantId: string,
+  vehicleId: string,
+  type: string,
+  data: {
+    kind: string;
+    title: string;
+    dueDate?: Date;
+    dueOdometerKm?: number;
+    intervalDays?: number;
+    intervalKm?: number;
+  },
+) {
+  const existing = await prisma.reminder.findFirst({
+    where: { tenantId, vehicleId, type },
+  });
+  if (existing) return existing;
+  return prisma.reminder.create({
+    data: {
+      tenantId,
+      vehicleId,
+      type,
+      kind: data.kind,
+      title: data.title,
+      dueDate: data.dueDate ?? null,
+      dueOdometerKm: data.dueOdometerKm ?? null,
+      intervalDays: data.intervalDays ?? null,
+      intervalKm: data.intervalKm ?? null,
+    },
+  });
 }
 
 async function ensureVehicle(
