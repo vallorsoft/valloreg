@@ -5,6 +5,8 @@ import { useTranslations } from 'next-intl';
 import {
   ALLOWED_DOCUMENT_EXTENSIONS,
   ALLOWED_DOCUMENT_MIME_TYPES,
+  isAllowedDocumentMimeType,
+  MAX_DOCUMENT_SIZE_BYTES,
 } from '@valloreg/shared';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
@@ -13,6 +15,13 @@ import type { DocumentListItem } from '@/lib/api';
 
 const ACCEPT = ALLOWED_DOCUMENT_MIME_TYPES.join(',');
 const ACCEPT_HINT = ALLOWED_DOCUMENT_EXTENSIONS.join(', ');
+
+/**
+ * Már lokalizált üzenetet hordozó hiba a feltöltési folyamat lépéseihez. Így a
+ * tárhelyre (S3/R2) történő közvetlen PUT hibája a tényleges üzenettel jelenik
+ * meg, és nem nyelődik el a generikus „Váratlan hiba”-ba.
+ */
+class UploadError extends Error {}
 
 interface Props {
   onUploadComplete?: (doc: DocumentListItem) => void;
@@ -31,20 +40,37 @@ export function UploadZone({ onUploadComplete }: Props) {
     setUploading(true);
     try {
       for (const file of Array.from(files)) {
+        const mimeType = file.type || 'application/octet-stream';
+
+        // 0. Kliensoldali validáció: azonnali, lokalizált visszajelzés, és nem
+        //    pazarlunk feltöltést olyan fájlra, amit a szerver úgyis elutasít.
+        if (!isAllowedDocumentMimeType(mimeType)) {
+          throw new UploadError(t('errorUnsupported'));
+        }
+        if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
+          throw new UploadError(t('errorTooLarge'));
+        }
+
         // 1. Presigned PUT URL kérése
         const { uploadUrl, storageKey } = await documentsApi.presign({
           fileName: file.name,
-          mimeType: file.type || 'application/octet-stream',
+          mimeType,
         });
 
-        // 2. Közvetlen feltöltés S3/R2-re
-        const putRes = await fetch(uploadUrl, {
-          method: 'PUT',
-          body: file,
-          headers: { 'Content-Type': file.type || 'application/octet-stream' },
-        });
+        // 2. Közvetlen feltöltés S3/R2-re. A fetch hálózati/CORS hibára elutasít
+        //    (nem ad választ), ezért külön kezeljük, hogy ne generikus hiba legyen.
+        let putRes: Response;
+        try {
+          putRes = await fetch(uploadUrl, {
+            method: 'PUT',
+            body: file,
+            headers: { 'Content-Type': mimeType },
+          });
+        } catch {
+          throw new UploadError(t('errorUpload'));
+        }
         if (!putRes.ok) {
-          throw new Error(t('errorUpload'));
+          throw new UploadError(t('errorUpload'));
         }
 
         // 3. SHA-256 számítása (idempotencia)
@@ -53,7 +79,7 @@ export function UploadZone({ onUploadComplete }: Props) {
         // 4. Dokumentum regisztrálása + feldolgozás indítása
         const doc = await documentsApi.register({
           fileName: file.name,
-          mimeType: file.type || 'application/octet-stream',
+          mimeType,
           sizeBytes: file.size,
           storageKey,
           sha256,
@@ -62,7 +88,11 @@ export function UploadZone({ onUploadComplete }: Props) {
         onUploadComplete?.(doc);
       }
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('errorGeneric'));
+      if (err instanceof ApiError || err instanceof UploadError) {
+        setError(err.message);
+      } else {
+        setError(t('errorGeneric'));
+      }
     } finally {
       setUploading(false);
       if (inputRef.current) inputRef.current.value = '';

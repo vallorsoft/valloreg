@@ -453,6 +453,8 @@
       "button": "Choose file",
       "uploading": "Uploading…",
       "errorUpload": "Upload failed, please try again.",
+      "errorUnsupported": "Unsupported file type. Allowed: PDF, JPG, JPEG, PNG.",
+      "errorTooLarge": "File is too large (maximum 25 MB).",
       "errorGeneric": "Unexpected error, please try again."
     },
     "table": {
