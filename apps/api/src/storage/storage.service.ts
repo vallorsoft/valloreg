@@ -62,16 +62,20 @@ export class StorageService implements OnModuleInit {
     return `tenants/${tenantId}/documents/${documentId}/${safeName}`;
   }
 
-  /** Presigned PUT URL feltöltéshez. */
-  async presignPut(key: string, contentType: string): Promise<string> {
-    const command = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-      ContentType: contentType,
-    });
-    return getSignedUrl(this.client, command, {
-      expiresIn: this.urlExpirySeconds,
-    });
+  /**
+   * Szerveroldali feltöltés az objektumtárba. A böngésző a fájlt az API-nak
+   * küldi (multipart), az API pedig innen tölti fel – így nincs szükség
+   * böngésző→S3 CORS-ra, presigned URL-re vagy kliensoldali checksumra.
+   */
+  async upload(key: string, body: Buffer, contentType: string): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
   }
 
   /** Fájl letöltése bufferbe (OCR provider-ek számára). */
