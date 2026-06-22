@@ -32,6 +32,14 @@ export class StorageService implements OnModuleInit {
         accessKeyId: s3.accessKey,
         secretAccessKey: s3.secretKey,
       },
+      // Az AWS SDK v3.729+ alapból CRC32 checksumot számol (WHEN_SUPPORTED), ami a
+      // presigned URL-be `x-amz-checksum-crc32` + `x-amz-sdk-checksum-algorithm`
+      // ALÁÍRT query paramétereket tesz. A böngésző egyszerű PUT-ja ezeket nem tudja
+      // teljesíteni, így az R2/S3/MinIO 4xx-szel elutasítja a feltöltést. WHEN_REQUIRED
+      // mellett a checksum csak akkor kerül be, ha expliciten kérjük – így a presigned
+      // PUT a böngészőből újra működik.
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
     });
   }
 
