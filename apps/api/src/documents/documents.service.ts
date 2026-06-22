@@ -1,5 +1,5 @@
-import { Injectable } from '@nestjs/common';
-import { randomUUID } from 'node:crypto';
+import { Injectable, Logger } from '@nestjs/common';
+import { createHash, randomUUID } from 'node:crypto';
 import {
   DocumentStatus,
   isAllowedDocumentMimeType,
@@ -13,8 +13,14 @@ import { StorageService } from '../storage/storage.service';
 import { DocumentsQueueService } from '../queue/documents-queue.service';
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/exceptions/app.exception';
-import type { PresignDocumentDto } from './dto/presign-document.dto';
-import type { RegisterDocumentDto } from './dto/register-document.dto';
+
+/** A feltöltött fájl (multer memory storage). */
+export interface UploadedDocumentFile {
+  originalname: string;
+  mimetype: string;
+  size: number;
+  buffer: Buffer;
+}
 
 /**
  * Dokumentum műveletek. A Document modell tenant-scope-olt; a worker enqueue-hoz
@@ -22,6 +28,8 @@ import type { RegisterDocumentDto } from './dto/register-document.dto';
  */
 @Injectable()
 export class DocumentsService {
+  private readonly logger = new Logger(DocumentsService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly config: AppConfigService,
@@ -31,80 +39,76 @@ export class DocumentsService {
   ) {}
 
   /**
-   * Presigned PUT URL kérése. Generál egy documentId-t és tenant-prefixes
-   * storageKey-t, és visszaadja a feltöltési URL-t. A kliens a feltöltés után a
-   * POST /documents-szel regisztrálja a dokumentumot.
+   * Dokumentum feltöltése EGY lépésben (szerveroldali proxy):
+   *  - a böngésző a fájlt multipart-ként az API-nak küldi,
+   *  - MIME + méret validáció, sha256 a szerveren (idempotencia),
+   *  - feltöltés az objektumtárba (nincs böngésző→S3 CORS / presigned URL),
+   *  - Document(QUEUED) létrehozás + feldolgozás sorbavétele.
    */
-  async presign(tenantId: string, dto: PresignDocumentDto) {
-    if (!isAllowedDocumentMimeType(dto.mimeType)) {
-      throw AppException.unsupportedDocumentType();
-    }
-
-    const documentId = randomUUID();
-    const storageKey = this.storage.buildDocumentKey(
-      tenantId,
-      documentId,
-      dto.fileName,
-    );
-    const uploadUrl = await this.storage.presignPut(storageKey, dto.mimeType);
-
-    return { documentId, storageKey, uploadUrl };
-  }
-
-  /**
-   * Feltöltött dokumentum regisztrálása:
-   *  - MIME + méret validáció,
-   *  - havi dokumentum-limit kényszerítése,
-   *  - idempotencia a (tenantId, sha256) egyediségre,
-   *  - Document(UPLOADED) létrehozás, majd QUEUED + job sorbavétel.
-   */
-  async register(
+  async upload(
     tenantId: string,
     userId: string,
-    dto: RegisterDocumentDto,
+    file: UploadedDocumentFile | undefined,
   ) {
-    if (!isAllowedDocumentMimeType(dto.mimeType)) {
+    if (!file?.buffer?.length) {
+      throw AppException.validation('Hiányzik a feltöltendő fájl.');
+    }
+    const mimeType = file.mimetype || 'application/octet-stream';
+    if (!isAllowedDocumentMimeType(mimeType)) {
       throw AppException.unsupportedDocumentType();
     }
-    if (dto.sizeBytes > this.config.maxDocumentSizeBytes) {
+    if (file.size > this.config.maxDocumentSizeBytes) {
       throw AppException.documentTooLarge();
     }
 
-    // Idempotencia: ugyanaz a fájl (sha256) már létezik?
+    const sha256 = createHash('sha256').update(file.buffer).digest('hex');
+
+    // Idempotencia: ugyanaz a fájl (sha256) már létezik? Ha igen, és még nem
+    // dolgoztuk fel, biztosítjuk a sorbavételt (egy korábbi Redis-hiba után is).
     const existing = await this.prisma.scoped.document.findFirst({
-      where: { sha256: dto.sha256 },
+      where: { sha256 },
     });
     if (existing) {
+      if (
+        existing.status === DocumentStatus.UPLOADED ||
+        existing.status === DocumentStatus.QUEUED ||
+        existing.status === DocumentStatus.FAILED
+      ) {
+        await this.safeEnqueue(tenantId, existing.id, sha256);
+      }
       return existing;
     }
 
     await this.assertMonthlyDocumentLimit(tenantId);
 
-    // Létrehozás UPLOADED státusszal, majd QUEUED-re állítás és sorbavétel.
+    const documentId = randomUUID();
+    const storageKey = this.storage.buildDocumentKey(
+      tenantId,
+      documentId,
+      file.originalname,
+    );
+
+    // Előbb a tárhelyre töltünk; ha ez hibázik, nem jön létre árva DB-rekord.
+    await this.storage.upload(storageKey, file.buffer, mimeType);
+
     const document = await this.prisma.scoped.document.create({
       // tenantId-t a scoped kliens is injektálja; explicit a típusbiztonságért.
       data: {
         tenantId,
         uploadedById: userId,
-        fileName: dto.fileName,
-        mimeType: dto.mimeType,
-        sizeBytes: dto.sizeBytes,
-        storageKey: dto.storageKey,
-        sha256: dto.sha256,
-        status: DocumentStatus.UPLOADED,
+        fileName: file.originalname,
+        mimeType,
+        sizeBytes: file.size,
+        storageKey,
+        sha256,
+        status: DocumentStatus.QUEUED,
       },
     });
 
-    await this.prisma.scoped.document.update({
-      where: { id: document.id },
-      data: { status: DocumentStatus.QUEUED },
-    });
-
-    await this.queue.enqueueProcess({
-      tenantId,
-      documentId: document.id,
-      sha256: document.sha256,
-    });
+    // A sorbavétel hibája NE bukassa el a feltöltést: a fájl már tárolva van,
+    // a dokumentum létrejött. (Redis-kimaradás esetén egy újbóli feltöltés a
+    // fenti idempotencia-ág újra sorba teszi.)
+    await this.safeEnqueue(tenantId, document.id, sha256);
 
     await this.audit.log({
       tenantId,
@@ -112,10 +116,27 @@ export class DocumentsService {
       action: 'document.uploaded',
       resourceType: 'Document',
       resourceId: document.id,
-      metadata: { fileName: dto.fileName, sizeBytes: dto.sizeBytes },
+      metadata: { fileName: file.originalname, sizeBytes: file.size },
     });
 
-    return { ...document, status: DocumentStatus.QUEUED };
+    return document;
+  }
+
+  /** Sorbavétel hibatűrően: a hibát naplózzuk, de nem dobjuk tovább. */
+  private async safeEnqueue(
+    tenantId: string,
+    documentId: string,
+    sha256: string,
+  ): Promise<void> {
+    try {
+      await this.queue.enqueueProcess({ tenantId, documentId, sha256 });
+    } catch (err) {
+      this.logger.error(
+        `Dokumentum sorbavétele sikertelen (id=${documentId}): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
   }
 
   /**
