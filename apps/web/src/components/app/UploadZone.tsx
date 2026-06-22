@@ -10,17 +10,13 @@ import {
 } from '@valloreg/shared';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import { documentsApi, computeSha256, ApiError } from '@/lib/api';
+import { documentsApi, ApiError } from '@/lib/api';
 import type { DocumentListItem } from '@/lib/api';
 
 const ACCEPT = ALLOWED_DOCUMENT_MIME_TYPES.join(',');
 const ACCEPT_HINT = ALLOWED_DOCUMENT_EXTENSIONS.join(', ');
 
-/**
- * Már lokalizált üzenetet hordozó hiba a feltöltési folyamat lépéseihez. Így a
- * tárhelyre (S3/R2) történő közvetlen PUT hibája a tényleges üzenettel jelenik
- * meg, és nem nyelődik el a generikus „Váratlan hiba”-ba.
- */
+/** Már lokalizált üzenetet hordozó kliensoldali validációs hiba. */
 class UploadError extends Error {}
 
 interface Props {
@@ -42,8 +38,8 @@ export function UploadZone({ onUploadComplete }: Props) {
       for (const file of Array.from(files)) {
         const mimeType = file.type || 'application/octet-stream';
 
-        // 0. Kliensoldali validáció: azonnali, lokalizált visszajelzés, és nem
-        //    pazarlunk feltöltést olyan fájlra, amit a szerver úgyis elutasít.
+        // Kliensoldali validáció: azonnali, lokalizált visszajelzés, és nem
+        // pazarlunk feltöltést olyan fájlra, amit a szerver úgyis elutasít.
         if (!isAllowedDocumentMimeType(mimeType)) {
           throw new UploadError(t('errorUnsupported'));
         }
@@ -51,40 +47,8 @@ export function UploadZone({ onUploadComplete }: Props) {
           throw new UploadError(t('errorTooLarge'));
         }
 
-        // 1. Presigned PUT URL kérése
-        const { uploadUrl, storageKey } = await documentsApi.presign({
-          fileName: file.name,
-          mimeType,
-        });
-
-        // 2. Közvetlen feltöltés S3/R2-re. A fetch hálózati/CORS hibára elutasít
-        //    (nem ad választ), ezért külön kezeljük, hogy ne generikus hiba legyen.
-        let putRes: Response;
-        try {
-          putRes = await fetch(uploadUrl, {
-            method: 'PUT',
-            body: file,
-            headers: { 'Content-Type': mimeType },
-          });
-        } catch {
-          throw new UploadError(t('errorUpload'));
-        }
-        if (!putRes.ok) {
-          throw new UploadError(t('errorUpload'));
-        }
-
-        // 3. SHA-256 számítása (idempotencia)
-        const sha256 = await computeSha256(file);
-
-        // 4. Dokumentum regisztrálása + feldolgozás indítása
-        const doc = await documentsApi.register({
-          fileName: file.name,
-          mimeType,
-          sizeBytes: file.size,
-          storageKey,
-          sha256,
-        });
-
+        // Egyetlen kérés: a fájl az API-n keresztül kerül a tárhelyre.
+        const doc = await documentsApi.upload(file);
         onUploadComplete?.(doc);
       }
     } catch (err) {

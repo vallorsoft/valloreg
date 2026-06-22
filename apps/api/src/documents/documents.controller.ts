@@ -1,13 +1,15 @@
 import {
-  Body,
   Controller,
   Get,
   Param,
   Patch,
   Post,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
-import { FeatureKey, TenantRole } from '@valloreg/shared';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { FeatureKey, MAX_DOCUMENT_SIZE_BYTES, TenantRole } from '@valloreg/shared';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
@@ -21,35 +23,30 @@ import type {
   AuthUser,
 } from '../common/types/request-context';
 import { DocumentsService } from './documents.service';
-import { PresignDocumentDto } from './dto/presign-document.dto';
-import { RegisterDocumentDto } from './dto/register-document.dto';
+import type { UploadedDocumentFile } from './documents.service';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)
 export class DocumentsController {
   constructor(private readonly documentsService: DocumentsService) {}
 
-  /** Presigned PUT URL kérése feltöltéshez. */
-  @Post('presign')
-  @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
-  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
-  presign(
-    @CurrentTenant() tenant: ActiveTenant,
-    @Body() dto: PresignDocumentDto,
-  ) {
-    return this.documentsService.presign(tenant.tenantId, dto);
-  }
-
-  /** Feltöltött dokumentum regisztrálása + feldolgozás sorbavétele. */
+  /**
+   * Dokumentum feltöltése EGY kéréssel (multipart/form-data, `file` mező).
+   * A fájl az API-n keresztül kerül az objektumtárba (szerveroldali feltöltés),
+   * így nincs böngésző→S3 CORS / presigned URL / kliens-checksum függőség.
+   */
   @Post()
   @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
-  register(
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),
+  )
+  upload(
     @CurrentTenant() tenant: ActiveTenant,
     @CurrentUser() user: AuthUser,
-    @Body() dto: RegisterDocumentDto,
+    @UploadedFile() file: UploadedDocumentFile | undefined,
   ) {
-    return this.documentsService.register(tenant.tenantId, user.userId, dto);
+    return this.documentsService.upload(tenant.tenantId, user.userId, file);
   }
 
   /** Lista (minden tag). */
