@@ -453,6 +453,8 @@
       "button": "Selectați fișierul",
       "uploading": "Se încarcă…",
       "errorUpload": "Eroare la încărcare, încercați din nou.",
+      "errorUnsupported": "Tip de fișier neacceptat. Permise: PDF, JPG, JPEG, PNG.",
+      "errorTooLarge": "Fișierul este prea mare (maximum 25 MB).",
       "errorGeneric": "Eroare neașteptată, încercați din nou."
     },
     "table": {
