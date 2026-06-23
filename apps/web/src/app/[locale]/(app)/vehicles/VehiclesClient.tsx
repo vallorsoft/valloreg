@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { VehicleFormModal } from '@/components/app/VehicleFormModal';
 import { VehicleScanModal } from '@/components/app/VehicleScanModal';
+import { VehicleImportModal } from '@/components/app/VehicleImportModal';
 
 export function VehiclesClient() {
   const t = useTranslations('vehicles');
@@ -17,6 +18,7 @@ export function VehiclesClient() {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [scanOpen, setScanOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -83,7 +85,10 @@ export function VehiclesClient() {
         title={t('title')}
         subtitle={t('subtitle')}
         action={
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+              {t('import.button')}
+            </Button>
             <Button variant="outline" size="sm" onClick={() => setScanOpen(true)}>
               {t('scanRegistration')}
             </Button>
@@ -192,6 +197,16 @@ export function VehiclesClient() {
             setScanOpen(false);
             void refresh();
             router.push(`/${locale}/vehicles/${vehicleId}`);
+          }}
+        />
+      )}
+
+      {importOpen && (
+        <VehicleImportModal
+          onClose={() => setImportOpen(false)}
+          onDone={() => {
+            setImportOpen(false);
+            void refresh();
           }}
         />
       )}

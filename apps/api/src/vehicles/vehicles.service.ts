@@ -44,6 +44,34 @@ export interface VehicleScanResult {
   matchedVehicleId: string | null;
 }
 
+/** Egy CSV-import sor elemzési eredménye. */
+export interface ImportRowResult {
+  /** A sor száma a fájlban (1-alapú, a fejléc utáni). */
+  index: number;
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  odometerKm: number | null;
+  /** create = új; update = meglévő (rendszám/VIN egyezés); error = hibás sor. */
+  action: 'create' | 'update' | 'error';
+  vehicleId: string | null;
+  errors: string[];
+}
+
+export interface ImportPreview {
+  rows: ImportRowResult[];
+  summary: { total: number; create: number; update: number; error: number };
+}
+
+export interface ImportCommitResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: { index: number; message: string }[];
+}
+
 /** A jármű-scan staging S3 prefixe (a confirm csak ezen belüli kulcsot fogad el). */
 const SCAN_PREFIX = 'vehicle-scans';
 
@@ -416,6 +444,198 @@ export class VehiclesService {
     return null;
   }
 
+  // ── CSV tömeges import ───────────────────────────────────────────────────────
+
+  /** CSV előnézet: soronkénti validáció + create/update/error besorolás (nem ír). */
+  async previewImport(
+    file: UploadedScanFile | undefined,
+  ): Promise<ImportPreview> {
+    const rows = await this.analyzeImport(file);
+    const summary = {
+      total: rows.length,
+      create: rows.filter((r) => r.action === 'create').length,
+      update: rows.filter((r) => r.action === 'update').length,
+      error: rows.filter((r) => r.action === 'error').length,
+    };
+    return { rows, summary };
+  }
+
+  /**
+   * CSV véglegesítése: a hibátlan sorokat létrehozza/frissíti. A fájl a forrás
+   * (újra validáljuk – nem bízunk kliens-adatban). A csomag jármű-limit
+   * érvényesül (a limit felett a sorok kihagyásra kerülnek hibaüzenettel), és a
+   * fájlon belüli duplikátumokat is kiszűrjük.
+   */
+  async commitImport(
+    tenantId: string,
+    userId: string,
+    file: UploadedScanFile | undefined,
+  ): Promise<ImportCommitResult> {
+    const rows = await this.analyzeImport(file);
+
+    let created = 0;
+    let updated = 0;
+    let skipped = 0;
+    const errors: { index: number; message: string }[] = [];
+
+    // Fájlon belüli duplikátum-figyelés (a már feldolgozott kulcsok).
+    const seenPlate = new Set<string>();
+    const seenVin = new Set<string>();
+
+    for (const r of rows) {
+      if (r.action === 'error') {
+        skipped++;
+        errors.push({ index: r.index, message: r.errors.join('; ') });
+        continue;
+      }
+
+      const np = r.plate ? normalizePlate(r.plate) : '';
+      const nv = r.vin ? normalizeVin(r.vin) : '';
+      if ((np && seenPlate.has(np)) || (nv && seenVin.has(nv))) {
+        skipped++;
+        errors.push({ index: r.index, message: 'Duplikátum a fájlon belül.' });
+        continue;
+      }
+
+      try {
+        const dto = {
+          plate: r.plate ?? undefined,
+          vin: r.vin ?? undefined,
+          make: r.make ?? undefined,
+          model: r.model ?? undefined,
+          year: r.year ?? undefined,
+          odometerKm: r.odometerKm ?? undefined,
+        };
+        if (r.action === 'update' && r.vehicleId) {
+          await this.update(tenantId, userId, r.vehicleId, dto);
+          updated++;
+        } else {
+          await this.create(tenantId, userId, dto);
+          created++;
+        }
+        if (np) seenPlate.add(np);
+        if (nv) seenVin.add(nv);
+      } catch (err) {
+        skipped++;
+        const message =
+          err instanceof AppException ? err.message : 'Sikertelen mentés.';
+        errors.push({ index: r.index, message });
+      }
+    }
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'vehicle.imported',
+      resourceType: 'Vehicle',
+      metadata: { created, updated, skipped, total: rows.length },
+    });
+
+    return { created, updated, skipped, errors };
+  }
+
+  /** CSV beolvasás + soronkénti validáció + dedupe-besorolás (közös mag). */
+  private async analyzeImport(
+    file: UploadedScanFile | undefined,
+  ): Promise<ImportRowResult[]> {
+    if (!file?.buffer?.length) {
+      throw AppException.validation('Hiányzik a CSV fájl.');
+    }
+    const text = file.buffer.toString('utf-8').replace(/^﻿/, '');
+    const firstLine = text.split(/\r?\n/, 1)[0] ?? '';
+    const delimiter =
+      (firstLine.match(/;/g)?.length ?? 0) >
+      (firstLine.match(/,/g)?.length ?? 0)
+        ? ';'
+        : ',';
+
+    const table = parseCsv(text, delimiter);
+    if (table.length < 2) {
+      throw AppException.validation('A CSV üres, vagy csak fejlécet tartalmaz.');
+    }
+
+    const header = (table[0] ?? []).map(normalizeHeader);
+    const col = mapColumns(header);
+    if (col.plate === undefined && col.vin === undefined) {
+      throw AppException.validation(
+        'Hiányzó kötelező oszlop: "plate" (rendszám) vagy "vin" (alvázszám).',
+      );
+    }
+
+    const existing = await this.prisma.scoped.vehicle.findMany({
+      select: { id: true, plate: true, vin: true },
+    });
+    const byPlate = new Map<string, string>();
+    const byVin = new Map<string, string>();
+    for (const v of existing) {
+      if (v.plate) byPlate.set(normalizePlate(v.plate), v.id);
+      if (v.vin) byVin.set(normalizeVin(v.vin), v.id);
+    }
+
+    const cell = (cells: string[], idx?: number): string =>
+      idx === undefined ? '' : (cells[idx] ?? '').trim();
+
+    const results: ImportRowResult[] = [];
+    for (let i = 1; i < table.length; i++) {
+      const cells = table[i] ?? [];
+      if (cells.every((c) => c.trim() === '')) continue; // üres sor
+
+      const plate = cell(cells, col.plate);
+      const vin = cell(cells, col.vin);
+      const make = cell(cells, col.make);
+      const model = cell(cells, col.model);
+      const yearRaw = cell(cells, col.year);
+      const odoRaw = cell(cells, col.odometerKm);
+
+      const errors: string[] = [];
+      if (!plate && !vin) {
+        errors.push('Rendszám vagy alvázszám kötelező.');
+      }
+      let year: number | null = null;
+      if (yearRaw) {
+        const n = parseInt(yearRaw, 10);
+        if (isNaN(n) || n < 1900 || n > 2100) errors.push('Érvénytelen évjárat.');
+        else year = n;
+      }
+      let odometerKm: number | null = null;
+      if (odoRaw) {
+        const n = parseInt(odoRaw.replace(/[\s.]/g, ''), 10);
+        if (isNaN(n) || n < 0) errors.push('Érvénytelen km-állás.');
+        else odometerKm = n;
+      }
+
+      let action: ImportRowResult['action'] = 'create';
+      let vehicleId: string | null = null;
+      if (errors.length > 0) {
+        action = 'error';
+      } else {
+        const matched =
+          (vin && byVin.get(normalizeVin(vin))) ||
+          (plate && byPlate.get(normalizePlate(plate))) ||
+          null;
+        if (matched) {
+          action = 'update';
+          vehicleId = matched;
+        }
+      }
+
+      results.push({
+        index: i,
+        plate: plate || null,
+        vin: vin || null,
+        make: make || null,
+        model: model || null,
+        year,
+        odometerKm,
+        action,
+        vehicleId,
+        errors,
+      });
+    }
+
+    return results;
+  }
+
   /** Csomag jármű-limit ellenőrzése a létrehozás előtt. */
   private async assertVehicleLimit(tenantId: string): Promise<void> {
     const subscription = await this.prisma.system.subscription.findUnique({
@@ -440,4 +660,96 @@ function normalizePlate(value: string): string {
 /** VIN normalizálása: nagybetű, szóközök eltávolítva. */
 function normalizeVin(value: string): string {
   return value.toUpperCase().replace(/\s+/g, '');
+}
+
+/** Egyszerű, idézőjel-tűrő CSV-parser (RFC4180-szerű). */
+function parseCsv(text: string, delimiter: string): string[][] {
+  const rows: string[][] = [];
+  let row: string[] = [];
+  let field = '';
+  let inQuotes = false;
+  let i = 0;
+
+  while (i < text.length) {
+    const c = text[i];
+    if (inQuotes) {
+      if (c === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i += 2;
+          continue;
+        }
+        inQuotes = false;
+        i++;
+        continue;
+      }
+      field += c;
+      i++;
+      continue;
+    }
+    if (c === '"') {
+      inQuotes = true;
+      i++;
+      continue;
+    }
+    if (c === delimiter) {
+      row.push(field);
+      field = '';
+      i++;
+      continue;
+    }
+    if (c === '\r') {
+      i++;
+      continue;
+    }
+    if (c === '\n') {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = '';
+      i++;
+      continue;
+    }
+    field += c;
+    i++;
+  }
+  if (field !== '' || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+/** Fejléc-cella normalizálása: kisbetű, ékezet-mentes, csak alfanumerikus. */
+function normalizeHeader(value: string): string {
+  return value
+    .normalize('NFD')
+    .replace(/[̀-ͯ]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, '');
+}
+
+/** Oszlopnevek → index leképezés (HU/RO/EN aliasokkal). */
+function mapColumns(header: string[]): {
+  plate?: number;
+  vin?: number;
+  make?: number;
+  model?: number;
+  year?: number;
+  odometerKm?: number;
+} {
+  const aliases: Record<string, string[]> = {
+    plate: ['plate', 'rendszam', 'platenumber', 'nr', 'numar', 'numarinmatriculare'],
+    vin: ['vin', 'alvazszam', 'chassis', 'serie', 'seriesasiu'],
+    make: ['make', 'gyartmany', 'marka', 'marca', 'brand'],
+    model: ['model', 'tipus', 'modell'],
+    year: ['year', 'evjarat', 'an', 'yearofmanufacture'],
+    odometerKm: ['odometerkm', 'km', 'kilometer', 'kilometerora', 'kilometraj', 'odometer'],
+  };
+  const result: Record<string, number | undefined> = {};
+  for (const [key, names] of Object.entries(aliases)) {
+    const idx = header.findIndex((h) => names.includes(h));
+    if (idx >= 0) result[key] = idx;
+  }
+  return result;
 }
