@@ -110,7 +110,46 @@ export class HealthService {
         }
       }),
     );
-    return { queues: out, timestamp: new Date().toISOString() };
+
+    // DB-oldal: létrejönnek-e a rekordok és milyen státuszban ragadnak.
+    // (Ha a tábla hiányzik, az `error` mező jelzi – pl. vehicle_scans migráció.)
+    const [documents, vehicleScans] = await Promise.all([
+      this.dbStatusCounts('document'),
+      this.dbStatusCounts('vehicleScan'),
+    ]);
+
+    return {
+      queues: out,
+      db: { documents, vehicleScans },
+      env: {
+        ocrProvider: this.config.ocrProvider,
+        extractionProvider: this.config.extractionProvider,
+      },
+      timestamp: new Date().toISOString(),
+    };
+  }
+
+  /** Rekord-számok státuszonként egy modellre (system kliens, tenant nélkül). */
+  private async dbStatusCounts(
+    model: 'document' | 'vehicleScan',
+  ): Promise<Record<string, unknown>> {
+    try {
+      const client = this.prisma.system as unknown as Record<
+        string,
+        { groupBy: (args: unknown) => Promise<unknown> }
+      >;
+      const delegate = client[model];
+      if (!delegate) return { error: `unknown model ${model}` };
+      const rows = (await delegate.groupBy({
+        by: ['status'],
+        _count: { _all: true },
+      })) as Array<{ status: string; _count: { _all: number } }>;
+      const counts: Record<string, number> = {};
+      for (const r of rows) counts[r.status] = r._count._all;
+      return counts;
+    } catch (err) {
+      return { error: (err as Error).message };
+    }
   }
 
   private async checkRedis(): Promise<'up' | 'down'> {
