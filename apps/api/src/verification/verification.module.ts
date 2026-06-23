@@ -1,5 +1,7 @@
 import { Logger, Module, Provider } from '@nestjs/common';
 import { AppConfigService } from '../config/app-config.service';
+import { OcrModule } from '../ocr/ocr.module';
+import { ExtractionModule } from '../extraction/extraction.module';
 import { VEHICLE_VERIFICATION_PROVIDER } from './verification.provider';
 import { StubVerificationProvider } from './providers/stub-verification.provider';
 import { RoVerificationProvider } from './providers/ro-verification.provider';
@@ -28,6 +30,7 @@ const verificationProviderFactory: Provider = {
 };
 
 @Module({
+  imports: [OcrModule, ExtractionModule],
   providers: [
     StubVerificationProvider,
     RoVerificationProvider,

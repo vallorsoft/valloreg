@@ -10,6 +10,7 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
+import { ComplianceScanModal } from '@/components/app/ComplianceScanModal';
 
 const DAY = 24 * 60 * 60 * 1000;
 
@@ -35,6 +36,7 @@ export function VehicleVerification({ vehicleId }: { vehicleId: string }) {
   const [loaded, setLoaded] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [scanType, setScanType] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -67,10 +69,14 @@ export function VehicleVerification({ vehicleId }: { vehicleId: string }) {
   const fmt = (v: string | null) =>
     v ? new Date(v).toLocaleDateString(locale) : '—';
 
-  const rows: { label: string; value: string | null }[] = [
-    { label: t('itp'), value: data?.itpValidUntil ?? null },
-    { label: t('rca'), value: data?.rcaValidUntil ?? null },
-    { label: t('vignette'), value: data?.vignetteValidUntil ?? null },
+  const rows: { type: string; label: string; value: string | null }[] = [
+    { type: 'itp', label: t('itp'), value: data?.itpValidUntil ?? null },
+    { type: 'rca', label: t('rca'), value: data?.rcaValidUntil ?? null },
+    {
+      type: 'vignette',
+      label: t('vignette'),
+      value: data?.vignetteValidUntil ?? null,
+    },
   ];
 
   return (
@@ -94,12 +100,12 @@ export function VehicleVerification({ vehicleId }: { vehicleId: string }) {
 
       {error && <p className="px-4 pt-3 text-sm text-red-600">{error}</p>}
 
-      {!data ? (
-        <p className="px-4 py-6 text-center text-sm text-anthracite-500">
+      {!data && (
+        <p className="px-4 pt-3 text-center text-xs text-anthracite-400">
           {t('empty')}
         </p>
-      ) : (
-        <div className="divide-y divide-anthracite-100">
+      )}
+      <div className="divide-y divide-anthracite-100">
           {rows.map((r) => {
             const { tone, key } = dateTone(r.value);
             return (
@@ -113,11 +119,35 @@ export function VehicleVerification({ vehicleId }: { vehicleId: string }) {
                     {fmt(r.value)}
                   </span>
                   <Badge tone={tone}>{t(`state.${key}`)}</Badge>
+                  <button
+                    className="text-xs font-medium text-primary-600 hover:underline"
+                    onClick={() => setScanType(r.type)}
+                  >
+                    {t('scan.button')}
+                  </button>
                 </div>
               </div>
             );
           })}
-        </div>
+      </div>
+
+      {scanType && (
+        <ComplianceScanModal
+          vehicleId={vehicleId}
+          type={scanType}
+          typeLabel={
+            scanType === 'itp'
+              ? t('itp')
+              : scanType === 'rca'
+                ? t('rca')
+                : t('vignette')
+          }
+          onClose={() => setScanType(null)}
+          onDone={() => {
+            setScanType(null);
+            void load();
+          }}
+        />
       )}
     </Card>
   );

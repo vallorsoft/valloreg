@@ -31,6 +31,8 @@ import type {
 import { VehiclesService } from './vehicles.service';
 import type { UploadedScanFile } from './vehicles.service';
 import { VerificationService } from '../verification/verification.service';
+import { ConfirmDocumentDto } from '../verification/dto/confirm-document.dto';
+import type { ComplianceType } from '@valloreg/shared';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { ConfirmScanDto } from './dto/confirm-scan.dto';
@@ -58,6 +60,40 @@ export class VehiclesController {
   @Get(':id/verification')
   getVerification(@Param('id') id: string) {
     return this.verification.getLatest(id);
+  }
+
+  /** ITP/RCA/rovinietă igazolás beolvasása (OCR) – a lejáratot adja vissza. */
+  @Post(':id/verify-document')
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),
+  )
+  verifyDocument(
+    @CurrentTenant() tenant: ActiveTenant,
+    @Param('id') id: string,
+    @Query('type') type: ComplianceType,
+    @UploadedFile() file: UploadedScanFile | undefined,
+  ) {
+    return this.verification.scanDocument(tenant.tenantId, type, file);
+  }
+
+  /** A beolvasott megfelelőségi lejárat mentése (emlékeztető + archívum). */
+  @Post(':id/verify-document/confirm')
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  confirmDocument(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Param('id') id: string,
+    @Body() dto: ConfirmDocumentDto,
+  ) {
+    return this.verification.confirmDocument(
+      tenant.tenantId,
+      user.userId,
+      id,
+      dto.type,
+      dto.validUntil,
+      dto.file,
+    );
   }
 
   /**
