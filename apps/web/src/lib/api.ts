@@ -389,14 +389,51 @@ export const invoicesApi = {
 
 // ── Vehicles ──────────────────────────────────────────────────────────────────
 
+/** Egy jármű-fél szerepe és típusa. */
+export type VehiclePartyRole = 'owner' | 'user';
+export type VehiclePartyType = 'person' | 'company';
+
+/** Tulajdonos (C.2) vagy üzembentartó/lízingbevevő (C.1) – DB-rekord. */
+export interface VehicleParty {
+  id: string;
+  role: VehiclePartyRole;
+  partyType: VehiclePartyType;
+  name: string | null;
+  address: string | null;
+  /** CNP (magánszemély) vagy CUI (cég). */
+  idNumber: string | null;
+}
+
+/** Egy fél írásakor küldött payload (id nélkül). */
+export interface VehiclePartyPayload {
+  role: VehiclePartyRole;
+  partyType?: VehiclePartyType;
+  name?: string;
+  address?: string;
+  idNumber?: string;
+}
+
 export interface Vehicle {
   id: string;
   plate: string | null;
   vin: string | null;
   make: string | null;
   model: string | null;
+  vehicleType: string | null;
   year: number | null;
   odometerKm: number | null;
+  firstRegistration: string | null;
+  category: string | null;
+  fuelType: string | null;
+  engineCm3: number | null;
+  powerKw: number | null;
+  color: string | null;
+  seats: number | null;
+  maxMassKg: number | null;
+  kerbWeightKg: number | null;
+  euroClass: string | null;
+  typeApproval: string | null;
+  parties?: VehicleParty[];
   createdAt: string;
   updatedAt: string;
 }
@@ -406,8 +443,21 @@ export interface CreateVehiclePayload {
   vin?: string;
   make?: string;
   model?: string;
+  vehicleType?: string;
   year?: number;
   odometerKm?: number;
+  firstRegistration?: string;
+  category?: string;
+  fuelType?: string;
+  engineCm3?: number;
+  powerKw?: number;
+  color?: string;
+  seats?: number;
+  maxMassKg?: number;
+  kerbWeightKg?: number;
+  euroClass?: string;
+  typeApproval?: string;
+  parties?: VehiclePartyPayload[];
 }
 
 export interface ServiceHistoryItem extends InvoiceItem {
@@ -440,6 +490,7 @@ export interface VehicleRegistrationDraft {
   vin: string | null;
   make: string | null;
   model: string | null;
+  vehicleType: string | null;
   year: number | null;
   firstRegistration: string | null;
   fuelType: string | null;
@@ -447,7 +498,19 @@ export interface VehicleRegistrationDraft {
   powerKw: number | null;
   color: string | null;
   category: string | null;
+  seats: number | null;
+  maxMassKg: number | null;
+  kerbWeightKg: number | null;
+  euroClass: string | null;
+  typeApproval: string | null;
   ownerName: string | null;
+  ownerAddress: string | null;
+  ownerType: string | null;
+  ownerIdNumber: string | null;
+  userName: string | null;
+  userAddress: string | null;
+  userType: string | null;
+  userIdNumber: string | null;
   confidence: number;
   uncertainFields: { path: string; reason: string; confidence: number }[];
 }
@@ -484,14 +547,8 @@ export interface VehicleScanView {
   error: string | null;
 }
 
-export interface ConfirmScanPayload {
+export interface ConfirmScanPayload extends CreateVehiclePayload {
   vehicleId?: string;
-  plate?: string;
-  vin?: string;
-  make?: string;
-  model?: string;
-  year?: number;
-  odometerKm?: number;
   files?: ScanFileRef[];
 }
 

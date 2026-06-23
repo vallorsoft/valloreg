@@ -102,6 +102,7 @@ model Tenant {
   vehicleDocuments     VehicleDocument[]
   vehicleVerifications VehicleVerification[]
   vehicleScans         VehicleScan[]
+  vehicleParties       VehicleParty[]
 
   @@map("tenants")
 }
@@ -278,6 +279,20 @@ model Vehicle {
   model      String?
   year       Int?
   odometerKm Int?
+  // Forgalmi engedélyből kiolvasott bővített műszaki adatok (mind opcionális,
+  // EU-egységes kódok zárójelben). A meglévő járművek nem törnek el (null).
+  firstRegistration DateTime? // B/I – első forgalomba helyezés
+  vehicleType       String? // D.2 – típus/variáns/verzió
+  category          String? // J – jármű-kategória (M1, N1, …)
+  fuelType          String? // P.3 – üzemanyag
+  engineCm3         Int? // P.1 – hengerűrtartalom (cm³)
+  powerKw           Int? // P.2 – teljesítmény (kW)
+  color             String? // R – szín
+  seats             Int? // S.1 – ülőhelyek száma
+  maxMassKg         Int? // F.1 – megengedett legnagyobb tömeg (kg)
+  kerbWeightKg      Int? // G – saját tömeg (kg)
+  euroClass         String? // V.9 – emissziós osztály (Euro)
+  typeApproval      String? // K – típusjóváhagyási szám
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -287,10 +302,39 @@ model Vehicle {
   reminders    Reminder[]
   documents    VehicleDocument[]
   verification VehicleVerification?
+  parties      VehicleParty[]
 
   @@index([tenantId])
   @@index([tenantId, plate])
   @@map("vehicles")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Jármű felei: tulajdonos (C.2) és üzembentartó / lízingbevevő (C.1).
+// Lízing esetén a tulajdonos a lízingcég, a használó (üzembentartó) a cég/személy,
+// aki a járművet üzemelteti. `partyType` dönti el, hogy az `idNumber` CNP
+// (magánszemély) vagy CUI (cég). A névhez/címhez SZEMÉLYES ADAT tartozhat – csak
+// a tenanton belül elérhető (tenant-scope).
+// ──────────────────────────────────────────────────────────────────────────
+model VehicleParty {
+  id        String   @id @default(uuid())
+  tenantId  String
+  vehicleId String
+  role      String // "owner" (tulajdonos) | "user" (üzembentartó/lízingbevevő)
+  partyType String   @default("person") // "person" | "company"
+  name      String?
+  address   String?
+  idNumber  String? // CNP (magánszemély) vagy CUI (cég)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, vehicleId, role])
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@map("vehicle_parties")
 }
 
 model Document {

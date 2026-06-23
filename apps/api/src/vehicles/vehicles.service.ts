@@ -110,12 +110,14 @@ export class VehiclesService {
   list() {
     return this.prisma.scoped.vehicle.findMany({
       orderBy: { createdAt: 'desc' },
+      include: { parties: true },
     });
   }
 
   async getById(id: string) {
     const vehicle = await this.prisma.scoped.vehicle.findFirst({
       where: { id },
+      include: { parties: true },
     });
     if (!vehicle) {
       throw AppException.notFound('A jármű nem található.');
@@ -186,7 +188,7 @@ export class VehiclesService {
   async create(tenantId: string, userId: string, dto: CreateVehicleDto) {
     await this.assertVehicleLimit(tenantId);
 
-    const vehicle = await this.prisma.scoped.vehicle.create({
+    const created = await this.prisma.scoped.vehicle.create({
       // tenantId-t a scoped kliens is injektálja; explicit átadjuk a típus-
       // biztonságért (az érték azonos, így nincs ütközés).
       data: {
@@ -195,20 +197,34 @@ export class VehiclesService {
         vin: dto.vin ?? null,
         make: dto.make ?? null,
         model: dto.model ?? null,
+        vehicleType: dto.vehicleType ?? null,
         year: dto.year ?? null,
         odometerKm: dto.odometerKm ?? null,
+        firstRegistration: parseIsoDate(dto.firstRegistration),
+        category: dto.category ?? null,
+        fuelType: dto.fuelType ?? null,
+        engineCm3: dto.engineCm3 ?? null,
+        powerKw: dto.powerKw ?? null,
+        color: dto.color ?? null,
+        seats: dto.seats ?? null,
+        maxMassKg: dto.maxMassKg ?? null,
+        kerbWeightKg: dto.kerbWeightKg ?? null,
+        euroClass: dto.euroClass ?? null,
+        typeApproval: dto.typeApproval ?? null,
       },
     });
+
+    await this.syncParties(tenantId, created.id, dto.parties);
 
     await this.audit.log({
       tenantId,
       userId,
       action: 'vehicle.created',
       resourceType: 'Vehicle',
-      resourceId: vehicle.id,
+      resourceId: created.id,
     });
 
-    return vehicle;
+    return this.getById(created.id);
   }
 
   async update(
@@ -219,17 +235,35 @@ export class VehiclesService {
   ) {
     await this.getById(id); // tenant-scope-olt létezés-ellenőrzés
 
-    const vehicle = await this.prisma.scoped.vehicle.update({
+    await this.prisma.scoped.vehicle.update({
       where: { id },
       data: {
         plate: dto.plate,
         vin: dto.vin,
         make: dto.make,
         model: dto.model,
+        vehicleType: dto.vehicleType,
         year: dto.year,
         odometerKm: dto.odometerKm,
+        // Csak akkor írjuk felül a dátumot, ha a mező szerepel a kérésben.
+        firstRegistration:
+          dto.firstRegistration === undefined
+            ? undefined
+            : parseIsoDate(dto.firstRegistration),
+        category: dto.category,
+        fuelType: dto.fuelType,
+        engineCm3: dto.engineCm3,
+        powerKw: dto.powerKw,
+        color: dto.color,
+        seats: dto.seats,
+        maxMassKg: dto.maxMassKg,
+        kerbWeightKg: dto.kerbWeightKg,
+        euroClass: dto.euroClass,
+        typeApproval: dto.typeApproval,
       },
     });
+
+    await this.syncParties(tenantId, id, dto.parties);
 
     await this.audit.log({
       tenantId,
@@ -239,7 +273,38 @@ export class VehiclesService {
       resourceId: id,
     });
 
-    return vehicle;
+    return this.getById(id);
+  }
+
+  /**
+   * A jármű felei (tulajdonos / üzembentartó) szinkronizálása szerepkör szerint.
+   * Üres fél (név+cím+azonosító mind üres) törli az adott szerepet; egyébként
+   * upsert. `undefined` lista = nincs változás (nem nyúlunk a felekhez).
+   */
+  private async syncParties(
+    tenantId: string,
+    vehicleId: string,
+    parties: CreateVehicleDto['parties'],
+  ): Promise<void> {
+    if (parties === undefined) return;
+    for (const p of parties) {
+      const name = p.name?.trim() || null;
+      const address = p.address?.trim() || null;
+      const idNumber = p.idNumber?.trim() || null;
+      if (!name && !address && !idNumber) {
+        // Minden mező üres → a szerep törlése (ha létezett).
+        await this.prisma.scoped.vehicleParty.deleteMany({
+          where: { vehicleId, role: p.role },
+        });
+        continue;
+      }
+      const partyType = p.partyType ?? 'person';
+      await this.prisma.scoped.vehicleParty.upsert({
+        where: { tenantId_vehicleId_role: { tenantId, vehicleId, role: p.role } },
+        create: { tenantId, vehicleId, role: p.role, partyType, name, address, idNumber },
+        update: { partyType, name, address, idNumber },
+      });
+    }
   }
 
   async remove(tenantId: string, userId: string, id: string): Promise<void> {
@@ -383,8 +448,21 @@ export class VehiclesService {
       vin: dto.vin,
       make: dto.make,
       model: dto.model,
+      vehicleType: dto.vehicleType,
       year: dto.year,
       odometerKm: dto.odometerKm,
+      firstRegistration: dto.firstRegistration,
+      category: dto.category,
+      fuelType: dto.fuelType,
+      engineCm3: dto.engineCm3,
+      powerKw: dto.powerKw,
+      color: dto.color,
+      seats: dto.seats,
+      maxMassKg: dto.maxMassKg,
+      kerbWeightKg: dto.kerbWeightKg,
+      euroClass: dto.euroClass,
+      typeApproval: dto.typeApproval,
+      parties: dto.parties,
     };
 
     const vehicle = dto.vehicleId
@@ -654,6 +732,13 @@ export class VehiclesService {
       throw AppException.vehiclesLimitReached();
     }
   }
+}
+
+/** ISO dátum (YYYY-MM-DD) → Date, vagy null ha hiányzik/érvénytelen. */
+function parseIsoDate(value: string | undefined | null): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
 }
 
 /** Rendszám normalizálása: csak betűk/számok, nagybetű (pl. "ABC-123" → "ABC123"). */

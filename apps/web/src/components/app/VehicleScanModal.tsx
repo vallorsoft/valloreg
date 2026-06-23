@@ -11,6 +11,13 @@ import {
 } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import {
+  VehicleDetailsFields,
+  emptyExtraState,
+  extraStateFromDraft,
+  extraStateToPayload,
+  type VehicleExtraState,
+} from '@/components/app/VehicleDetailsFields';
 
 /** Polling: ennyi időnként kérdezzük le a beolvasás állapotát. */
 const POLL_INTERVAL_MS = 2000;
@@ -54,6 +61,7 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
     year: '',
     odometerKm: '',
   });
+  const [extra, setExtra] = useState<VehicleExtraState>(emptyExtraState());
 
   // A modal bezárása közben futó pollingot le kell állítani (ne állítson state-et
   // egy lecsatolt komponensen).
@@ -101,6 +109,7 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
         year: d?.year?.toString() ?? '',
         odometerKm: '',
       });
+      setExtra(d ? extraStateFromDraft(d) : emptyExtraState());
     } catch (err) {
       // Hálózati/technikai hibánál a nyers "Failed to fetch" helyett lokalizált
       // üzenetet mutatunk (a háttér épp ébredhet – pár másodperc múlva újra).
@@ -142,6 +151,7 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
     setError(null);
     try {
       const payload: ConfirmScanPayload = {
+        ...extraStateToPayload(extra),
         vehicleId: result.matchedVehicleId ?? undefined,
         plate: form.plate.trim() || undefined,
         vin: form.vin.trim() || undefined,
@@ -183,7 +193,7 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover">
+      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover">
         <h2 className="mb-1 text-lg font-semibold text-anthracite-900">
           {t('title')}
         </h2>
@@ -293,24 +303,9 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
               onChange={(e) => set('odometerKm', e.target.value)}
             />
 
-            {/* Csak ellenőrzéshez kiolvasott extra adatok (nem mentjük). */}
-            <div className="rounded-xl bg-anthracite-50 px-3 py-2 text-xs text-anthracite-600">
-              <p className="mb-1 font-semibold text-anthracite-500">
-                {t('extraTitle')}
-              </p>
-              <div className="grid grid-cols-2 gap-x-4 gap-y-0.5">
-                {d.fuelType && <span>{t('fuel')}: {d.fuelType}</span>}
-                {d.powerKw != null && <span>{t('power')}: {d.powerKw} kW</span>}
-                {d.engineCm3 != null && <span>{t('engine')}: {d.engineCm3} cm³</span>}
-                {d.color && <span>{t('color')}: {d.color}</span>}
-                {d.firstRegistration && (
-                  <span>{t('firstReg')}: {d.firstRegistration}</span>
-                )}
-                {d.ownerName && <span>{t('owner')}: {d.ownerName}</span>}
-              </div>
-              <p className="mt-2 text-[11px] text-anthracite-400">
-                {t('extraNote')}
-              </p>
+            {/* Kiolvasott bővebb adatok + tulajdonos/üzembentartó – mind szerkeszthető. */}
+            <div className="border-t border-anthracite-100 pt-4">
+              <VehicleDetailsFields value={extra} onChange={setExtra} uncertain={uncertain} />
             </div>
 
             {error && <p className="text-sm text-red-600">{error}</p>}

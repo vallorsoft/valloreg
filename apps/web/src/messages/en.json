@@ -454,6 +454,32 @@
         "amount": "Amount"
       }
     },
+    "fields": {
+      "sectionTech": "Technical data",
+      "sectionOwner": "Owner",
+      "sectionUser": "Operator / lessee",
+      "vehicleType": "Type/variant (D.2)",
+      "firstRegistration": "First registration",
+      "category": "Vehicle category (J)",
+      "fuelType": "Fuel type",
+      "engineCm3": "Engine displacement (cc)",
+      "powerKw": "Power (kW)",
+      "color": "Colour",
+      "seats": "Number of seats",
+      "maxMassKg": "Max permissible mass (kg)",
+      "kerbWeightKg": "Kerb weight (kg)",
+      "euroClass": "Emission class (Euro)",
+      "typeApproval": "Type approval number (K)",
+      "party": {
+        "type": "Type",
+        "person": "Individual",
+        "company": "Company",
+        "name": "Name",
+        "address": "Address",
+        "cnp": "CNP (personal ID)",
+        "cui": "CUI (tax ID)"
+      }
+    },
     "scanRegistration": "Scan registration",
     "scan": {
       "title": "Scan registration certificate",

@@ -454,6 +454,32 @@
         "amount": "Összeg"
       }
     },
+    "fields": {
+      "sectionTech": "Műszaki adatok",
+      "sectionOwner": "Tulajdonos",
+      "sectionUser": "Üzembentartó / lízingbevevő",
+      "vehicleType": "Típus/variáns (D.2)",
+      "firstRegistration": "Első forgalomba helyezés",
+      "category": "Jármű-kategória (J)",
+      "fuelType": "Üzemanyag",
+      "engineCm3": "Hengerűrtartalom (cm³)",
+      "powerKw": "Teljesítmény (kW)",
+      "color": "Szín",
+      "seats": "Ülőhelyek száma",
+      "maxMassKg": "Megengedett legnagyobb tömeg (kg)",
+      "kerbWeightKg": "Saját tömeg (kg)",
+      "euroClass": "Emissziós osztály (Euro)",
+      "typeApproval": "Típusjóváhagyási szám (K)",
+      "party": {
+        "type": "Típus",
+        "person": "Magánszemély",
+        "company": "Cég",
+        "name": "Név",
+        "address": "Cím",
+        "cnp": "CNP (személyi szám)",
+        "cui": "CUI (adószám)"
+      }
+    },
     "scanRegistration": "Forgalmi beolvasása",
     "scan": {
       "title": "Forgalmi engedély beolvasása",
