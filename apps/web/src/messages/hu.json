@@ -590,7 +590,8 @@
       "errorGeneric": "Váratlan hiba, próbálja újra."
     },
     "vehicleSectionTitle": "Emlékeztetők",
-    "suggestionsTitle": "Javaslatok a szerviztörténetből"
+    "suggestionsTitle": "Javaslatok a szerviztörténetből",
+    "suggestionLearned": "• tanult"
   },
   "team": {
     "title": "Csapat",
@@ -714,6 +715,24 @@
       "title": "Költség-anomáliák",
       "count": "{count} észlelés",
       "viewAll": "Megnézem"
+    },
+    "sections": {
+      "anomalies": "Költség-anomáliák"
+    },
+    "tco": {
+      "title": "Prediktív TCO / csere-javaslat",
+      "subtitle": "Az utolsó 12 hónap szervizköltsége az azt megelőző 12 hónaphoz képest.",
+      "vehicle": "Jármű",
+      "totalSpent": "Összköltség",
+      "recentCost": "Utolsó 12 hó",
+      "trend": "Trend",
+      "costPerKm": "Költség/km",
+      "recommendation": "Javaslat",
+      "recommendations": {
+        "ok": "Rendben",
+        "watch": "Figyelendő",
+        "consider_replacement": "Csere megfontolandó"
+      }
     }
   },
   "admin": {

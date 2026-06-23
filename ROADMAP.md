@@ -139,11 +139,14 @@ nyilvántartókhoz képest.
 - [x] **Ütemezett havi riport e-mailben:** a MEGLÉVŐ riport automatikus kiküldése a
       tulajdonosnak (havi BullMQ job) – NEM könyvelő-export, NEM integráció
 
-### 5/C – Tier 3 (következő feladatok)
+### 5/C – Tier 3 (KÉSZ)
 
-- [ ] **Prediktív karbantartás finomítás:** tanult intervallumok 2+ adatpontból
-      (az alapértelmezett intervallumok helyett/mellett)
-- [ ] **Prediktív TCO / csere-javaslat:** növekvő szervizköltség-trend a szerviztörténetből
+- [x] **Prediktív karbantartás finomítás:** a jármű SAJÁT történetéből tanult
+      intervallumok (2+ adatpontból átlagolt km-/nap-távolság); alap-intervallum
+      csak fallback. A javaslat jelzi, ha tanult (`source`, `dataPoints`)
+- [x] **Prediktív TCO / csere-javaslat:** járművenkénti összköltség, költségtrend
+      (utolsó 12 hó vs. előző 12 hó), költség/km és csere-javaslat
+      (`ok` / `watch` / `consider_replacement`). UI: `/insights` TCO szekció
 
 **Tudatosan NEM ide tartozik (külön döntéssel, később):** könyvelő-export,
 ERP / számlázz.hu / SAF-T integráció, teljes TMS (telematika, sofőr-/útdíj-/

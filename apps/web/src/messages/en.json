@@ -590,7 +590,8 @@
       "errorGeneric": "Unexpected error, please try again."
     },
     "vehicleSectionTitle": "Reminders",
-    "suggestionsTitle": "Suggestions from service history"
+    "suggestionsTitle": "Suggestions from service history",
+    "suggestionLearned": "• learned"
   },
   "team": {
     "title": "Team",
@@ -714,6 +715,24 @@
       "title": "Cost anomalies",
       "count": "{count} detected",
       "viewAll": "View"
+    },
+    "sections": {
+      "anomalies": "Cost anomalies"
+    },
+    "tco": {
+      "title": "Predictive TCO / replacement hint",
+      "subtitle": "Service cost of the last 12 months vs. the previous 12 months.",
+      "vehicle": "Vehicle",
+      "totalSpent": "Total spent",
+      "recentCost": "Last 12 months",
+      "trend": "Trend",
+      "costPerKm": "Cost/km",
+      "recommendation": "Recommendation",
+      "recommendations": {
+        "ok": "OK",
+        "watch": "Watch",
+        "consider_replacement": "Consider replacement"
+      }
     }
   },
   "admin": {

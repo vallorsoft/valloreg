@@ -590,7 +590,8 @@
       "errorGeneric": "Eroare neașteptată, încercați din nou."
     },
     "vehicleSectionTitle": "Mementouri",
-    "suggestionsTitle": "Sugestii din istoricul de service"
+    "suggestionsTitle": "Sugestii din istoricul de service",
+    "suggestionLearned": "• învățat"
   },
   "team": {
     "title": "Echipă",
@@ -714,6 +715,24 @@
       "title": "Anomalii de cost",
       "count": "{count} detectări",
       "viewAll": "Vezi"
+    },
+    "sections": {
+      "anomalies": "Anomalii de cost"
+    },
+    "tco": {
+      "title": "TCO predictiv / sugestie de înlocuire",
+      "subtitle": "Costul de service din ultimele 12 luni față de cele 12 luni anterioare.",
+      "vehicle": "Vehicul",
+      "totalSpent": "Cost total",
+      "recentCost": "Ultimele 12 luni",
+      "trend": "Tendință",
+      "costPerKm": "Cost/km",
+      "recommendation": "Sugestie",
+      "recommendations": {
+        "ok": "În regulă",
+        "watch": "De urmărit",
+        "consider_replacement": "De luat în calcul înlocuirea"
+      }
     }
   },
   "admin": {
