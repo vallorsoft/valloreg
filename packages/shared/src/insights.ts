@@ -30,6 +30,24 @@ export type AnomalySeverity =
 export const ALL_ANOMALY_TYPES: readonly AnomalyType[] =
   Object.values(AnomalyType);
 
+/** TCO / csere-javaslat ajánlás egy járműre. */
+export const TcoRecommendation = {
+  /** Rendben – nincs aggasztó trend. */
+  OK: 'ok',
+  /** Figyelendő – emelkedő költségtrend. */
+  WATCH: 'watch',
+  /** Megfontolandó a csere – erősen emelkedő, magas költség. */
+  CONSIDER_REPLACEMENT: 'consider_replacement',
+} as const;
+
+export type TcoRecommendation =
+  (typeof TcoRecommendation)[keyof typeof TcoRecommendation];
+
+/** „Figyelendő" küszöb: a legutóbbi 12 hó költsége ennyivel nőtt az előzőhöz képest (%). */
+export const TCO_WATCH_TREND_PCT = 25;
+/** „Csere megfontolandó" küszöb (%). */
+export const TCO_REPLACE_TREND_PCT = 50;
+
 /** Egy tétel akkor „price spike", ha ennyiszerese a kategória-mediánnak. */
 export const PRICE_SPIKE_RATIO = 1.5;
 /** Egy számla akkor „unusual amount", ha ennyiszerese a cég-mediánnak. */
