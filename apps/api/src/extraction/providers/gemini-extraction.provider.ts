@@ -15,8 +15,9 @@ import type {
 const GEMINI_BASE =
   'https://generativelanguage.googleapis.com/v1beta/models';
 
-/** Ezeken a HTTP státuszokon érdemes a következő modellre váltani. */
-const FALLBACK_STATUSES = new Set([429, 500, 503]);
+/** Ezeken a HTTP státuszokon érdemes a következő modellre váltani.
+ *  404: kivezetett/ismeretlen modellnév – lépjünk a következőre, ne hasaljon el. */
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
 
 /**
  * Google Gemini alapú extraction. OCR szövegből előállítja a shared
