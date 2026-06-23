@@ -156,13 +156,14 @@ export class AppConfigService {
    * a GEMINI_MODEL csak a lánc ELEJÉRE kerül (a többi marad tartaléknak).
    */
   get gemini(): { apiKey: string; models: string[] } {
+    // A Google kivezette a gemini-1.5-* modelleket a v1beta generateContent API-ból
+    // (404). Csak aktuális, támogatott modellek; a provider 404/429/5xx esetén a
+    // következőre vált (mindegyiknek külön ingyenes napi kerete van).
     const DEFAULT_CHAIN = [
       'gemini-2.0-flash',
       'gemini-2.0-flash-lite',
       'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-8b',
     ];
 
     const override = this.get('GEMINI_MODELS')
