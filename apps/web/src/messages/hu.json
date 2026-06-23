@@ -485,7 +485,8 @@
       "saving": "Mentés…",
       "errorScan": "A beolvasás sikertelen, próbáld újra.",
       "errorSave": "A mentés sikertelen, próbáld újra.",
-      "notRegistrationWarning": "Ez a kép nem tűnik forgalmi engedélynek (nem található rendszám vagy alvázszám). Ellenőrizd a mezőket, vagy töltsd ki kézzel."
+      "notRegistrationWarning": "Ez a kép nem tűnik forgalmi engedélynek (nem található rendszám vagy alvázszám). Ellenőrizd a mezőket, vagy töltsd ki kézzel.",
+      "errorTimeout": "A feldolgozás túl sokáig tartott. Próbáld újra pár perc múlva."
     },
     "documents": {
       "title": "Dokumentumok",
