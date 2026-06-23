@@ -479,7 +479,8 @@
       "update": "Actualizare",
       "saving": "Se salvează…",
       "errorScan": "Scanarea a eșuat, încearcă din nou.",
-      "errorSave": "Salvarea a eșuat, încearcă din nou."
+      "errorSave": "Salvarea a eșuat, încearcă din nou.",
+      "notRegistrationWarning": "Această imagine nu pare a fi un certificat de înmatriculare (nu s-a găsit număr de înmatriculare sau serie de șasiu). Verifică câmpurile sau completează manual."
     },
     "documents": {
       "title": "Documente",
@@ -564,7 +565,12 @@
       "errorUpload": "Eroare la încărcare, încercați din nou.",
       "errorUnsupported": "Tip de fișier neacceptat. Permise: PDF, JPG, JPEG, PNG.",
       "errorTooLarge": "Fișierul este prea mare (maximum 25 MB).",
-      "errorGeneric": "Eroare neașteptată, încercați din nou."
+      "errorGeneric": "Eroare neașteptată, încercați din nou.",
+      "status": {
+        "uploading": "Se încarcă…",
+        "done": "Gata",
+        "error": "Eroare"
+      }
     },
     "table": {
       "name": "Document",
@@ -582,7 +588,9 @@
       "AUTO_OK": "Finalizat automat",
       "CONFIRMED": "Confirmat",
       "FAILED": "Eșuat",
-      "ARCHIVED": "Arhivat"
+      "ARCHIVED": "Arhivat",
+      "NOT_INVOICE": "Nu este factură",
+      "DUPLICATE": "Posibil duplicat"
     },
     "empty": {
       "title": "Niciun document încă",
@@ -626,6 +634,27 @@
       "deleting": "Se șterge…",
       "confirmDelete": "Sigur ștergeți acest document? Factura, articolele și fișierul vor fi șterse definitiv.",
       "deleteError": "Ștergerea a eșuat, încercați din nou."
+    },
+    "docType": {
+      "invoice": "Factură",
+      "registration": "Certificat de înmatriculare",
+      "compliance": "Certificat de conformitate",
+      "other": "Alt document"
+    },
+    "notInvoice": {
+      "title": "Acesta nu este o factură de service",
+      "description": "Sistemul a recunoscut acest document ca fiind de tip „{type}”, deci nu a fost creată nicio factură."
+    },
+    "duplicate": {
+      "title": "Posibil duplicat",
+      "description": "Există deja o factură cu același furnizor și număr de factură. Duplicatul nu poate fi păstrat separat – poți doar suprascrie factura anterioară sau șterge această încărcare.",
+      "willOverwrite": "Aceasta ar fi suprascrisă",
+      "originalGone": "Documentul original nu mai este disponibil (șters între timp). Prin suprascriere, acest document este finalizat.",
+      "overwrite": "Suprascrie originalul",
+      "overwriting": "Se suprascrie…",
+      "confirmOverwrite": "Suprascrieți factura originală? Documentul original, factura și pozițiile sale vor fi șterse definitiv.",
+      "errorOverwrite": "Suprascrierea a eșuat, încercați din nou.",
+      "orDelete": "sau ștergeți această încărcare cu butonul Ștergere de mai sus."
     }
   },
   "reminders": {

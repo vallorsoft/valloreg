@@ -479,7 +479,8 @@
       "update": "Update",
       "saving": "Saving…",
       "errorScan": "Scan failed, please try again.",
-      "errorSave": "Save failed, please try again."
+      "errorSave": "Save failed, please try again.",
+      "notRegistrationWarning": "This image does not look like a vehicle registration (no plate or VIN found). Check the fields or fill them in manually."
     },
     "documents": {
       "title": "Documents",
@@ -564,7 +565,12 @@
       "errorUpload": "Upload failed, please try again.",
       "errorUnsupported": "Unsupported file type. Allowed: PDF, JPG, JPEG, PNG.",
       "errorTooLarge": "File is too large (maximum 25 MB).",
-      "errorGeneric": "Unexpected error, please try again."
+      "errorGeneric": "Unexpected error, please try again.",
+      "status": {
+        "uploading": "Uploading…",
+        "done": "Done",
+        "error": "Error"
+      }
     },
     "table": {
       "name": "Document",
@@ -582,7 +588,9 @@
       "AUTO_OK": "Auto-completed",
       "CONFIRMED": "Confirmed",
       "FAILED": "Failed",
-      "ARCHIVED": "Archived"
+      "ARCHIVED": "Archived",
+      "NOT_INVOICE": "Not an invoice",
+      "DUPLICATE": "Possible duplicate"
     },
     "empty": {
       "title": "No documents yet",
@@ -626,6 +634,27 @@
       "deleting": "Deleting…",
       "confirmDelete": "Delete this document? The invoice, line items and the file will be permanently removed.",
       "deleteError": "Delete failed, please try again."
+    },
+    "docType": {
+      "invoice": "Invoice",
+      "registration": "Vehicle registration",
+      "compliance": "Compliance certificate",
+      "other": "Other document"
+    },
+    "notInvoice": {
+      "title": "This is not a service invoice",
+      "description": "The system recognized this document as “{type}”, so no invoice was created."
+    },
+    "duplicate": {
+      "title": "Possible duplicate",
+      "description": "An invoice with the same supplier and invoice number already exists. The duplicate cannot be kept separately – you can only overwrite the earlier one, or delete this upload.",
+      "willOverwrite": "This would be overwritten",
+      "originalGone": "The original document is no longer available (deleted in the meantime). Overwriting finalizes this document.",
+      "overwrite": "Overwrite original",
+      "overwriting": "Overwriting…",
+      "confirmOverwrite": "Overwrite the original invoice? The original document, its invoice and line items will be permanently deleted.",
+      "errorOverwrite": "Overwrite failed, please try again.",
+      "orDelete": "or delete this upload with the Delete button above."
     }
   },
   "reminders": {

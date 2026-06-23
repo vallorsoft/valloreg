@@ -479,7 +479,8 @@
       "update": "Frissítés",
       "saving": "Mentés…",
       "errorScan": "A beolvasás sikertelen, próbáld újra.",
-      "errorSave": "A mentés sikertelen, próbáld újra."
+      "errorSave": "A mentés sikertelen, próbáld újra.",
+      "notRegistrationWarning": "Ez a kép nem tűnik forgalmi engedélynek (nem található rendszám vagy alvázszám). Ellenőrizd a mezőket, vagy töltsd ki kézzel."
     },
     "documents": {
       "title": "Dokumentumok",
@@ -564,7 +565,12 @@
       "errorUpload": "Feltöltési hiba, próbálja újra.",
       "errorUnsupported": "Nem támogatott fájltípus. Engedélyezett: PDF, JPG, JPEG, PNG.",
       "errorTooLarge": "A fájl túl nagy (legfeljebb 25 MB).",
-      "errorGeneric": "Váratlan hiba, próbálja újra."
+      "errorGeneric": "Váratlan hiba, próbálja újra.",
+      "status": {
+        "uploading": "Feltöltés…",
+        "done": "Kész",
+        "error": "Hiba"
+      }
     },
     "table": {
       "name": "Dokumentum",
@@ -582,7 +588,9 @@
       "AUTO_OK": "Automatikusan kész",
       "CONFIRMED": "Jóváhagyva",
       "FAILED": "Sikertelen",
-      "ARCHIVED": "Archiválva"
+      "ARCHIVED": "Archiválva",
+      "NOT_INVOICE": "Nem számla",
+      "DUPLICATE": "Lehetséges duplikátum"
     },
     "empty": {
       "title": "Még nincs dokumentum",
@@ -626,6 +634,27 @@
       "deleting": "Törlés…",
       "confirmDelete": "Biztosan törli ezt a dokumentumot? A számla, a tételek és a fájl is véglegesen törlődik.",
       "deleteError": "A törlés sikertelen, próbálja újra."
+    },
+    "docType": {
+      "invoice": "Számla",
+      "registration": "Forgalmi engedély",
+      "compliance": "Megfelelőségi igazolás",
+      "other": "Egyéb dokumentum"
+    },
+    "notInvoice": {
+      "title": "Ez nem szervizszámla",
+      "description": "A rendszer ezt a dokumentumot „{type}” típusúként ismerte fel, ezért nem készült belőle számla."
+    },
+    "duplicate": {
+      "title": "Lehetséges duplikátum",
+      "description": "Azonos beszállító és számlaszám alapján ez a számla már létezik. A duplikátum nem tartható meg külön – csak felülírhatod a korábbit, vagy törölheted ezt a feltöltést.",
+      "willOverwrite": "Ezt írná felül",
+      "originalGone": "Az eredeti dokumentum már nem érhető el (időközben törölve). A felülírással ez a dokumentum véglegesítődik.",
+      "overwrite": "Eredeti felülírása",
+      "overwriting": "Felülírás…",
+      "confirmOverwrite": "Biztosan felülírja az eredeti számlát? Az eredeti dokumentum, a számlája és a tételei véglegesen törlődnek.",
+      "errorOverwrite": "A felülírás sikertelen, próbálja újra.",
+      "orDelete": "vagy törölje ezt a feltöltést a fenti Törlés gombbal."
     }
   },
   "reminders": {

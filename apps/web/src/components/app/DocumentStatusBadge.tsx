@@ -11,6 +11,8 @@ const TONES: Record<DocumentStatus, BadgeTone> = {
   [DocumentStatus.NEEDS_REVIEW]: 'warning',
   [DocumentStatus.AUTO_OK]: 'success',
   [DocumentStatus.CONFIRMED]: 'success',
+  [DocumentStatus.NOT_INVOICE]: 'info',
+  [DocumentStatus.DUPLICATE]: 'warning',
   [DocumentStatus.FAILED]: 'danger',
   [DocumentStatus.ARCHIVED]: 'neutral',
 };

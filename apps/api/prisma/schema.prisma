@@ -50,6 +50,10 @@ enum DocumentStatus {
   NEEDS_REVIEW
   AUTO_OK
   CONFIRMED
+  // AI felismerte: nem számla (forgalmi/megfelelőségi/egyéb) – nincs Invoice.
+  NOT_INVOICE
+  // Lehetséges duplikátum (azonos beszállító + számlaszám) – felülírható.
+  DUPLICATE
   FAILED
   ARCHIVED
 }
@@ -298,15 +302,27 @@ model Document {
   storageKey   String
   sha256       String
   status       DocumentStatus @default(UPLOADED)
+  // AI-osztályozás (DocumentType: invoice | registration | compliance | other).
+  // Null = még nincs osztályozva (feltöltés/feldolgozás alatt).
+  docType      String?
+  // Lehetséges tartalmi duplikátum: az EREDETI (korábbi) dokumentum id-je,
+  // amellyel a beszállító + számlaszám egyezik. A felhasználó felülírhatja azt.
+  duplicateOfId String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
   tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   invoice Invoice?
 
+  // Self-reláció: a duplikátum → eredeti. Az eredeti törlésekor a hivatkozás
+  // nullázódik (SetNull), hogy ne keletkezzen árva FK.
+  duplicateOf  Document?  @relation("DocumentDuplicate", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+  duplicates   Document[] @relation("DocumentDuplicate")
+
   @@unique([tenantId, sha256]) // idempotencia: ugyanaz a fájl egyszer
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([duplicateOfId])
   @@map("documents")
 }
 

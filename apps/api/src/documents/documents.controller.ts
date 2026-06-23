@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Delete,
   Get,
@@ -27,6 +28,7 @@ import type {
 } from '../common/types/request-context';
 import { DocumentsService } from './documents.service';
 import type { UploadedDocumentFile } from './documents.service';
+import { ResolveDuplicateDto } from './dto/resolve-duplicate.dto';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)
@@ -88,6 +90,27 @@ export class DocumentsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.documentsService.confirm(tenant.tenantId, user.userId, id);
+  }
+
+  /**
+   * Lehetséges duplikátum feloldása FELÜLÍRÁSSAL: az új dokumentum felülírja az
+   * eredetit (az eredeti törlődik), az új a megszokott állapotba kerül. A
+   * duplikátum megtartása (két párhuzamos rekord) szándékosan nem lehetséges.
+   */
+  @Post(':id/overwrite-duplicate')
+  @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  overwriteDuplicate(
+    @Param('id') id: string,
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Body() _dto: ResolveDuplicateDto,
+  ) {
+    return this.documentsService.overwriteDuplicate(
+      tenant.tenantId,
+      user.userId,
+      id,
+    );
   }
 
   /**

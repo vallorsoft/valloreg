@@ -233,6 +233,10 @@ export interface DocumentListItem {
   mimeType: string;
   sizeBytes: number;
   status: string;
+  /** AI-osztályozott típus (invoice | registration | compliance | other) vagy null. */
+  docType: string | null;
+  /** Tartalmi duplikátum esetén az eredeti (felülírható) dokumentum id-je. */
+  duplicateOfId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -265,10 +269,21 @@ export interface DocumentInvoice {
   items: InvoiceItem[];
 }
 
+/** Az eredeti (felülírható) dokumentum összegzése a duplikátum-nézethez. */
+export interface DuplicateOriginal {
+  id: string;
+  fileName: string;
+  status: string;
+  createdAt: string;
+  invoice: DocumentInvoice | null;
+}
+
 export interface DocumentDetail extends DocumentListItem {
   storageKey: string;
   sha256: string;
   invoice: DocumentInvoice | null;
+  /** Duplikátum esetén: MIT írna felül (az eredeti dokumentum + számlája). */
+  duplicateOf: DuplicateOriginal | null;
 }
 
 export const documentsApi = {
@@ -293,6 +308,16 @@ export const documentsApi = {
   confirm(id: string) {
     return apiRequest<DocumentListItem>(`/documents/${id}/confirm`, {
       method: 'PATCH',
+    });
+  },
+  /**
+   * Duplikátum feloldása felülírással: az új dokumentum felülírja az eredetit
+   * (az eredeti törlődik). A duplikátum megtartása nem lehetséges.
+   */
+  overwriteDuplicate(id: string) {
+    return apiRequest<DocumentListItem>(`/documents/${id}/overwrite-duplicate`, {
+      method: 'POST',
+      json: { action: 'overwrite' },
     });
   },
   /** Teljes törlés: a számla, tételek és a tárolt fájl is törlődik. */
@@ -396,6 +421,8 @@ export interface VehicleScanResult {
   draft: VehicleRegistrationDraft;
   files: ScanFileRef[];
   matchedVehicleId: string | null;
+  /** Forgalmi engedélynek tűnik-e (van rendszám/VIN). Ha nem, a UI figyelmeztet. */
+  looksLikeRegistration: boolean;
 }
 
 export interface ConfirmScanPayload {

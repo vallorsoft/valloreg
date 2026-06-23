@@ -55,6 +55,7 @@ export function DocumentReviewClient({ id }: { id: string }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [overwriting, setOverwriting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
@@ -88,6 +89,23 @@ export function DocumentReviewClient({ id }: { id: string }) {
       setError(err instanceof ApiError ? err.message : t('review.errorConfirm'));
     } finally {
       setConfirming(false);
+    }
+  }
+
+  async function handleOverwrite() {
+    if (!doc) return;
+    if (!window.confirm(t('duplicate.confirmOverwrite'))) return;
+    setOverwriting(true);
+    setError(null);
+    try {
+      await documentsApi.overwriteDuplicate(id);
+      // Felülírás után az eredeti törlődött; újratöltjük a friss állapotot.
+      const fresh = await documentsApi.getById(id);
+      setDoc(fresh);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('duplicate.errorOverwrite'));
+    } finally {
+      setOverwriting(false);
     }
   }
 
@@ -158,6 +176,32 @@ export function DocumentReviewClient({ id }: { id: string }) {
 
   const invoice = doc.invoice;
   const canConfirm = CONFIRMABLE.has(doc.status);
+  const isDuplicate = doc.status === DocumentStatus.DUPLICATE;
+  const isNotInvoice = doc.status === DocumentStatus.NOT_INVOICE;
+  const original = doc.duplicateOf;
+
+  function invoiceSummary(inv: typeof invoice) {
+    if (!inv) return [] as [string, string | null][];
+    const supplier =
+      inv.supplier?.name ??
+      (inv.extractionRaw as { invoice?: { supplier?: string } } | null)?.invoice
+        ?.supplier ??
+      null;
+    return [
+      ['review.invoice.supplier', supplier],
+      ['review.invoice.invoiceNumber', inv.invoiceNumber],
+      [
+        'review.invoice.date',
+        inv.date ? new Date(inv.date).toLocaleDateString(locale) : null,
+      ],
+      [
+        'review.invoice.grossTotal',
+        inv.grossTotal
+          ? `${fmt(inv.grossTotal, locale)} ${inv.currency ?? ''}`.trim()
+          : null,
+      ],
+    ] as [string, string | null][];
+  }
 
   // Szállító neve: a linkelt Supplier-ből, vagy az extractionRaw-ból.
   const supplierName =
@@ -186,6 +230,11 @@ export function DocumentReviewClient({ id }: { id: string }) {
             {confirming ? t('review.confirming') : t('review.confirm')}
           </Button>
         )}
+        {isDuplicate && (
+          <Button size="sm" onClick={() => void handleOverwrite()} disabled={overwriting}>
+            {overwriting ? t('duplicate.overwriting') : t('duplicate.overwrite')}
+          </Button>
+        )}
         <Button variant="outline" size="sm" onClick={() => void handleDownload()}>
           {t('review.download')}
         </Button>
@@ -202,10 +251,71 @@ export function DocumentReviewClient({ id }: { id: string }) {
 
       {error && <p className="mb-4 text-sm text-red-600">{error}</p>}
 
-      {!invoice ? (
-        <Card>
-          <p className="text-sm text-anthracite-500">{t('review.noInvoice')}</p>
+      {/* Nem-számla osztályozás: nem készült belőle számla, csak jelezzük a típust. */}
+      {isNotInvoice && (
+        <Card className="mb-6 border-blue-200 bg-blue-50">
+          <h2 className="mb-1 text-base font-semibold text-blue-900">
+            {t('notInvoice.title')}
+          </h2>
+          <p className="text-sm text-blue-800">
+            {t('notInvoice.description', {
+              type: doc.docType ? t(`docType.${doc.docType}` as Parameters<typeof t>[0]) : t('docType.other'),
+            })}
+          </p>
         </Card>
+      )}
+
+      {/* Lehetséges duplikátum: csak FELÜLÍRHATÓ; megmutatjuk, mit írna felül. */}
+      {isDuplicate && (
+        <Card className="mb-6 border-amber-200 bg-amber-50">
+          <h2 className="mb-1 text-base font-semibold text-amber-900">
+            {t('duplicate.title')}
+          </h2>
+          <p className="mb-4 text-sm text-amber-800">{t('duplicate.description')}</p>
+
+          {original ? (
+            <div className="rounded-xl border border-amber-200 bg-white p-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-amber-700">
+                {t('duplicate.willOverwrite')}
+              </p>
+              <p className="mb-2 text-sm font-medium text-anthracite-900">
+                {original.fileName}
+                <span className="ml-2 text-xs text-anthracite-400">
+                  {new Date(original.createdAt).toLocaleDateString(locale)}
+                </span>
+              </p>
+              <dl className="grid gap-x-6 gap-y-2 sm:grid-cols-2">
+                {invoiceSummary(original.invoice).map(([key, value]) => (
+                  <div key={key}>
+                    <dt className="text-xs text-anthracite-500">
+                      {t(key as Parameters<typeof t>[0])}
+                    </dt>
+                    <dd className="mt-0.5 text-sm font-medium text-anthracite-900">
+                      {value ?? '-'}
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            </div>
+          ) : (
+            <p className="text-sm text-amber-700">{t('duplicate.originalGone')}</p>
+          )}
+
+          <div className="mt-4 flex items-center gap-3">
+            <Button size="sm" onClick={() => void handleOverwrite()} disabled={overwriting}>
+              {overwriting ? t('duplicate.overwriting') : t('duplicate.overwrite')}
+            </Button>
+            <span className="text-xs text-amber-700">{t('duplicate.orDelete')}</span>
+          </div>
+        </Card>
+      )}
+
+      {!invoice ? (
+        isNotInvoice ? null : (
+          <Card>
+            <p className="text-sm text-anthracite-500">{t('review.noInvoice')}</p>
+          </Card>
+        )
       ) : (
         <>
           {/* Számlaadatok */}

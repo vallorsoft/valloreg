@@ -42,6 +42,12 @@ export interface VehicleScanResult {
   files: ScanFileRef[];
   /** Ha a rendszám/VIN már létező járműre illik (frissítés ajánlott). */
   matchedVehicleId: string | null;
+  /**
+   * Forgalmi engedélynek tűnik-e: ha sem rendszám, sem VIN nem olvasható ki, a
+   * beolvasott kép valószínűleg NEM forgalmi – a UI figyelmeztet (de a kézi
+   * kitöltés engedélyezett marad).
+   */
+  looksLikeRegistration: boolean;
 }
 
 /** Egy CSV-import sor elemzési eredménye. */
@@ -321,6 +327,12 @@ export class VehiclesService {
       draft.vin,
     );
 
+    // Forgalmi engedély felismerése: rendszám VAGY VIN nélkül a kép aligha
+    // forgalmi – a UI figyelmeztet, de a kézi kitöltést nem tiltjuk.
+    const looksLikeRegistration = Boolean(
+      (draft.plate && draft.plate.trim()) || (draft.vin && draft.vin.trim()),
+    );
+
     await this.audit.log({
       tenantId,
       userId,
@@ -330,10 +342,11 @@ export class VehiclesService {
         fileCount: files.length,
         confidence: draft.confidence,
         matchedVehicleId,
+        looksLikeRegistration,
       },
     });
 
-    return { draft, files: staged, matchedVehicleId };
+    return { draft, files: staged, matchedVehicleId, looksLikeRegistration };
   }
 
   /**
