@@ -29,6 +29,17 @@ export const DocumentStatus = {
   AUTO_OK: 'AUTO_OK',
   /** Felhasználó jóváhagyta. */
   CONFIRMED: 'CONFIRMED',
+  /**
+   * Az AI felismerte, hogy a dokumentum NEM számla (pl. forgalmi engedély,
+   * megfelelőségi igazolás, egyéb). Nem készül belőle számla; a `docType`
+   * jelzi a felismert típust.
+   */
+  NOT_INVOICE: 'NOT_INVOICE',
+  /**
+   * Lehetséges duplikátum: azonos beszállító + számlaszám már létezik. A
+   * felhasználónak fel kell oldania (felülírás) – megtartani NEM lehet.
+   */
+  DUPLICATE: 'DUPLICATE',
   FAILED: 'FAILED',
   ARCHIVED: 'ARCHIVED',
 } as const;
