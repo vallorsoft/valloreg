@@ -1,6 +1,6 @@
 name: queue-probe
 
-# IDEIGLENES: a /api/health/queues sor- ES DB-allapotot kerdezi le (varja a deployt).
+# IDEIGLENES: a /api/health/queues – megvarja, amig az extractionProvider 'gemini' lesz.
 on:
   workflow_dispatch: {}
 
@@ -9,19 +9,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 12
     steps:
-      - name: Queue + DB allapot (uj 'env' mezore var)
+      - name: Var a gemini providerre + kiirja a JSON-t
         run: |
           URL="https://valloreg-api.onrender.com/api/health/queues"
-          for i in $(seq 1 24); do
+          for i in $(seq 1 30); do
             BODY=$(curl -s "$URL" --max-time 90)
-            # Az uj deploy ismerve van, ha mar tartalmazza az "env" mezot.
-            if echo "$BODY" | grep -q '"env"'; then
-              echo "===== HEALTH/QUEUES JSON (uj) ====="
-              echo "$BODY"
+            echo "[$i] $BODY"
+            if echo "$BODY" | grep -q '"extractionProvider":"gemini"'; then
+              echo "===== KESZ: gemini aktiv ====="
               exit 0
             fi
-            echo "[$i] meg a regi valasz (nincs 'env'), varok 20s..."
+            echo "  meg nem gemini, varok 20s..."
             sleep 20
           done
-          echo "Nem jott meg az uj deploy a varakozasi ablakban. Utolso: $BODY"
+          echo "Nem valt gemini-re a varakozasi ablakban (lehet, hogy a Blueprint-et kezzel kell szinkronizalni)."
           exit 1
