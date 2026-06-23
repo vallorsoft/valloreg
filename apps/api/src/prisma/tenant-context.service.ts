@@ -13,36 +13,61 @@ export interface TenantContext {
   role: TenantRole;
 }
 
+/**
+ * MUTÁLHATÓ tároló. A kérés ELEJÉN (TenantContextMiddleware) egy üres holder-t
+ * nyitunk a teljes kérésre `als.run()`-nal, majd a TenantGuard ennek a holder-nek
+ * a `current` mezőjét TÖLTI FEL. Mivel a guard a már létező objektumot MUTÁLJA
+ * (nem új scope-ot nyit), az érték végigöröklődik a guard→handler async láncon –
+ * szemben az `enterWith`-tel, ami a NestJS guard→handler határon megbízhatatlan.
+ */
+interface MutableHolder {
+  current?: TenantContext;
+}
+
 @Injectable()
 export class TenantContextService {
-  private readonly als = new AsyncLocalStorage<TenantContext>();
+  private readonly als = new AsyncLocalStorage<MutableHolder>();
 
   /**
-   * A megadott kontextusban futtatja a callback-et (és minden async
-   * leszármazottját). Tesztekhez / explicit scope-hoz hasznos.
+   * Üres ALS scope nyitása a TELJES kérésre, és a callback futtatása benne.
+   * A TenantContextMiddleware hívja: így a guard→handler lánc VÉGIG ugyanabban
+   * az async kontextusban fut, és a guard által később beállított érték a
+   * handlerben (és a scoped Prisma kliensben) is látszik.
    */
-  run<T>(context: TenantContext, callback: () => T): T {
-    return this.als.run(context, callback);
+  run<T>(callback: () => T): T {
+    return this.als.run({}, callback);
   }
 
   /**
-   * Belép a kontextusba a JELENLEGI async folyamhoz (callback nélkül).
-   * A TenantGuard ezt használja: a guard `canActivate`-je visszatér, de a
-   * controller handler ugyanazon az async láncon fut tovább, így örökli a
-   * kontextust. (Az enterWith a NestJS guard→handler folyam esetén megbízható,
-   * mert a `Reflect`-alapú interceptor lánc nem szakítja meg az async kontextust.)
+   * Explicit kontextusban futtatás (tesztekhez / háttérfeladatokhoz):
+   * azonnal feltöltött holder-rel nyit scope-ot.
    */
-  enter(context: TenantContext): void {
-    this.als.enterWith(context);
+  runWith<T>(context: TenantContext, callback: () => T): T {
+    return this.als.run({ current: context }, callback);
+  }
+
+  /**
+   * Beállítja az aktuális kérés tenant kontextusát. A TenantGuard hívja, miután
+   * a membership-et ellenőrizte. A meglévő (middleware által nyitott) holder-t
+   * MUTÁLJA, ezért az érték a teljes async láncon látszik. Ha valamiért nincs
+   * aktív holder (pl. middleware nélküli hívás), `enterWith`-tel nyit egyet.
+   */
+  set(context: TenantContext): void {
+    const holder = this.als.getStore();
+    if (holder) {
+      holder.current = context;
+    } else {
+      this.als.enterWith({ current: context });
+    }
   }
 
   /** Az aktuális kontextus, vagy undefined ha nincs (pl. auth/system query). */
   get(): TenantContext | undefined {
-    return this.als.getStore();
+    return this.als.getStore()?.current;
   }
 
   /** Az aktuális tenantId, vagy undefined ha nincs kontextus. */
   getTenantId(): string | undefined {
-    return this.als.getStore()?.tenantId;
+    return this.als.getStore()?.current?.tenantId;
   }
 }

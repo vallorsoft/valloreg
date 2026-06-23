@@ -3,6 +3,7 @@
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
+import { InstallButton } from '@/components/app/InstallButton';
 import { Button } from '@/components/ui/Button';
 import { clearTokens } from '@/lib/auth';
 
@@ -36,6 +37,7 @@ export function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
         </p>
       </div>
       <div className="flex items-center gap-3">
+        <InstallButton />
         <LanguageSwitcher />
         <Button variant="outline" size="sm" onClick={onLogout}>
           {t('nav.logout')}

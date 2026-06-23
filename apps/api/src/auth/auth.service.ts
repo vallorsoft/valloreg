@@ -1,12 +1,13 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { createHash, randomBytes } from 'node:crypto';
-import { PlanTier, TenantRole } from '@valloreg/shared';
+import { DEFAULT_LOCALE, PlanTier, TenantRole } from '@valloreg/shared';
 import { SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppConfigService } from '../config/app-config.service';
 import { AuditService } from '../audit/audit.service';
+import { MailerService } from '../storage/mailer.service';
 import { AppException } from '../common/exceptions/app.exception';
 import type { AccessTokenPayload } from './strategies/jwt.strategy';
 import type { RegisterDto } from './dto/register.dto';
@@ -41,11 +42,14 @@ export interface AuthResult extends AuthTokens {
  */
 @Injectable()
 export class AuthService {
+  private readonly logger = new Logger(AuthService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly jwt: JwtService,
     private readonly config: AppConfigService,
     private readonly audit: AuditService,
+    private readonly mailer: MailerService,
   ) {}
 
   /**
@@ -185,6 +189,127 @@ export class AuthService {
   }
 
   /**
+   * Jelszó-visszaállítás KÉRÉSE. Mindig sikerrel tér vissza (nem áruljuk el,
+   * létezik-e a fiók – email-enumeráció ellen). Ha a felhasználó létezik,
+   * egyszer használatos tokent generál (hash-elve tároljuk), és emailt küld a
+   * visszaállító linkkel.
+   */
+  async forgotPassword(email: string, locale?: string): Promise<{ ok: true }> {
+    const normalized = email.toLowerCase().trim();
+
+    const user = await this.prisma.system.user.findUnique({
+      where: { email: normalized },
+      select: { id: true, email: true },
+    });
+
+    if (user) {
+      // A korábbi, még fel nem használt tokeneket érvénytelenítjük.
+      await this.prisma.system.passwordResetToken.updateMany({
+        where: { userId: user.id, usedAt: null },
+        data: { usedAt: new Date() },
+      });
+
+      const rawToken = randomBytes(32).toString('hex');
+      const tokenHash = this.hashToken(rawToken);
+      const expiresAt = new Date(
+        Date.now() + this.config.passwordResetTtl * 1000,
+      );
+
+      await this.prisma.system.passwordResetToken.create({
+        data: { userId: user.id, tokenHash, expiresAt },
+      });
+
+      await this.sendResetEmail(user.email, rawToken, locale);
+
+      await this.audit.log({
+        userId: user.id,
+        action: 'auth.password_reset_requested',
+        resourceType: 'User',
+        resourceId: user.id,
+      });
+    } else {
+      // Ismeretlen cím: ugyanúgy viselkedünk (időzítés/válasz), csak logolunk.
+      this.logger.debug(
+        `Jelszó-visszaállítás ismeretlen címre: ${normalized}`,
+      );
+    }
+
+    return { ok: true };
+  }
+
+  /**
+   * Jelszó beállítása a visszaállító tokennel. Validálja a tokent (létezik, nem
+   * használt, nem járt le), frissíti a jelszót, a tokent használtnak jelöli, és
+   * BIZTONSÁGBÓL visszavonja a felhasználó összes refresh tokenjét.
+   */
+  async resetPassword(
+    token: string,
+    newPassword: string,
+  ): Promise<{ ok: true }> {
+    const tokenHash = this.hashToken(token);
+
+    const record = await this.prisma.system.passwordResetToken.findUnique({
+      where: { tokenHash },
+      select: { id: true, userId: true, usedAt: true, expiresAt: true },
+    });
+
+    if (!record || record.usedAt) {
+      throw AppException.tokenInvalid();
+    }
+    if (record.expiresAt < new Date()) {
+      throw AppException.tokenExpired();
+    }
+
+    const passwordHash = await argon2.hash(newPassword);
+
+    await this.prisma.system.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: record.userId },
+        data: { passwordHash },
+      });
+      await tx.passwordResetToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      });
+      // Minden aktív munkamenet érvénytelenítése (kijelentkeztetés mindenhol).
+      await tx.refreshToken.updateMany({
+        where: { userId: record.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    });
+
+    await this.audit.log({
+      userId: record.userId,
+      action: 'auth.password_reset',
+      resourceType: 'User',
+      resourceId: record.userId,
+    });
+
+    return { ok: true };
+  }
+
+  /** A visszaállító e-mail összeállítása és kiküldése a megadott nyelven. */
+  private async sendResetEmail(
+    to: string,
+    rawToken: string,
+    locale?: string,
+  ): Promise<void> {
+    const lang = (locale ?? DEFAULT_LOCALE).toLowerCase();
+    const link = `${this.config.webAppUrl}/${lang}/reset-password?token=${rawToken}`;
+    const minutes = Math.round(this.config.passwordResetTtl / 60);
+
+    const t = RESET_EMAIL_I18N[lang] ?? RESET_EMAIL_I18N[DEFAULT_LOCALE]!;
+    const text = t.text(link, minutes);
+
+    await this.mailer.send({
+      to,
+      subject: t.subject,
+      text,
+      html: t.html(link, minutes),
+    });
+  }
+
+  /**
    * Refresh token rotáció: a régi tokent visszavonja, újat ad ki.
    * A refresh token JWT-ként érkezik; a tárolt hash-t is ellenőrizzük.
    */
@@ -301,3 +426,46 @@ export class AuthService {
     return createHash('sha256').update(token).digest('hex');
   }
 }
+
+/** Jelszó-visszaállító e-mail szövegek nyelvenként (hu/ro/en). */
+interface ResetEmailTemplate {
+  subject: string;
+  text: (link: string, minutes: number) => string;
+  html: (link: string, minutes: number) => string;
+}
+
+const RESET_EMAIL_I18N: Record<string, ResetEmailTemplate> = {
+  hu: {
+    subject: 'Jelszó visszaállítása – Valloreg',
+    text: (link, minutes) =>
+      `Jelszó-visszaállítást kértél a Valloreg fiókodhoz.\n\n` +
+      `Állítsd be az új jelszavad ezen a linken (${minutes} percig érvényes):\n${link}\n\n` +
+      `Ha nem te kérted, hagyd figyelmen kívül ezt az e-mailt – a jelszavad változatlan marad.`,
+    html: (link, minutes) =>
+      `<p>Jelszó-visszaállítást kértél a <strong>Valloreg</strong> fiókodhoz.</p>` +
+      `<p><a href="${link}">Kattints ide az új jelszó beállításához</a> (a link ${minutes} percig érvényes).</p>` +
+      `<p>Ha nem te kérted, hagyd figyelmen kívül ezt az e-mailt – a jelszavad változatlan marad.</p>`,
+  },
+  ro: {
+    subject: 'Resetare parolă – Valloreg',
+    text: (link, minutes) =>
+      `Ai solicitat resetarea parolei pentru contul tău Valloreg.\n\n` +
+      `Setează o parolă nouă folosind acest link (valabil ${minutes} de minute):\n${link}\n\n` +
+      `Dacă nu ai solicitat tu, ignoră acest e-mail – parola rămâne neschimbată.`,
+    html: (link, minutes) =>
+      `<p>Ai solicitat resetarea parolei pentru contul tău <strong>Valloreg</strong>.</p>` +
+      `<p><a href="${link}">Apasă aici pentru a seta o parolă nouă</a> (linkul este valabil ${minutes} de minute).</p>` +
+      `<p>Dacă nu ai solicitat tu, ignoră acest e-mail – parola rămâne neschimbată.</p>`,
+  },
+  en: {
+    subject: 'Password reset – Valloreg',
+    text: (link, minutes) =>
+      `You requested a password reset for your Valloreg account.\n\n` +
+      `Set a new password using this link (valid for ${minutes} minutes):\n${link}\n\n` +
+      `If you didn't request this, ignore this email – your password stays unchanged.`,
+    html: (link, minutes) =>
+      `<p>You requested a password reset for your <strong>Valloreg</strong> account.</p>` +
+      `<p><a href="${link}">Click here to set a new password</a> (the link is valid for ${minutes} minutes).</p>` +
+      `<p>If you didn't request this, ignore this email – your password stays unchanged.</p>`,
+  },
+};

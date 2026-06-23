@@ -7,7 +7,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { authApi, storeAuth, ApiError } from '@/lib/api';
+import { authApi, storeAuth, resolveErrorKey, errorDebugSuffix } from '@/lib/api';
 import {
   isValidEmail,
   isNonEmpty,
@@ -86,11 +86,10 @@ export function RegisterForm() {
       storeAuth(res);
       router.push('/dashboard');
     } catch (err) {
-      if (err instanceof ApiError) {
-        setFormError(te(err.code));
-      } else {
-        setFormError(te('INTERNAL_ERROR'));
-      }
+      // A nyers hibát a böngésző konzoljába is kiírjuk (státusz, URL) a könnyebb
+      // diagnózishoz; a felhasználónak fordított üzenetet mutatunk.
+      console.error('[auth] register failed', err);
+      setFormError(te(resolveErrorKey(err)) + errorDebugSuffix(err));
     } finally {
       setSubmitting(false);
     }

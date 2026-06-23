@@ -9,6 +9,7 @@ import type {
 } from '../common/types/request-context';
 import { NotificationsService } from './notifications.service';
 import { SubscribePushDto } from './dto/subscribe-push.dto';
+import { UnsubscribePushDto } from './dto/unsubscribe-push.dto';
 
 @Controller('notifications')
 export class NotificationsController {
@@ -35,7 +36,7 @@ export class NotificationsController {
   /** Leiratkozás endpoint alapján. */
   @Post('unsubscribe')
   @UseGuards(JwtAuthGuard)
-  unsubscribe(@Body() body: { endpoint: string }) {
-    return this.notifications.unsubscribe(body.endpoint);
+  unsubscribe(@Body() dto: UnsubscribePushDto) {
+    return this.notifications.unsubscribe(dto.endpoint);
   }
 }

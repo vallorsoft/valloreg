@@ -47,6 +47,22 @@ export class AppConfigService {
   }
 
   /**
+   * A webes frontend nyilvános URL-je (záró / nélkül). A jelszó-visszaállító
+   * e-mail linkje ehhez fűzi a /reset-password útvonalat. Ha a WEB_APP_URL üres,
+   * a CORS_ORIGINS első eleme a fallback, végső soron a localhost.
+   */
+  get webAppUrl(): string {
+    const explicit = this.get('WEB_APP_URL').trim();
+    const url = explicit || this.corsOrigins[0] || 'http://localhost:3000';
+    return url.replace(/\/+$/, '');
+  }
+
+  /** Jelszó-visszaállító token élettartama másodpercben. */
+  get passwordResetTtl(): number {
+    return this.get('PASSWORD_RESET_TTL');
+  }
+
+  /**
    * Redis kapcsolat (BullMQ/ioredis). Ha REDIS_URL adott, abból parse-olunk
    * (rediss:// → TLS); különben a külön host/port/password mezőkből.
    */
@@ -96,14 +112,22 @@ export class AppConfigService {
     bucket: string;
     forcePathStyle: boolean;
   } {
+    // Az accessKey és a region szó szerint bekerül az AWS SigV4 Authorization
+    // fejlécbe. Ha az env-érték végén láthatatlan karakter van (pl. Render-re
+    // másoláskor becsúszott \n), a Node setHeader ERR_INVALID_CHAR-ral dob.
     return {
-      endpoint: this.get('S3_ENDPOINT'),
-      region: this.get('S3_REGION'),
-      accessKey: this.get('S3_ACCESS_KEY'),
-      secretKey: this.get('S3_SECRET_KEY'),
-      bucket: this.get('S3_BUCKET'),
+      endpoint: this.sanitizeEnv(this.get('S3_ENDPOINT')),
+      region: this.sanitizeEnv(this.get('S3_REGION')),
+      accessKey: this.sanitizeEnv(this.get('S3_ACCESS_KEY')),
+      secretKey: this.sanitizeEnv(this.get('S3_SECRET_KEY')),
+      bucket: this.sanitizeEnv(this.get('S3_BUCKET')),
       forcePathStyle: this.get('S3_FORCE_PATH_STYLE'),
     };
+  }
+
+  private sanitizeEnv(value: string): string {
+    // eslint-disable-next-line no-control-regex
+    return value.replace(/[\x00-\x1F\x7F]/g, '').trim();
   }
 
   get ocrProvider(): AppEnv['OCR_PROVIDER'] {
@@ -112,6 +136,18 @@ export class AppConfigService {
 
   get extractionProvider(): AppEnv['EXTRACTION_PROVIDER'] {
     return this.get('EXTRACTION_PROVIDER');
+  }
+
+  get vehicleVerifyProvider(): AppEnv['VEHICLE_VERIFY_PROVIDER'] {
+    return this.get('VEHICLE_VERIFY_PROVIDER');
+  }
+
+  /** RO megfelelőség-ellenőrző külső API konfigurációja. */
+  get roVerify(): { apiUrl: string; apiKey: string } {
+    return {
+      apiUrl: this.get('RO_VERIFY_API_URL'),
+      apiKey: this.get('RO_VERIFY_API_KEY'),
+    };
   }
 
   /**

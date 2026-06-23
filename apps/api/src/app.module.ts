@@ -1,6 +1,7 @@
-import { Module } from '@nestjs/common';
+import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { AppConfigModule } from './config/config.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { TenantContextMiddleware } from './common/middleware/tenant-context.middleware';
 import { AuditModule } from './audit/audit.module';
 import { StorageModule } from './storage/storage.module';
 import { FeatureFlagsModule } from './feature-flags/feature-flags.module';
@@ -19,6 +20,9 @@ import { ReportsModule } from './reports/reports.module';
 import { AdminModule } from './admin/admin.module';
 import { BillingModule } from './billing/billing.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RemindersModule } from './reminders/reminders.module';
+import { InsightsModule } from './insights/insights.module';
+import { VerificationModule } from './verification/verification.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -51,6 +55,18 @@ import { NotificationsModule } from './notifications/notifications.module';
     ReportsModule,
     AdminModule,
     BillingModule,
+    RemindersModule,
+    InsightsModule,
+    VerificationModule,
   ],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  /**
+   * A tenant-kontextus middleware MINDEN útvonalra fut, így minden kérés egy
+   * megnyitott ALS scope-ban dolgozik. A TenantGuard ezt tölti fel; a system
+   * (unscoped) útvonalakat (auth, health) nem érinti – ott csak üres marad.
+   */
+  configure(consumer: MiddlewareConsumer): void {
+    consumer.apply(TenantContextMiddleware).forRoutes('*path');
+  }
+}

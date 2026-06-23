@@ -283,7 +283,8 @@
       "emailInvalid": "Introduceți o adresă de e-mail validă.",
       "passwordTooShort": "Parola trebuie să aibă cel puțin 8 caractere.",
       "taxIdInvalid": "Introduceți un cod fiscal valid.",
-      "phoneInvalid": "Introduceți un număr de telefon valid."
+      "phoneInvalid": "Introduceți un număr de telefon valid.",
+      "passwordsMismatch": "Cele două parole nu coincid."
     },
     "errors": {
       "AUTH_INVALID_CREDENTIALS": "Adresă de e-mail sau parolă incorectă.",
@@ -307,6 +308,28 @@
       "NOT_FOUND": "Resursa nu a fost găsită.",
       "INTERNAL_ERROR": "A apărut o eroare neașteptată. Vă rugăm să încercați din nou.",
       "NETWORK_ERROR": "Eroare de rețea. Verificați conexiunea."
+    },
+    "forgotPassword": {
+      "title": "Ați uitat parola",
+      "subtitle": "Introduceți adresa de e-mail și vă vom trimite un link pentru resetarea parolei.",
+      "email": "E-mail",
+      "emailPlaceholder": "dvs@companie.ro",
+      "submit": "Trimite linkul de resetare",
+      "backToLogin": "Înapoi la autentificare",
+      "success": "Dacă există un cont cu această adresă, am trimis linkul de resetare. Verificați-vă căsuța de e-mail (și folderul spam)."
+    },
+    "resetPassword": {
+      "title": "Setați o parolă nouă",
+      "subtitle": "Introduceți o parolă nouă pentru contul dumneavoastră.",
+      "password": "Parolă nouă",
+      "passwordPlaceholder": "Cel puțin 8 caractere",
+      "confirmPassword": "Confirmați parola",
+      "confirmPasswordPlaceholder": "Introduceți din nou parola",
+      "submit": "Schimbă parola",
+      "backToLogin": "Înapoi la autentificare",
+      "success": "Parola a fost schimbată cu succes. Acum vă puteți autentifica cu noua parolă.",
+      "goToLogin": "Autentificare",
+      "invalidLink": "Linkul de resetare este invalid sau lipsește. Solicitați unul nou."
     }
   },
   "app": {
@@ -314,7 +337,9 @@
       "dashboard": "Panou de control",
       "vehicles": "Vehicule",
       "documents": "Documente",
+      "reminders": "Mementouri",
       "reports": "Rapoarte",
+      "insights": "Anomalii",
       "team": "Echipă",
       "billing": "Abonament",
       "admin": "Super Admin",
@@ -325,7 +350,12 @@
       "noTenant": "Nicio companie selectată",
       "menu": "Meniu"
     },
-    "phaseNote": "Vizualizare demo – conectarea datelor reale va veni în fazele următoare."
+    "phaseNote": "Vizualizare demo – conectarea datelor reale va veni în fazele următoare.",
+    "install": {
+      "label": "Instalează aplicația",
+      "iosTitle": "Instalare pe iPhone / iPad",
+      "iosSteps": "Apasă butonul Partajare, apoi alege „Adaugă la ecranul principal”."
+    }
   },
   "dashboard": {
     "title": "Panou de control",
@@ -339,7 +369,8 @@
       "processing": "În procesare",
       "confirmed": "Confirmate",
       "invoiceGrossTotal": "Sumă facturată",
-      "invoiceCount": "Facturi procesate"
+      "invoiceCount": "Facturi procesate",
+      "automationRate": "Grad de automatizare"
     },
     "units": {
       "currency": "RON",
@@ -347,7 +378,12 @@
       "items": "buc.",
       "events": "evenimente"
     },
-    "noData": "Nu există încă suficiente date. Încărcați documente și adăugați vehicule."
+    "noData": "Nu există încă suficiente date. Încărcați documente și adăugați vehicule.",
+    "quickUpload": {
+      "title": "Încărcare rapidă",
+      "subtitle": "Trageți o factură aici – sistemul o procesează.",
+      "allDocuments": "Toate documentele"
+    }
   },
   "vehicles": {
     "title": "Vehicule",
@@ -417,6 +453,109 @@
         "category": "Categorie",
         "amount": "Sumă"
       }
+    },
+    "scanRegistration": "Scanare talon",
+    "scan": {
+      "title": "Scanare talon (certificat de înmatriculare)",
+      "subtitle": "Fotografiază sau încarcă (imagine sau PDF) – sistemul extrage datele.",
+      "hint": "Trage aici sau alege fișier (1–2 pagini: față/verso).",
+      "choose": "Alege fișier",
+      "scan": "Scanează",
+      "scanning": "Se scanează…",
+      "cancel": "Anulare",
+      "rescan": "Scanează din nou",
+      "plate": "Nr. înmatriculare",
+      "year": "An",
+      "vin": "Serie șasiu (VIN)",
+      "make": "Marca",
+      "model": "Model",
+      "odometerKm": "Kilometraj",
+      "odometerHint": "Introdu manual (nu e pe talon)",
+      "extraTitle": "Alte date extrase",
+      "fuel": "Combustibil",
+      "power": "Putere",
+      "engine": "Capacitate cilindrică",
+      "color": "Culoare",
+      "firstReg": "Prima înmatriculare",
+      "owner": "Proprietar",
+      "extraNote": "Afișate doar pentru verificare; numele proprietarului nu este stocat.",
+      "duplicateWarning": "Acest vehicul (nr./VIN) există deja – va fi actualizat la salvare.",
+      "save": "Salvare",
+      "update": "Actualizare",
+      "saving": "Se salvează…",
+      "errorScan": "Scanarea a eșuat, încearcă din nou.",
+      "errorSave": "Salvarea a eșuat, încearcă din nou.",
+      "notRegistrationWarning": "Această imagine nu pare a fi un certificat de înmatriculare (nu s-a găsit număr de înmatriculare sau serie de șasiu). Verifică câmpurile sau completează manual.",
+      "errorTimeout": "Procesarea a durat prea mult. Încearcă din nou peste câteva minute."
+    },
+    "documents": {
+      "title": "Documente",
+      "open": "Deschide",
+      "kind": {
+        "registration": "Talon",
+        "other": "Document"
+      }
+    },
+    "import": {
+      "button": "Import în masă",
+      "title": "Import vehicule (CSV)",
+      "subtitle": "Încarcă un CSV pentru adăugarea rapidă a flotei. Coloane: plate, vin, make, model, year, odometerKm.",
+      "choose": "Alege CSV",
+      "template": "Descarcă șablon",
+      "preview": "Previzualizare",
+      "loading": "Se procesează…",
+      "import": "Importă",
+      "importing": "Se importă…",
+      "cancel": "Anulare",
+      "close": "Închide",
+      "status": "Status",
+      "plate": "Nr.",
+      "vin": "Serie șasiu",
+      "makeModel": "Marca / model",
+      "row": "Rând",
+      "action": {
+        "create": "Nou",
+        "update": "Actualizare",
+        "error": "Eroare"
+      },
+      "summaryPreview": "Total {total} rânduri: {create} noi, {update} actualizări, {error} cu erori.",
+      "summaryDone": "{created} create, {updated} actualizate, {skipped} omise.",
+      "doneTitle": "Import finalizat",
+      "errorPreview": "Previzualizarea a eșuat.",
+      "errorCommit": "Importul a eșuat."
+    },
+    "verification": {
+      "title": "Conformitate (RO)",
+      "verifyNow": "Verifică acum",
+      "checking": "Se verifică…",
+      "itp": "ITP",
+      "rca": "RCA",
+      "vignette": "Rovinietă",
+      "checkedAt": "Verificat: {date}",
+      "demoNote": "date demo",
+      "empty": "Încă nicio verificare. Apasă „Verifică acum\".",
+      "error": "Verificarea a eșuat.",
+      "state": {
+        "ok": "Valabil",
+        "soon": "Expiră curând",
+        "expired": "Expirat",
+        "unknown": "Necunoscut"
+      },
+      "scan": {
+        "button": "Scanare",
+        "title": "Scanare document {type}",
+        "subtitle": "Fotografiază sau încarcă documentul – extragem data expirării.",
+        "choose": "Alege fișier",
+        "scan": "Scanează",
+        "scanning": "Se scanează…",
+        "rescan": "Din nou",
+        "validUntil": "Valabil până la",
+        "save": "Salvare",
+        "saving": "Se salvează…",
+        "cancel": "Anulare",
+        "errorScan": "Scanarea a eșuat.",
+        "errorSave": "Salvarea a eșuat."
+      }
     }
   },
   "documents": {
@@ -430,7 +569,14 @@
       "button": "Selectați fișierul",
       "uploading": "Se încarcă…",
       "errorUpload": "Eroare la încărcare, încercați din nou.",
-      "errorGeneric": "Eroare neașteptată, încercați din nou."
+      "errorUnsupported": "Tip de fișier neacceptat. Permise: PDF, JPG, JPEG, PNG.",
+      "errorTooLarge": "Fișierul este prea mare (maximum 25 MB).",
+      "errorGeneric": "Eroare neașteptată, încercați din nou.",
+      "status": {
+        "uploading": "Se încarcă…",
+        "done": "Gata",
+        "error": "Eroare"
+      }
     },
     "table": {
       "name": "Document",
@@ -448,7 +594,9 @@
       "AUTO_OK": "Finalizat automat",
       "CONFIRMED": "Confirmat",
       "FAILED": "Eșuat",
-      "ARCHIVED": "Arhivat"
+      "ARCHIVED": "Arhivat",
+      "NOT_INVOICE": "Nu este factură",
+      "DUPLICATE": "Posibil duplicat"
     },
     "empty": {
       "title": "Niciun document încă",
@@ -486,7 +634,106 @@
         "unassigned": "Neatribuit",
         "assignError": "Atribuirea a eșuat."
       }
+    },
+    "actions": {
+      "delete": "Ștergere",
+      "deleting": "Se șterge…",
+      "confirmDelete": "Sigur ștergeți acest document? Factura, articolele și fișierul vor fi șterse definitiv.",
+      "deleteError": "Ștergerea a eșuat, încercați din nou."
+    },
+    "docType": {
+      "invoice": "Factură",
+      "registration": "Certificat de înmatriculare",
+      "compliance": "Certificat de conformitate",
+      "other": "Alt document"
+    },
+    "notInvoice": {
+      "title": "Acesta nu este o factură de service",
+      "description": "Sistemul a recunoscut acest document ca fiind de tip „{type}”, deci nu a fost creată nicio factură."
+    },
+    "duplicate": {
+      "title": "Posibil duplicat",
+      "description": "Există deja o factură cu același furnizor și număr de factură. Duplicatul nu poate fi păstrat separat – poți doar suprascrie factura anterioară sau șterge această încărcare.",
+      "willOverwrite": "Aceasta ar fi suprascrisă",
+      "originalGone": "Documentul original nu mai este disponibil (șters între timp). Prin suprascriere, acest document este finalizat.",
+      "overwrite": "Suprascrie originalul",
+      "overwriting": "Se suprascrie…",
+      "confirmOverwrite": "Suprascrieți factura originală? Documentul original, factura și pozițiile sale vor fi șterse definitiv.",
+      "errorOverwrite": "Suprascrierea a eșuat, încercați din nou.",
+      "orDelete": "sau ștergeți această încărcare cu butonul Ștergere de mai sus."
     }
+  },
+  "reminders": {
+    "title": "Mementouri",
+    "subtitle": "Întreținere proactivă și termene de expirare per vehicul.",
+    "loading": "Se încarcă…",
+    "addReminder": "Memento nou",
+    "groups": {
+      "overdue": "Expirate",
+      "due_soon": "În curând",
+      "ok": "În regulă"
+    },
+    "status": {
+      "ok": "În regulă",
+      "due_soon": "Scadent",
+      "overdue": "Expirat"
+    },
+    "types": {
+      "oil_change": "Schimb ulei",
+      "timing_belt": "Curea distribuție",
+      "brake_service": "Service frâne",
+      "tire_change": "Schimb anvelope",
+      "general_service": "Service general",
+      "inspection": "ITP",
+      "insurance": "Asigurare",
+      "tachograph": "Tahograf",
+      "vignette": "Rovinietă",
+      "other": "Altele"
+    },
+    "remaining": {
+      "days": "peste {days} zile",
+      "km": "peste {km} km",
+      "overdueDays": "expirat de {days} zile",
+      "overdueKm": "depășit cu {km} km"
+    },
+    "actions": {
+      "complete": "Gata",
+      "edit": "Editare",
+      "delete": "Ștergere",
+      "confirmDelete": "Sigur ștergeți acest memento?"
+    },
+    "widget": {
+      "title": "Mementouri scadente",
+      "viewAll": "Toate"
+    },
+    "empty": {
+      "title": "Niciun memento",
+      "description": "Adăugați un memento de întreținere sau de expirare pentru un vehicul.",
+      "noVehicles": "Adăugați mai întâi un vehicul pentru a putea crea un memento.",
+      "cta": "Memento nou"
+    },
+    "form": {
+      "addTitle": "Memento nou",
+      "editTitle": "Editare memento",
+      "vehicle": "Vehicul",
+      "type": "Tip",
+      "titleLabel": "Denumire (opțional)",
+      "titlePlaceholder": "ex. Schimb ulei",
+      "dueDate": "Scadență (dată)",
+      "dueOdometerKm": "Scadență (km)",
+      "intervalDays": "Repetare (zile)",
+      "intervalKm": "Repetare (km)",
+      "notes": "Notă",
+      "notesPlaceholder": "Notă opțională",
+      "hint": "Indicați cel puțin o scadență (dată sau km). Intervalul mută înainte următoarea scadență după marcarea „Gata”.",
+      "cancel": "Anulare",
+      "save": "Salvare",
+      "saving": "Se salvează…",
+      "errorGeneric": "Eroare neașteptată, încercați din nou."
+    },
+    "vehicleSectionTitle": "Mementouri",
+    "suggestionsTitle": "Sugestii din istoricul de service",
+    "suggestionLearned": "• învățat"
   },
   "team": {
     "title": "Echipă",
@@ -580,6 +827,54 @@
       "office": "Birou",
       "fleet_general": "Flotă general",
       "other": "Altele"
+    }
+  },
+  "insights": {
+    "title": "Anomalii de cost",
+    "subtitle": "Articole supraevaluate, facturi duplicate și sume neobișnuite din istoricul de service.",
+    "loading": "Se încarcă…",
+    "unavailable": "Această funcție nu este activată în planul tău.",
+    "empty": {
+      "title": "Nicio anomalie",
+      "description": "Momentan nu am găsit articole sau facturi suspecte."
+    },
+    "types": {
+      "price_spike": "Supraevaluare",
+      "duplicate_invoice": "Duplicat",
+      "unusual_amount": "Sumă neobișnuită"
+    },
+    "severity": {
+      "low": "Scăzut",
+      "medium": "Mediu",
+      "high": "Ridicat"
+    },
+    "message": {
+      "price_spike": "{item}: cu {pct}% mai scump decât de obicei",
+      "duplicate_invoice": "Posibilă factură duplicată ({count}×): {number}",
+      "unusual_amount": "Sumă neobișnuită: cu {pct}% peste medie"
+    },
+    "widget": {
+      "title": "Anomalii de cost",
+      "count": "{count} detectări",
+      "viewAll": "Vezi"
+    },
+    "sections": {
+      "anomalies": "Anomalii de cost"
+    },
+    "tco": {
+      "title": "TCO predictiv / sugestie de înlocuire",
+      "subtitle": "Costul de service din ultimele 12 luni față de cele 12 luni anterioare.",
+      "vehicle": "Vehicul",
+      "totalSpent": "Cost total",
+      "recentCost": "Ultimele 12 luni",
+      "trend": "Tendință",
+      "costPerKm": "Cost/km",
+      "recommendation": "Sugestie",
+      "recommendations": {
+        "ok": "În regulă",
+        "watch": "De urmărit",
+        "consider_replacement": "De luat în calcul înlocuirea"
+      }
     }
   },
   "admin": {

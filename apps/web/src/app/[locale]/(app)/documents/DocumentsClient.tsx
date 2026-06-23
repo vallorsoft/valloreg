@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { DocumentStatus } from '@valloreg/shared';
-import { documentsApi, type DocumentListItem } from '@/lib/api';
+import { documentsApi, ApiError, type DocumentListItem } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
 import { UploadZone } from '@/components/app/UploadZone';
@@ -23,6 +23,8 @@ export function DocumentsClient() {
   const router = useRouter();
   const [docs, setDocs] = useState<DocumentListItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     try {
@@ -48,10 +50,26 @@ export function DocumentsClient() {
     void refresh();
   }
 
+  async function handleDelete(doc: DocumentListItem) {
+    if (!window.confirm(t('actions.confirmDelete'))) return;
+    setError(null);
+    setDeletingId(doc.id);
+    try {
+      await documentsApi.remove(doc.id);
+      setDocs((prev) => prev.filter((d) => d.id !== doc.id));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('actions.deleteError'));
+    } finally {
+      setDeletingId(null);
+    }
+  }
+
   return (
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
       <UploadZone onUploadComplete={handleUploadComplete} />
+
+      {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 
       <Card className="mt-6 overflow-hidden p-0">
         {loading ? (
@@ -91,15 +109,29 @@ export function DocumentsClient() {
                       <DocumentStatusBadge status={doc.status as DocumentStatus} />
                     </td>
                     <td className="px-4 py-3">
-                      <button
-                        className="text-sm text-primary-600 hover:underline"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          router.push(`/${locale}/documents/${doc.id}`);
-                        }}
-                      >
-                        {t('table.view')}
-                      </button>
+                      <div className="flex gap-3">
+                        <button
+                          className="text-sm text-primary-600 hover:underline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            router.push(`/${locale}/documents/${doc.id}`);
+                          }}
+                        >
+                          {t('table.view')}
+                        </button>
+                        <button
+                          className="text-sm text-red-500 hover:underline disabled:opacity-50"
+                          disabled={deletingId === doc.id}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            void handleDelete(doc);
+                          }}
+                        >
+                          {deletingId === doc.id
+                            ? t('actions.deleting')
+                            : t('actions.delete')}
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}

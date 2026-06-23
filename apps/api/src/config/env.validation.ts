@@ -28,6 +28,9 @@ export const envSchema = z.object({
   API_PORT: z.coerce.number().int().positive().default(4000),
   API_GLOBAL_PREFIX: z.string().default('api'),
   CORS_ORIGINS: z.string().default('http://localhost:3000'),
+  // A webes frontend nyilvános URL-je (a jelszó-visszaállító e-mail linkjéhez).
+  // Ha üres, a CORS_ORIGINS első eleme a fallback.
+  WEB_APP_URL: z.string().optional().default(''),
 
   // PostgreSQL – a DIRECT_URL opcionális (Neon-nál külön); ha nincs, a
   // PrismaService a DATABASE_URL-t használja a migrációkhoz is.
@@ -47,6 +50,8 @@ export const envSchema = z.object({
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET kötelező'),
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
   JWT_REFRESH_TTL: z.coerce.number().int().positive().default(1209600),
+  // Jelszó-visszaállító token élettartama másodpercben (alap: 1 óra).
+  PASSWORD_RESET_TTL: z.coerce.number().int().positive().default(3600),
 
   // S3 / MinIO
   S3_ENDPOINT: z.string().default('http://localhost:9000'),
@@ -73,6 +78,12 @@ export const envSchema = z.object({
   GEMINI_MODEL: z.string().optional().default(''),
   // Opcionális: a TELJES modell-láncot felülírja (vesszős lista).
   GEMINI_MODELS: z.string().optional().default(''),
+
+  // RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). `stub` = dev/álladat;
+  // `ro` = külső API a RO_VERIFY_API_URL-en (kulccsal). API nélkül stubra esik.
+  VEHICLE_VERIFY_PROVIDER: z.enum(['stub', 'ro']).default('stub'),
+  RO_VERIFY_API_URL: z.string().optional().default(''),
+  RO_VERIFY_API_KEY: z.string().optional().default(''),
 
   // E-mail: Brevo (transactional API). Ha nincs kulcs, a mailer csak logol.
   BREVO_API_KEY: z.string().optional().default(''),

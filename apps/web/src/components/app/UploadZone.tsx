@@ -5,14 +5,29 @@ import { useTranslations } from 'next-intl';
 import {
   ALLOWED_DOCUMENT_EXTENSIONS,
   ALLOWED_DOCUMENT_MIME_TYPES,
+  isAllowedDocumentMimeType,
+  MAX_DOCUMENT_SIZE_BYTES,
 } from '@valloreg/shared';
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/cn';
-import { documentsApi, computeSha256, ApiError } from '@/lib/api';
+import { documentsApi, ApiError } from '@/lib/api';
 import type { DocumentListItem } from '@/lib/api';
 
 const ACCEPT = ALLOWED_DOCUMENT_MIME_TYPES.join(',');
 const ACCEPT_HINT = ALLOWED_DOCUMENT_EXTENSIONS.join(', ');
+
+/** Már lokalizált üzenetet hordozó kliensoldali validációs hiba. */
+class UploadError extends Error {}
+
+/** Egy fájl feltöltési állapota a tömeges feltöltőben. */
+type FileStatus = 'uploading' | 'done' | 'error';
+
+interface UploadItem {
+  name: string;
+  status: FileStatus;
+  /** Hibaüzenet (csak `error` állapotban). */
+  message?: string;
+}
 
 interface Props {
   onUploadComplete?: (doc: DocumentListItem) => void;
@@ -23,50 +38,54 @@ export function UploadZone({ onUploadComplete }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [items, setItems] = useState<UploadItem[]>([]);
 
-  async function handleFiles(files: FileList | null) {
-    if (!files || files.length === 0) return;
-    setError(null);
+  function setItemAt(index: number, patch: Partial<UploadItem>) {
+    setItems((prev) =>
+      prev.map((it, i) => (i === index ? { ...it, ...patch } : it)),
+    );
+  }
+
+  async function handleFiles(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
+    const files = Array.from(fileList);
+
+    // Minden fájl külön sorként jelenik meg, induló állapotban "uploading".
+    const startIndex = items.length;
+    setItems((prev) => [
+      ...prev,
+      ...files.map((f) => ({ name: f.name, status: 'uploading' as FileStatus })),
+    ]);
     setUploading(true);
-    try {
-      for (const file of Array.from(files)) {
-        // 1. Presigned PUT URL kérése
-        const { uploadUrl, storageKey } = await documentsApi.presign({
-          fileName: file.name,
-          mimeType: file.type || 'application/octet-stream',
-        });
 
-        // 2. Közvetlen feltöltés S3/R2-re
-        const putRes = await fetch(uploadUrl, {
-          method: 'PUT',
-          body: file,
-          headers: { 'Content-Type': file.type || 'application/octet-stream' },
-        });
-        if (!putRes.ok) {
-          throw new Error(t('errorUpload'));
+    // Soros feldolgozás: minden fájl a saját sorát frissíti (fájlonkénti státusz).
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const index = startIndex + i;
+      const mimeType = file.type || 'application/octet-stream';
+      try {
+        // Kliensoldali validáció: azonnali, lokalizált visszajelzés.
+        if (!isAllowedDocumentMimeType(mimeType)) {
+          throw new UploadError(t('errorUnsupported'));
+        }
+        if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
+          throw new UploadError(t('errorTooLarge'));
         }
 
-        // 3. SHA-256 számítása (idempotencia)
-        const sha256 = await computeSha256(file);
-
-        // 4. Dokumentum regisztrálása + feldolgozás indítása
-        const doc = await documentsApi.register({
-          fileName: file.name,
-          mimeType: file.type || 'application/octet-stream',
-          sizeBytes: file.size,
-          storageKey,
-          sha256,
-        });
-
+        const doc = await documentsApi.upload(file);
+        setItemAt(index, { status: 'done' });
         onUploadComplete?.(doc);
+      } catch (err) {
+        const message =
+          err instanceof ApiError || err instanceof UploadError
+            ? err.message
+            : t('errorGeneric');
+        setItemAt(index, { status: 'error', message });
       }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('errorGeneric'));
-    } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = '';
     }
+
+    setUploading(false);
+    if (inputRef.current) inputRef.current.value = '';
   }
 
   return (
@@ -122,8 +141,36 @@ export function UploadZone({ onUploadComplete }: Props) {
           onChange={(e) => void handleFiles(e.target.files)}
         />
       </div>
-      {error && (
-        <p className="mt-2 text-sm text-red-600">{error}</p>
+
+      {/* Fájlonkénti státusz (tömeges feltöltés). */}
+      {items.length > 0 && (
+        <ul className="mt-3 space-y-1.5">
+          {items.map((it, i) => (
+            <li
+              key={`${it.name}-${i}`}
+              className="flex items-center justify-between gap-3 rounded-lg border border-anthracite-100 bg-white px-3 py-2 text-sm"
+            >
+              <span className="min-w-0 flex-1 truncate text-anthracite-800">
+                {it.name}
+              </span>
+              {it.status === 'uploading' && (
+                <span className="shrink-0 text-xs text-anthracite-500">
+                  ⏳ {t('status.uploading')}
+                </span>
+              )}
+              {it.status === 'done' && (
+                <span className="shrink-0 text-xs font-medium text-green-600">
+                  ✓ {t('status.done')}
+                </span>
+              )}
+              {it.status === 'error' && (
+                <span className="shrink-0 text-xs font-medium text-red-600">
+                  ✕ {it.message ?? t('status.error')}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
       )}
     </div>
   );

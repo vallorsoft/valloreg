@@ -283,7 +283,8 @@
       "emailInvalid": "Please enter a valid email address.",
       "passwordTooShort": "Password must be at least 8 characters long.",
       "taxIdInvalid": "Please enter a valid tax ID.",
-      "phoneInvalid": "Please enter a valid phone number."
+      "phoneInvalid": "Please enter a valid phone number.",
+      "passwordsMismatch": "The two passwords do not match."
     },
     "errors": {
       "AUTH_INVALID_CREDENTIALS": "Incorrect email or password.",
@@ -307,6 +308,28 @@
       "NOT_FOUND": "Resource not found.",
       "INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
       "NETWORK_ERROR": "Network error. Check your connection."
+    },
+    "forgotPassword": {
+      "title": "Forgot password",
+      "subtitle": "Enter your email and we will send you a link to reset your password.",
+      "email": "Email",
+      "emailPlaceholder": "you@company.com",
+      "submit": "Send reset link",
+      "backToLogin": "Back to login",
+      "success": "If an account exists for this email, we have sent a reset link. Please check your inbox (and spam folder)."
+    },
+    "resetPassword": {
+      "title": "Set a new password",
+      "subtitle": "Enter a new password for your account.",
+      "password": "New password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Change password",
+      "backToLogin": "Back to login",
+      "success": "Your password has been changed. You can now log in with your new password.",
+      "goToLogin": "Log in",
+      "invalidLink": "The reset link is invalid or missing. Please request a new one."
     }
   },
   "app": {
@@ -314,7 +337,9 @@
       "dashboard": "Dashboard",
       "vehicles": "Vehicles",
       "documents": "Documents",
+      "reminders": "Reminders",
       "reports": "Reports",
+      "insights": "Insights",
       "team": "Team",
       "billing": "Billing",
       "admin": "Super Admin",
@@ -325,7 +350,12 @@
       "noTenant": "No company selected",
       "menu": "Menu"
     },
-    "phaseNote": "Demo view – real data wiring lands in later phases."
+    "phaseNote": "Demo view – real data wiring lands in later phases.",
+    "install": {
+      "label": "Install app",
+      "iosTitle": "Install on iPhone / iPad",
+      "iosSteps": "Tap the Share button, then choose “Add to Home Screen”."
+    }
   },
   "dashboard": {
     "title": "Dashboard",
@@ -339,7 +369,8 @@
       "processing": "Processing",
       "confirmed": "Confirmed",
       "invoiceGrossTotal": "Invoiced amount",
-      "invoiceCount": "Processed invoices"
+      "invoiceCount": "Processed invoices",
+      "automationRate": "Automation"
     },
     "units": {
       "currency": "HUF",
@@ -347,7 +378,12 @@
       "items": "pcs",
       "events": "events"
     },
-    "noData": "Not enough data yet. Upload documents and add vehicles."
+    "noData": "Not enough data yet. Upload documents and add vehicles.",
+    "quickUpload": {
+      "title": "Quick upload",
+      "subtitle": "Drop an invoice here – the system processes it.",
+      "allDocuments": "All documents"
+    }
   },
   "vehicles": {
     "title": "Vehicles",
@@ -417,6 +453,109 @@
         "category": "Category",
         "amount": "Amount"
       }
+    },
+    "scanRegistration": "Scan registration",
+    "scan": {
+      "title": "Scan registration certificate",
+      "subtitle": "Photograph or upload (image or PDF) – the system extracts the data.",
+      "hint": "Drop here or choose a file (1–2 pages: front/back).",
+      "choose": "Choose file",
+      "scan": "Scan",
+      "scanning": "Scanning…",
+      "cancel": "Cancel",
+      "rescan": "Scan again",
+      "plate": "Plate",
+      "year": "Year",
+      "vin": "VIN",
+      "make": "Make",
+      "model": "Model",
+      "odometerKm": "Odometer (km)",
+      "odometerHint": "Enter manually (not on the certificate)",
+      "extraTitle": "Other extracted data",
+      "fuel": "Fuel",
+      "power": "Power",
+      "engine": "Engine capacity",
+      "color": "Color",
+      "firstReg": "First registration",
+      "owner": "Owner",
+      "extraNote": "Shown for verification only; the owner name is not stored.",
+      "duplicateWarning": "This vehicle (plate/VIN) already exists – it will be updated on save.",
+      "save": "Save",
+      "update": "Update",
+      "saving": "Saving…",
+      "errorScan": "Scan failed, please try again.",
+      "errorSave": "Save failed, please try again.",
+      "notRegistrationWarning": "This image does not look like a vehicle registration (no plate or VIN found). Check the fields or fill them in manually.",
+      "errorTimeout": "Processing took too long. Please try again in a few minutes."
+    },
+    "documents": {
+      "title": "Documents",
+      "open": "Open",
+      "kind": {
+        "registration": "Registration",
+        "other": "Document"
+      }
+    },
+    "import": {
+      "button": "Bulk import",
+      "title": "Bulk vehicle import (CSV)",
+      "subtitle": "Upload a CSV to add your fleet quickly. Columns: plate, vin, make, model, year, odometerKm.",
+      "choose": "Choose CSV",
+      "template": "Download template",
+      "preview": "Preview",
+      "loading": "Processing…",
+      "import": "Import",
+      "importing": "Importing…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "status": "Status",
+      "plate": "Plate",
+      "vin": "VIN",
+      "makeModel": "Make / model",
+      "row": "Row",
+      "action": {
+        "create": "New",
+        "update": "Update",
+        "error": "Error"
+      },
+      "summaryPreview": "{total} rows total: {create} new, {update} updates, {error} errors.",
+      "summaryDone": "{created} created, {updated} updated, {skipped} skipped.",
+      "doneTitle": "Import complete",
+      "errorPreview": "Preview failed.",
+      "errorCommit": "Import failed."
+    },
+    "verification": {
+      "title": "Compliance (RO)",
+      "verifyNow": "Verify now",
+      "checking": "Verifying…",
+      "itp": "Inspection (ITP)",
+      "rca": "Insurance (RCA)",
+      "vignette": "Vignette (rovinietă)",
+      "checkedAt": "Checked: {date}",
+      "demoNote": "demo data",
+      "empty": "No verification yet. Use \"Verify now\".",
+      "error": "Verification failed.",
+      "state": {
+        "ok": "Valid",
+        "soon": "Expiring soon",
+        "expired": "Expired",
+        "unknown": "Unknown"
+      },
+      "scan": {
+        "button": "Scan",
+        "title": "Scan {type} document",
+        "subtitle": "Photograph or upload the document – we extract the expiry date.",
+        "choose": "Choose file",
+        "scan": "Scan",
+        "scanning": "Scanning…",
+        "rescan": "Again",
+        "validUntil": "Valid until",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "errorScan": "Scan failed.",
+        "errorSave": "Save failed."
+      }
     }
   },
   "documents": {
@@ -430,7 +569,14 @@
       "button": "Choose file",
       "uploading": "Uploading…",
       "errorUpload": "Upload failed, please try again.",
-      "errorGeneric": "Unexpected error, please try again."
+      "errorUnsupported": "Unsupported file type. Allowed: PDF, JPG, JPEG, PNG.",
+      "errorTooLarge": "File is too large (maximum 25 MB).",
+      "errorGeneric": "Unexpected error, please try again.",
+      "status": {
+        "uploading": "Uploading…",
+        "done": "Done",
+        "error": "Error"
+      }
     },
     "table": {
       "name": "Document",
@@ -448,7 +594,9 @@
       "AUTO_OK": "Auto-completed",
       "CONFIRMED": "Confirmed",
       "FAILED": "Failed",
-      "ARCHIVED": "Archived"
+      "ARCHIVED": "Archived",
+      "NOT_INVOICE": "Not an invoice",
+      "DUPLICATE": "Possible duplicate"
     },
     "empty": {
       "title": "No documents yet",
@@ -486,7 +634,106 @@
         "unassigned": "Unassigned",
         "assignError": "Assignment failed."
       }
+    },
+    "actions": {
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete this document? The invoice, line items and the file will be permanently removed.",
+      "deleteError": "Delete failed, please try again."
+    },
+    "docType": {
+      "invoice": "Invoice",
+      "registration": "Vehicle registration",
+      "compliance": "Compliance certificate",
+      "other": "Other document"
+    },
+    "notInvoice": {
+      "title": "This is not a service invoice",
+      "description": "The system recognized this document as “{type}”, so no invoice was created."
+    },
+    "duplicate": {
+      "title": "Possible duplicate",
+      "description": "An invoice with the same supplier and invoice number already exists. The duplicate cannot be kept separately – you can only overwrite the earlier one, or delete this upload.",
+      "willOverwrite": "This would be overwritten",
+      "originalGone": "The original document is no longer available (deleted in the meantime). Overwriting finalizes this document.",
+      "overwrite": "Overwrite original",
+      "overwriting": "Overwriting…",
+      "confirmOverwrite": "Overwrite the original invoice? The original document, its invoice and line items will be permanently deleted.",
+      "errorOverwrite": "Overwrite failed, please try again.",
+      "orDelete": "or delete this upload with the Delete button above."
     }
+  },
+  "reminders": {
+    "title": "Reminders",
+    "subtitle": "Proactive maintenance and expiry deadlines per vehicle.",
+    "loading": "Loading…",
+    "addReminder": "New reminder",
+    "groups": {
+      "overdue": "Overdue",
+      "due_soon": "Due soon",
+      "ok": "OK"
+    },
+    "status": {
+      "ok": "OK",
+      "due_soon": "Due",
+      "overdue": "Overdue"
+    },
+    "types": {
+      "oil_change": "Oil change",
+      "timing_belt": "Timing belt",
+      "brake_service": "Brake service",
+      "tire_change": "Tire change",
+      "general_service": "General service",
+      "inspection": "Inspection",
+      "insurance": "Insurance",
+      "tachograph": "Tachograph",
+      "vignette": "Highway vignette",
+      "other": "Other"
+    },
+    "remaining": {
+      "days": "in {days} days",
+      "km": "in {km} km",
+      "overdueDays": "{days} days overdue",
+      "overdueKm": "{km} km overdue"
+    },
+    "actions": {
+      "complete": "Done",
+      "edit": "Edit",
+      "delete": "Delete",
+      "confirmDelete": "Delete this reminder?"
+    },
+    "widget": {
+      "title": "Due reminders",
+      "viewAll": "View all"
+    },
+    "empty": {
+      "title": "No reminders",
+      "description": "Add a maintenance or expiry reminder for a vehicle.",
+      "noVehicles": "Add a vehicle first so you can create a reminder.",
+      "cta": "New reminder"
+    },
+    "form": {
+      "addTitle": "New reminder",
+      "editTitle": "Edit reminder",
+      "vehicle": "Vehicle",
+      "type": "Type",
+      "titleLabel": "Title (optional)",
+      "titlePlaceholder": "e.g. Oil change",
+      "dueDate": "Due (date)",
+      "dueOdometerKm": "Due (km)",
+      "intervalDays": "Repeat (days)",
+      "intervalKm": "Repeat (km)",
+      "notes": "Notes",
+      "notesPlaceholder": "Optional note",
+      "hint": "Provide at least one due value (date or km). The interval rolls the next due forward after you mark it Done.",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving…",
+      "errorGeneric": "Unexpected error, please try again."
+    },
+    "vehicleSectionTitle": "Reminders",
+    "suggestionsTitle": "Suggestions from service history",
+    "suggestionLearned": "• learned"
   },
   "team": {
     "title": "Team",
@@ -580,6 +827,54 @@
       "office": "Office",
       "fleet_general": "Fleet general",
       "other": "Other"
+    }
+  },
+  "insights": {
+    "title": "Cost anomalies",
+    "subtitle": "Overpriced items, duplicate invoices and unusual amounts from your service history.",
+    "loading": "Loading…",
+    "unavailable": "This feature is not enabled in your plan.",
+    "empty": {
+      "title": "No anomalies",
+      "description": "No suspicious items or invoices found right now."
+    },
+    "types": {
+      "price_spike": "Overpriced",
+      "duplicate_invoice": "Duplicate",
+      "unusual_amount": "Unusual amount"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "message": {
+      "price_spike": "{item}: {pct}% more expensive than usual",
+      "duplicate_invoice": "Possible duplicate invoice ({count}×): {number}",
+      "unusual_amount": "Unusual invoice amount: {pct}% above usual"
+    },
+    "widget": {
+      "title": "Cost anomalies",
+      "count": "{count} detected",
+      "viewAll": "View"
+    },
+    "sections": {
+      "anomalies": "Cost anomalies"
+    },
+    "tco": {
+      "title": "Predictive TCO / replacement hint",
+      "subtitle": "Service cost of the last 12 months vs. the previous 12 months.",
+      "vehicle": "Vehicle",
+      "totalSpent": "Total spent",
+      "recentCost": "Last 12 months",
+      "trend": "Trend",
+      "costPerKm": "Cost/km",
+      "recommendation": "Recommendation",
+      "recommendations": {
+        "ok": "OK",
+        "watch": "Watch",
+        "consider_replacement": "Consider replacement"
+      }
     }
   },
   "admin": {

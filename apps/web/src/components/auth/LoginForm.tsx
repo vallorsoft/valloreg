@@ -7,7 +7,7 @@ import { Link, useRouter } from '@/i18n/routing';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { authApi, storeAuth, ApiError } from '@/lib/api';
+import { authApi, storeAuth, resolveErrorKey, errorDebugSuffix } from '@/lib/api';
 import { isValidEmail, isNonEmpty } from '@/lib/validation';
 
 interface FieldErrors {
@@ -47,12 +47,10 @@ export function LoginForm() {
       storeAuth(res);
       router.push('/dashboard');
     } catch (err) {
-      if (err instanceof ApiError) {
-        // ErrorCode (and NETWORK_ERROR) keys exist in auth.errors.
-        setFormError(te(err.code));
-      } else {
-        setFormError(te('INTERNAL_ERROR'));
-      }
+      // A nyers hibát a böngésző konzoljába is kiírjuk (státusz, URL) a könnyebb
+      // diagnózishoz; a felhasználónak fordított üzenetet mutatunk.
+      console.error('[auth] login failed', err);
+      setFormError(te(resolveErrorKey(err)) + errorDebugSuffix(err));
     } finally {
       setSubmitting(false);
     }
@@ -95,6 +93,14 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
+        <div className="-mt-2 text-right">
+          <Link
+            href="/forgot-password"
+            className="text-sm font-medium text-primary-700 hover:text-primary-800"
+          >
+            {t('forgotPassword')}
+          </Link>
+        </div>
         <Button type="submit" fullWidth size="lg" disabled={submitting}>
           {t('submit')}
         </Button>

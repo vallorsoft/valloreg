@@ -50,6 +50,10 @@ enum DocumentStatus {
   NEEDS_REVIEW
   AUTO_OK
   CONFIRMED
+  // AI felismerte: nem számla (forgalmi/megfelelőségi/egyéb) – nincs Invoice.
+  NOT_INVOICE
+  // Lehetséges duplikátum (azonos beszállító + számlaszám) – felülírható.
+  DUPLICATE
   FAILED
   ARCHIVED
 }
@@ -94,6 +98,10 @@ model Tenant {
   supportAccesses      SupportAccess[]
   supplierVehicleMappings SupplierVehicleMapping[]
   itemCategoryMappings ItemCategoryMapping[]
+  reminders            Reminder[]
+  vehicleDocuments     VehicleDocument[]
+  vehicleVerifications VehicleVerification[]
+  vehicleScans         VehicleScan[]
 
   @@map("tenants")
 }
@@ -112,9 +120,10 @@ model User {
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
-  memberships       Membership[]
-  refreshTokens     RefreshToken[]
-  pushSubscriptions PushSubscription[]
+  memberships         Membership[]
+  refreshTokens       RefreshToken[]
+  pushSubscriptions   PushSubscription[]
+  passwordResetTokens PasswordResetToken[]
 
   @@map("users")
 }
@@ -188,6 +197,22 @@ model RefreshToken {
   @@map("refresh_tokens")
 }
 
+// Jelszó-visszaállító token (hash-elve tárolva). Egyszer használatos, lejár.
+// A nyers tokent csak az emailben küldött link tartalmazza.
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
 // ──────────────────────────────────────────────────────────────────────────
 // Előfizetés és feature flag-ek
 // ──────────────────────────────────────────────────────────────────────────
@@ -259,6 +284,9 @@ model Vehicle {
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   invoiceItems InvoiceItem[]
   supplierVehicleMappings SupplierVehicleMapping[]
+  reminders    Reminder[]
+  documents    VehicleDocument[]
+  verification VehicleVerification?
 
   @@index([tenantId])
   @@index([tenantId, plate])
@@ -275,15 +303,27 @@ model Document {
   storageKey   String
   sha256       String
   status       DocumentStatus @default(UPLOADED)
+  // AI-osztályozás (DocumentType: invoice | registration | compliance | other).
+  // Null = még nincs osztályozva (feltöltés/feldolgozás alatt).
+  docType      String?
+  // Lehetséges tartalmi duplikátum: az EREDETI (korábbi) dokumentum id-je,
+  // amellyel a beszállító + számlaszám egyezik. A felhasználó felülírhatja azt.
+  duplicateOfId String?
   createdAt    DateTime       @default(now())
   updatedAt    DateTime       @updatedAt
 
   tenant  Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   invoice Invoice?
 
+  // Self-reláció: a duplikátum → eredeti. Az eredeti törlésekor a hivatkozás
+  // nullázódik (SetNull), hogy ne keletkezzen árva FK.
+  duplicateOf  Document?  @relation("DocumentDuplicate", fields: [duplicateOfId], references: [id], onDelete: SetNull)
+  duplicates   Document[] @relation("DocumentDuplicate")
+
   @@unique([tenantId, sha256]) // idempotencia: ugyanaz a fájl egyszer
   @@index([tenantId])
   @@index([tenantId, status])
+  @@index([duplicateOfId])
   @@map("documents")
 }
 
@@ -414,4 +454,122 @@ model ItemCategoryMapping {
   @@index([tenantId])
   @@index([tenantId, pattern])
   @@map("item_category_mappings")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Emlékeztetők (proaktív karbantartás + megfelelőség/lejárat figyelés)
+// ──────────────────────────────────────────────────────────────────────────
+//
+// A `kind` / `type` String-ként tárol (a @valloreg/shared ReminderKind/
+// ReminderType string-union értékeivel azonosan). A számított `status`
+// (ok/due_soon/overdue) NEM tárolt: futásidőben dől el a dueDate/dueOdometerKm
+// és a jármű aktuális km-állása alapján.
+model Reminder {
+  id             String    @id @default(uuid())
+  tenantId       String
+  vehicleId      String
+  kind           String // ReminderKind: maintenance | compliance
+  type           String // ReminderType: oil_change | inspection | insurance | …
+  title          String?
+  // Esedékesség: idő- és/vagy km-alapon (legalább az egyik ajánlott).
+  dueDate        DateTime?
+  dueOdometerKm  Int?
+  // Ismétlődés: a "kész" jelöléskor ennyivel gördül előre a következő esedékesség.
+  intervalDays   Int?
+  intervalKm     Int?
+  lastDoneAt     DateTime?
+  lastDoneKm     Int?
+  notes          String?
+  active         Boolean   @default(true)
+  // Forrás: "manual" (felhasználó) vagy "verification" (RO auto-lekérés).
+  source         String    @default("manual")
+  // Értesítés-throttle: mikor és milyen állapotról ment ki utoljára értesítés.
+  lastNotifiedAt DateTime?
+  notifiedStage  String? // a legutóbb értesített status (due_soon | overdue)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@index([tenantId, active, dueDate])
+  @@map("reminders")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Jármű dokumentum-archívum (pl. forgalmi engedély beolvasott képe/PDF-je)
+// ──────────────────────────────────────────────────────────────────────────
+model VehicleDocument {
+  id         String   @id @default(uuid())
+  tenantId   String
+  vehicleId  String
+  kind       String // pl. "registration" (forgalmi engedély)
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  storageKey String
+  createdAt  DateTime @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@map("vehicle_documents")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Forgalmi-beolvasás (OCR + AI) ASZINKRON háttér-job állapota és eredménye
+// ──────────────────────────────────────────────────────────────────────────
+//
+// A beolvasás nem a HTTP-kérésen belül fut: a controller stagingbe tölti a
+// fájl(oka)t, létrehoz egy VehicleScan(PENDING) rekordot, sorba teszi, és a
+// scanId-t adja vissza. A worker (BullMQ) végzi az OCR+AI-t és ide írja az
+// eredményt; a kliens pollingol a státuszra. A `status` a @valloreg/shared
+// VehicleScanStatus string-értékeivel azonos.
+model VehicleScan {
+  id                    String   @id @default(uuid())
+  tenantId              String
+  createdById           String
+  status                String   @default("PENDING")
+  // A staging fájlok hivatkozásai (ScanFileRef[]) – a confirm ezeket köti a járműhöz.
+  files                 Json
+  // A kiolvasott draft (VehicleRegistrationResult), ha DONE.
+  draft                 Json?
+  // Rendszám/VIN alapján talált meglévő jármű (frissítés-javaslat), ha van.
+  matchedVehicleId      String?
+  // Forgalmi engedélynek tűnik-e (van rendszám/VIN).
+  looksLikeRegistration Boolean?
+  // Hibaüzenet, ha FAILED.
+  error                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("vehicle_scans")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Megfelelőség-ellenőrzés (RO): ITP, RCA, rovinietă lejáratok külső forrásból
+// ──────────────────────────────────────────────────────────────────────────
+model VehicleVerification {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  vehicleId          String    @unique
+  source             String // "stub" | "ro"
+  status             String // "ok" | "not_found" | "error"
+  itpValidUntil      DateTime? // műszaki (ITP)
+  rcaValidUntil      DateTime? // kötelező biztosítás (RCA)
+  vignetteValidUntil DateTime? // autópálya-matrica (rovinietă)
+  checkedAt          DateTime  @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("vehicle_verifications")
 }
