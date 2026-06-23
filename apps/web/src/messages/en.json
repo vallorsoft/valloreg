@@ -516,6 +516,24 @@
       "doneTitle": "Import complete",
       "errorPreview": "Preview failed.",
       "errorCommit": "Import failed."
+    },
+    "verification": {
+      "title": "Compliance (RO)",
+      "verifyNow": "Verify now",
+      "checking": "Verifying…",
+      "itp": "Inspection (ITP)",
+      "rca": "Insurance (RCA)",
+      "vignette": "Vignette (rovinietă)",
+      "checkedAt": "Checked: {date}",
+      "demoNote": "demo data",
+      "empty": "No verification yet. Use \"Verify now\".",
+      "error": "Verification failed.",
+      "state": {
+        "ok": "Valid",
+        "soon": "Expiring soon",
+        "expired": "Expired",
+        "unknown": "Unknown"
+      }
     }
   },
   "documents": {

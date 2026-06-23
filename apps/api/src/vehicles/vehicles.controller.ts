@@ -30,6 +30,7 @@ import type {
 } from '../common/types/request-context';
 import { VehiclesService } from './vehicles.service';
 import type { UploadedScanFile } from './vehicles.service';
+import { VerificationService } from '../verification/verification.service';
 import { CreateVehicleDto } from './dto/create-vehicle.dto';
 import { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import { ConfirmScanDto } from './dto/confirm-scan.dto';
@@ -37,7 +38,27 @@ import { ConfirmScanDto } from './dto/confirm-scan.dto';
 @Controller('vehicles')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)
 export class VehiclesController {
-  constructor(private readonly vehiclesService: VehiclesService) {}
+  constructor(
+    private readonly vehiclesService: VehiclesService,
+    private readonly verification: VerificationService,
+  ) {}
+
+  /** RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă) most – frissíti az emlékeztetőket. */
+  @Post(':id/verify')
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  verify(
+    @Param('id') id: string,
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.verification.verify(tenant.tenantId, user.userId, id);
+  }
+
+  /** A legutóbbi megfelelőség-ellenőrzés eredménye. */
+  @Get(':id/verification')
+  getVerification(@Param('id') id: string) {
+    return this.verification.getLatest(id);
+  }
 
   /**
    * Forgalmi engedély beolvasása (1–2 kép vagy PDF). OCR + AI kiolvasás, NEM ment

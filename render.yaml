@@ -99,6 +99,14 @@ services:
         value: stub
       - key: GEMINI_API_KEY
         sync: false
+      # RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). Alap: stub (álladat).
+      # Valódi forráshoz: VEHICLE_VERIFY_PROVIDER=ro + RO_VERIFY_API_URL (+ kulcs).
+      - key: VEHICLE_VERIFY_PROVIDER
+        value: stub
+      - key: RO_VERIFY_API_URL
+        sync: false
+      - key: RO_VERIFY_API_KEY
+        sync: false
       # E-mail (Brevo) – opcionális, meghívókhoz:
       - key: BREVO_API_KEY
         sync: false
