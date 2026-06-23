@@ -448,6 +448,46 @@
         "category": "Category",
         "amount": "Amount"
       }
+    },
+    "scanRegistration": "Scan registration",
+    "scan": {
+      "title": "Scan registration certificate",
+      "subtitle": "Photograph or upload (image or PDF) – the system extracts the data.",
+      "hint": "Drop here or choose a file (1–2 pages: front/back).",
+      "choose": "Choose file",
+      "scan": "Scan",
+      "scanning": "Scanning…",
+      "cancel": "Cancel",
+      "rescan": "Scan again",
+      "plate": "Plate",
+      "year": "Year",
+      "vin": "VIN",
+      "make": "Make",
+      "model": "Model",
+      "odometerKm": "Odometer (km)",
+      "odometerHint": "Enter manually (not on the certificate)",
+      "extraTitle": "Other extracted data",
+      "fuel": "Fuel",
+      "power": "Power",
+      "engine": "Engine capacity",
+      "color": "Color",
+      "firstReg": "First registration",
+      "owner": "Owner",
+      "extraNote": "Shown for verification only; the owner name is not stored.",
+      "duplicateWarning": "This vehicle (plate/VIN) already exists – it will be updated on save.",
+      "save": "Save",
+      "update": "Update",
+      "saving": "Saving…",
+      "errorScan": "Scan failed, please try again.",
+      "errorSave": "Save failed, please try again."
+    },
+    "documents": {
+      "title": "Documents",
+      "open": "Open",
+      "kind": {
+        "registration": "Registration",
+        "other": "Document"
+      }
     }
   },
   "documents": {
