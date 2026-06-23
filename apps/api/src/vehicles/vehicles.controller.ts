@@ -97,8 +97,10 @@ export class VehiclesController {
   }
 
   /**
-   * Forgalmi engedély beolvasása (1–2 kép vagy PDF). OCR + AI kiolvasás, NEM ment
-   * járművet – a draft mezőket adja vissza ellenőrzésre. AI_PROCESSING feature mögött.
+   * Forgalmi engedély beolvasásának INDÍTÁSA (1–2 kép vagy PDF). A fájl(oka)t
+   * stagingbe tölti és háttér-feldolgozásra sorba teszi (OCR + AI), majd AZONNAL
+   * visszaadja a `scanId`-t. A kliens a `GET scan/:scanId`-del pollingol az
+   * eredményre – így a hosszú OCR+AI nem a HTTP-kérés idejét terheli.
    */
   @Post('scan')
   @RequireFeature(FeatureKey.AI_PROCESSING)
@@ -112,12 +114,20 @@ export class VehiclesController {
     @UploadedFiles() files: UploadedScanFile[] | undefined,
     @Query('locale') locale?: string,
   ) {
-    return this.vehiclesService.scanRegistration(
+    return this.vehiclesService.startScan(
       tenant.tenantId,
       user.userId,
       files,
       locale,
     );
+  }
+
+  /** Egy beolvasás (job) állapota és – ha kész – az eredménye (polling). */
+  @Get('scan/:scanId')
+  @RequireFeature(FeatureKey.AI_PROCESSING)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  getScan(@Param('scanId') scanId: string) {
+    return this.vehiclesService.getScan(scanId);
   }
 
   /** A beolvasott (ellenőrzött) adatok mentése: új jármű vagy meglévő frissítése. */

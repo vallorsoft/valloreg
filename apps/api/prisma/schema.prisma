@@ -101,6 +101,7 @@ model Tenant {
   reminders            Reminder[]
   vehicleDocuments     VehicleDocument[]
   vehicleVerifications VehicleVerification[]
+  vehicleScans         VehicleScan[]
 
   @@map("tenants")
 }
@@ -517,6 +518,39 @@ model VehicleDocument {
   @@index([tenantId])
   @@index([tenantId, vehicleId])
   @@map("vehicle_documents")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Forgalmi-beolvasás (OCR + AI) ASZINKRON háttér-job állapota és eredménye
+// ──────────────────────────────────────────────────────────────────────────
+//
+// A beolvasás nem a HTTP-kérésen belül fut: a controller stagingbe tölti a
+// fájl(oka)t, létrehoz egy VehicleScan(PENDING) rekordot, sorba teszi, és a
+// scanId-t adja vissza. A worker (BullMQ) végzi az OCR+AI-t és ide írja az
+// eredményt; a kliens pollingol a státuszra. A `status` a @valloreg/shared
+// VehicleScanStatus string-értékeivel azonos.
+model VehicleScan {
+  id                    String   @id @default(uuid())
+  tenantId              String
+  createdById           String
+  status                String   @default("PENDING")
+  // A staging fájlok hivatkozásai (ScanFileRef[]) – a confirm ezeket köti a járműhöz.
+  files                 Json
+  // A kiolvasott draft (VehicleRegistrationResult), ha DONE.
+  draft                 Json?
+  // Rendszám/VIN alapján talált meglévő jármű (frissítés-javaslat), ha van.
+  matchedVehicleId      String?
+  // Forgalmi engedélynek tűnik-e (van rendszám/VIN).
+  looksLikeRegistration Boolean?
+  // Hibaüzenet, ha FAILED.
+  error                 String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("vehicle_scans")
 }
 
 // ──────────────────────────────────────────────────────────────────────────

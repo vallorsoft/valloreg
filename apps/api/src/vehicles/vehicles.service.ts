@@ -1,4 +1,4 @@
-import { Inject, Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import {
@@ -7,16 +7,14 @@ import {
   MAX_DOCUMENT_SIZE_BYTES,
   PLAN_LIMITS,
   PlanTier,
+  VehicleScanStatus,
   type VehicleRegistrationResult,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/exceptions/app.exception';
 import { StorageService } from '../storage/storage.service';
-import { OCR_PROVIDER } from '../ocr/ocr.provider';
-import type { OcrProvider } from '../ocr/ocr.provider';
-import { VEHICLE_EXTRACTION_PROVIDER } from '../extraction/vehicle-extraction.provider';
-import type { VehicleExtractionProvider } from '../extraction/vehicle-extraction.provider';
+import { VehicleScansQueueService } from '../queue/vehicle-scans-queue.service';
 import type { CreateVehicleDto } from './dto/create-vehicle.dto';
 import type { UpdateVehicleDto } from './dto/update-vehicle.dto';
 import type { ConfirmScanDto } from './dto/confirm-scan.dto';
@@ -37,8 +35,19 @@ export interface ScanFileRef {
   sizeBytes: number;
 }
 
-export interface VehicleScanResult {
-  draft: VehicleRegistrationResult;
+/** A beolvasás elindításának eredménye: a kliens ezzel pollingol. */
+export interface StartScanResult {
+  scanId: string;
+  status: VehicleScanStatus;
+}
+
+/** Egy beolvasás (job) aktuális állapota és – ha kész – az eredménye. */
+export interface VehicleScanView {
+  id: string;
+  status: VehicleScanStatus;
+  /** A kiolvasott draft mezők (csak DONE állapotban). */
+  draft: VehicleRegistrationResult | null;
+  /** A staging fájlok hivatkozásai (a confirm ezeket köti a járműhöz). */
   files: ScanFileRef[];
   /** Ha a rendszám/VIN már létező járműre illik (frissítés ajánlott). */
   matchedVehicleId: string | null;
@@ -47,7 +56,9 @@ export interface VehicleScanResult {
    * beolvasott kép valószínűleg NEM forgalmi – a UI figyelmeztet (de a kézi
    * kitöltés engedélyezett marad).
    */
-  looksLikeRegistration: boolean;
+  looksLikeRegistration: boolean | null;
+  /** Hibaüzenet, ha FAILED. */
+  error: string | null;
 }
 
 /** Egy CSV-import sor elemzési eredménye. */
@@ -93,9 +104,7 @@ export class VehiclesService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly storage: StorageService,
-    @Inject(OCR_PROVIDER) private readonly ocr: OcrProvider,
-    @Inject(VEHICLE_EXTRACTION_PROVIDER)
-    private readonly vehicleExtraction: VehicleExtractionProvider,
+    private readonly scanQueue: VehicleScansQueueService,
   ) {}
 
   list() {
@@ -270,24 +279,24 @@ export class VehiclesService {
   // ── Forgalmi engedély beolvasás (OCR + AI) ──────────────────────────────────
 
   /**
-   * Forgalmi engedély (1–2 kép vagy PDF) beolvasása: feltöltés a staging
-   * tárhelyre → OCR → AI kiolvasás → draft mezők. NEM ment járművet; a felhasználó
-   * az ellenőrzött adatokkal a `confirmScan`-t hívja. Ha a rendszám/VIN már létező
-   * járműre illik, a `matchedVehicleId` frissítést javasol.
+   * Forgalmi engedély (1–2 kép vagy PDF) beolvasásának INDÍTÁSA. A fájl(oka)t a
+   * staging tárhelyre tölti, létrehoz egy VehicleScan(PENDING) rekordot, sorba
+   * teszi a háttér-feldolgozáshoz (OCR + AI), és AZONNAL visszaadja a `scanId`-t.
+   * A kliens a `getScan`-nel pollingol az eredményre. Így a hosszú OCR+AI nem a
+   * HTTP-kérés idejét terheli (nincs időtúllépés / "Failed to fetch").
    */
-  async scanRegistration(
+  async startScan(
     tenantId: string,
     userId: string,
     files: UploadedScanFile[] | undefined,
     locale?: string,
-  ): Promise<VehicleScanResult> {
+  ): Promise<StartScanResult> {
     if (!files || files.length === 0) {
       throw AppException.validation('Hiányzik a beolvasandó fájl.');
     }
 
     const scanId = randomUUID();
     const staged: ScanFileRef[] = [];
-    const texts: string[] = [];
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i]!;
@@ -301,14 +310,6 @@ export class VehiclesService {
 
       const storageKey = `tenants/${tenantId}/${SCAN_PREFIX}/${scanId}/${i}`;
       await this.storage.upload(storageKey, file.buffer, mimeType);
-
-      const ocr = await this.ocr.recognize({
-        storageKey,
-        mimeType,
-        tenantId,
-        documentId: scanId,
-      });
-      texts.push(ocr.text);
       staged.push({
         storageKey,
         fileName: file.originalname,
@@ -317,36 +318,46 @@ export class VehiclesService {
       });
     }
 
-    const draft = await this.vehicleExtraction.extractVehicle(
-      texts.join('\n\n'),
-      { tenantId, locale },
-    );
+    await this.prisma.scoped.vehicleScan.create({
+      data: {
+        id: scanId,
+        tenantId,
+        createdById: userId,
+        status: VehicleScanStatus.PENDING,
+        files: staged as unknown as Prisma.InputJsonValue,
+      },
+    });
 
-    const matchedVehicleId = await this.findMatchingVehicle(
-      draft.plate,
-      draft.vin,
-    );
-
-    // Forgalmi engedély felismerése: rendszám VAGY VIN nélkül a kép aligha
-    // forgalmi – a UI figyelmeztet, de a kézi kitöltést nem tiltjuk.
-    const looksLikeRegistration = Boolean(
-      (draft.plate && draft.plate.trim()) || (draft.vin && draft.vin.trim()),
-    );
+    await this.scanQueue.enqueueProcess({ tenantId, scanId, locale });
 
     await this.audit.log({
       tenantId,
       userId,
-      action: 'vehicle.scanned',
-      resourceType: 'Vehicle',
-      metadata: {
-        fileCount: files.length,
-        confidence: draft.confidence,
-        matchedVehicleId,
-        looksLikeRegistration,
-      },
+      action: 'vehicle.scan_started',
+      resourceType: 'VehicleScan',
+      resourceId: scanId,
+      metadata: { fileCount: files.length },
     });
 
-    return { draft, files: staged, matchedVehicleId, looksLikeRegistration };
+    return { scanId, status: VehicleScanStatus.PENDING };
+  }
+
+  /** Egy beolvasás (job) aktuális állapota és – ha kész – az eredménye. */
+  async getScan(scanId: string): Promise<VehicleScanView> {
+    const scan = await this.prisma.scoped.vehicleScan.findFirst({
+      where: { id: scanId },
+    });
+    if (!scan) throw AppException.notFound('A beolvasás nem található.');
+
+    return {
+      id: scan.id,
+      status: scan.status as VehicleScanStatus,
+      draft: (scan.draft as unknown as VehicleRegistrationResult | null) ?? null,
+      files: (scan.files as unknown as ScanFileRef[]) ?? [],
+      matchedVehicleId: scan.matchedVehicleId,
+      looksLikeRegistration: scan.looksLikeRegistration,
+      error: scan.error,
+    };
   }
 
   /**
@@ -435,26 +446,6 @@ export class VehiclesService {
     if (!doc) throw AppException.notFound('A dokumentum nem található.');
     const downloadUrl = await this.storage.presignGet(doc.storageKey);
     return { downloadUrl };
-  }
-
-  /** Rendszám/VIN alapú egyezés a meglévő járművekkel (frissítés-javaslathoz). */
-  private async findMatchingVehicle(
-    plate: string | null,
-    vin: string | null,
-  ): Promise<string | null> {
-    const normPlate = plate ? normalizePlate(plate) : '';
-    const normVin = vin ? normalizeVin(vin) : '';
-    if (!normPlate && !normVin) return null;
-
-    const vehicles = await this.prisma.scoped.vehicle.findMany({
-      select: { id: true, plate: true, vin: true },
-    });
-    for (const v of vehicles) {
-      if (normVin && v.vin && normalizeVin(v.vin) === normVin) return v.id;
-      if (normPlate && v.plate && normalizePlate(v.plate) === normPlate)
-        return v.id;
-    }
-    return null;
   }
 
   // ── CSV tömeges import ───────────────────────────────────────────────────────
