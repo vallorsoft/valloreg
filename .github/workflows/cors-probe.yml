@@ -1,0 +1,35 @@
+name: cors-probe
+
+# IDEIGLENES diagnosztika: ellenőrzi, hogy az élő API helyes CORS-fejlécet ad-e
+# a web origin felé (preflight + tényleges kérés). Eldobható a vizsgálat után.
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: CORS preflight (OPTIONS) a /api/documents-re
+        run: |
+          API="https://valloreg-api.onrender.com/api"
+          ORIGIN="https://valloreg-web.onrender.com"
+          echo "===== 1) OPTIONS preflight POST /documents ====="
+          curl -s -i -X OPTIONS "$API/documents" \
+            -H "Origin: $ORIGIN" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: authorization,x-tenant-id,content-type" \
+            --max-time 60 | sed -n '1,30p'
+          echo ""
+          echo "===== 2) OPTIONS preflight POST /vehicles/x/scan ====="
+          curl -s -i -X OPTIONS "$API/vehicles/x/scan" \
+            -H "Origin: $ORIGIN" \
+            -H "Access-Control-Request-Method: POST" \
+            -H "Access-Control-Request-Headers: authorization,x-tenant-id,content-type" \
+            --max-time 60 | sed -n '1,30p'
+          echo ""
+          echo "===== 3) GET /health Origin-nel (ACAO fejlec?) ====="
+          curl -s -i "$API/health" -H "Origin: $ORIGIN" --max-time 60 | sed -n '1,20p'
+          echo ""
+          echo "===== 4) POST /documents fajl nelkul, Origin-nel (varhato 4xx, DE CORS-fejleccel) ====="
+          curl -s -i -X POST "$API/documents" -H "Origin: $ORIGIN" --max-time 60 | sed -n '1,25p'
