@@ -488,6 +488,34 @@
         "registration": "Registration",
         "other": "Document"
       }
+    },
+    "import": {
+      "button": "Bulk import",
+      "title": "Bulk vehicle import (CSV)",
+      "subtitle": "Upload a CSV to add your fleet quickly. Columns: plate, vin, make, model, year, odometerKm.",
+      "choose": "Choose CSV",
+      "template": "Download template",
+      "preview": "Preview",
+      "loading": "Processing…",
+      "import": "Import",
+      "importing": "Importing…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "status": "Status",
+      "plate": "Plate",
+      "vin": "VIN",
+      "makeModel": "Make / model",
+      "row": "Row",
+      "action": {
+        "create": "New",
+        "update": "Update",
+        "error": "Error"
+      },
+      "summaryPreview": "{total} rows total: {create} new, {update} updates, {error} errors.",
+      "summaryDone": "{created} created, {updated} updated, {skipped} skipped.",
+      "doneTitle": "Import complete",
+      "errorPreview": "Preview failed.",
+      "errorCommit": "Import failed."
     }
   },
   "documents": {

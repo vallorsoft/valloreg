@@ -149,6 +149,14 @@ nyilvántartókhoz képest.
       letöltés a részletezőn; jármű törlésekor az S3 fájl is takarítódik
 - [x] Adatvédelem: a tulajdonos neve (személyes adat) csak ellenőrzéshez, nem perzisztáljuk
 
+### 5/E – Tömeges járműimport CSV-ből (KÉSZ)
+
+- [x] CSV feltöltés → **soronkénti validáció + előnézet** (create/update/error besorolás),
+      majd véglegesítés (`POST /vehicles/import/preview` és `/commit`)
+- [x] Duplikátum-kezelés (rendszám/VIN → frissítés), fájlon belüli dupla kiszűrése,
+      csomag jármű-limit érvényesítése, HU/RO/EN oszlop-aliasok, `;`/`,` elválasztó
+- [x] UI: import modal (előnézet-tábla státusz-badge-ekkel) + sablon letöltés; külső függés nélkül
+
 ### 5/C – Tier 3 (KÉSZ)
 
 - [x] **Prediktív karbantartás finomítás:** a jármű SAJÁT történetéből tanult

@@ -9,11 +9,12 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UploadedFiles,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
-import { FilesInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { FeatureKey, MAX_DOCUMENT_SIZE_BYTES, TenantRole } from '@valloreg/shared';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
@@ -72,6 +73,30 @@ export class VehiclesController {
     @Body() dto: ConfirmScanDto,
   ) {
     return this.vehiclesService.confirmScan(tenant.tenantId, user.userId, dto);
+  }
+
+  /** CSV tömeges import – előnézet (soronkénti validáció, NEM ír). */
+  @Post('import/preview')
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),
+  )
+  importPreview(@UploadedFile() file: UploadedScanFile | undefined) {
+    return this.vehiclesService.previewImport(file);
+  }
+
+  /** CSV tömeges import – véglegesítés (létrehoz/frissít). */
+  @Post('import/commit')
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),
+  )
+  importCommit(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @UploadedFile() file: UploadedScanFile | undefined,
+  ) {
+    return this.vehiclesService.commitImport(tenant.tenantId, user.userId, file);
   }
 
   /** Egy jármű csatolt dokumentumai (archívum). */
