@@ -97,11 +97,15 @@ services:
         value: valloreg-documents
       - key: S3_FORCE_PATH_STYLE
         value: "true"
-      # AI / OCR – Fázis 1-ben stub; Fázis 2-ben állítsd `gemini`-re + add meg a kulcsot:
+      # AI / OCR – Gemini Vision (valódi olvasás). FONTOS: ezek `value`-k, ezért a
+      # Blueprint MINDEN szinkronnál ráírja a szolgáltatásra – tehát itt KELL
+      # `gemini`-nek lennie, különben a sync visszaállítja stubra a dashboardon
+      # kézzel beállított értéket (ez okozta a „nem olvas” hibát).
       - key: EXTRACTION_PROVIDER
-        value: stub
+        value: gemini
       - key: OCR_PROVIDER
-        value: stub
+        value: gemini
+      # A Gemini API-kulcs titok – a Render dashboardon kell beállítani:
       - key: GEMINI_API_KEY
         sync: false
       # RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). Alap: stub (álladat).
