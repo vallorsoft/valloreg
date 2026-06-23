@@ -1,0 +1,47 @@
+name: keep-alive
+
+# Az API (valloreg-api) ébren tartása a Render free tier 15 perces spin-down-ja
+# ellen. CSAK az API-t pingeljük, hogy beleférjünk a 750 instance-óra/hó free
+# keretbe (két szolgáltatás 24/7 ezt túllépné). A health check egyúttal a DB-t
+# és a Redist is "melegen" tartja (a Neon free is auto-suspendel).
+#
+# A cél URL felülírható egy `API_HEALTH_URL` repo-változóval
+# (Settings → Secrets and variables → Actions → Variables).
+#
+# Megjegyzés: az ütemezett GitHub Actions CSAK a default branch-ről fut, és nagy
+# terhelésnél késhet pár percet; tartós inaktivitásnál (60 nap) a GitHub
+# kikapcsolja. Megbízhatóbb kiegészítő lehet egy külső pinger (cron-job.org /
+# UptimeRobot) ugyanerre az URL-re.
+
+on:
+  schedule:
+    # ~14 percenként (a Render 15 perc inaktivitás után állítja le).
+    - cron: "*/14 * * * *"
+  workflow_dispatch: {}
+
+# Egyszerre csak egy ping fusson; a régebbi futás megszakítható.
+concurrency:
+  group: keep-alive
+  cancel-in-progress: true
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping API health
+        run: |
+          URL="${{ vars.API_HEALTH_URL || 'https://valloreg-api.onrender.com/api/health' }}"
+          echo "Pinging $URL"
+          # Cold start akár ~60 mp is lehet → több próbálkozás hosszabb timeout-tal.
+          for i in 1 2 3 4; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$URL" || echo 000)
+            echo "Attempt $i → HTTP $code"
+            if [ "$code" = "200" ]; then
+              echo "API awake."
+              exit 0
+            fi
+            sleep 15
+          done
+          echo "API did not return HTTP 200 after retries (last: $code)."
+          exit 1

@@ -1,6 +1,7 @@
 'use client';
 
-import type { ApiErrorBody, ErrorCode } from '@valloreg/shared';
+import { ErrorCode } from '@valloreg/shared';
+import type { ApiErrorBody } from '@valloreg/shared';
 import {
   getAccessToken,
   getActiveTenantId,
@@ -45,9 +46,44 @@ export class ApiError extends Error {
   }
 }
 
+/**
+ * Az auth.errors i18n blokkban LÉTEZŐ kulcsok (minden ErrorCode + NETWORK_ERROR).
+ * Ha a backend ezen kívüli kódot ad vissza, INTERNAL_ERROR-ra esünk, hogy a
+ * fordító (`te`) ne dobjon hiányzó-kulcs hibát.
+ */
+const KNOWN_ERROR_KEYS = new Set<string>([
+  ...Object.values(ErrorCode),
+  'NETWORK_ERROR',
+]);
+
+/** Egy ismert i18n hibakulcs egy tetszőleges hibából (fallback: INTERNAL_ERROR). */
+export function resolveErrorKey(err: unknown): ErrorCode | 'NETWORK_ERROR' {
+  if (err instanceof ApiError && KNOWN_ERROR_KEYS.has(err.code)) {
+    return err.code;
+  }
+  return ErrorCode.INTERNAL_ERROR;
+}
+
+/**
+ * Diagnosztikai utótag a technikai (nem üzleti) hibákhoz: a HTTP státusz, hogy
+ * megkülönböztethető legyen a szerver 500 (INTERNAL_ERROR) a rossz API-URL /
+ * 404 / elérhetetlen háttér esetektől. Üzleti hibáknál üres.
+ */
+export function errorDebugSuffix(err: unknown): string {
+  if (
+    err instanceof ApiError &&
+    (err.code === 'INTERNAL_ERROR' || err.code === 'NETWORK_ERROR')
+  ) {
+    return err.status ? ` (HTTP ${err.status})` : ' (nincs válasz)';
+  }
+  return '';
+}
+
 interface RequestOptions extends Omit<RequestInit, 'body'> {
   /** JSON-serializable body; set automatically with the correct header. */
   json?: unknown;
+  /** Multipart body (fájlfeltöltés). A Content-Type-ot a böngésző állítja be. */
+  form?: FormData;
   /** Skip attaching the Authorization header (e.g. login/register). */
   anonymous?: boolean;
 }
@@ -57,6 +93,8 @@ function buildHeaders(options: RequestOptions): Headers {
   if (options.json !== undefined && !headers.has('Content-Type')) {
     headers.set('Content-Type', 'application/json');
   }
+  // FormData esetén NEM állítunk Content-Type-ot: a böngésző teszi rá a
+  // helyes multipart boundary-t.
   if (!options.anonymous) {
     const token = getAccessToken();
     if (token) headers.set('Authorization', `Bearer ${token}`);
@@ -78,20 +116,30 @@ async function parseError(response: Response): Promise<ApiError> {
   return new ApiError(code, response.status, message, body?.details);
 }
 
-/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
-export async function apiRequest<T>(
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
-  const { json, anonymous: _anonymous, ...init } = options;
-  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+/**
+ * Hálózati hiba (fetch dobott) utáni várakozások ms-ben. Az ingyenes (Render
+ * free) háttér ~15 perc tétlenség után leáll; ilyenkor az ELSŐ kérés a hideg
+ * indítás közben kapcsolat-szinten elbukhat ("Failed to fetch"). Egy-két
+ * újrapróba a backoff alatt felébreszti a szolgáltatást, és a kérés átmegy.
+ * Csak NETWORK_ERROR-ra próbálkozunk újra (a válasszal érkező HTTP-hibákra nem).
+ */
+const NETWORK_RETRY_DELAYS_MS = [1500, 4000, 8000];
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Egyetlen kérés végrehajtása (újrapróba nélkül). */
+async function performRequest<T>(
+  url: string,
+  options: RequestOptions,
+  body: BodyInit | undefined,
+  init: Omit<RequestOptions, 'json' | 'form' | 'anonymous'>,
+): Promise<T> {
   let response: Response;
   try {
     response = await fetch(url, {
       ...init,
       headers: buildHeaders(options),
-      body: json !== undefined ? JSON.stringify(json) : undefined,
+      body,
     });
   } catch (cause) {
     throw new ApiError(
@@ -110,6 +158,45 @@ export async function apiRequest<T>(
   }
 
   return (await response.json()) as T;
+}
+
+/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const { json, form, anonymous: _anonymous, ...init } = options;
+  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+
+  const body =
+    form !== undefined
+      ? form
+      : json !== undefined
+        ? JSON.stringify(json)
+        : undefined;
+
+  // Hálózati hibára (a kérés el sem ért a szerverig) backoff-fal újrapróbálunk –
+  // fájlfeltöltésnél (FormData) is, mert a FormData objektum minden fetch-hívásnál
+  // újrakódolódik (nem "elfogyó" stream), és a hideg indítás miatti "Failed to
+  // fetch" jellemzően azonnal, szerver-érintés nélkül jön.
+  const maxAttempts = NETWORK_RETRY_DELAYS_MS.length + 1;
+
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await performRequest<T>(url, options, body, init);
+    } catch (err) {
+      lastError = err;
+      // Csak hálózati hibára (nincs válasz) próbálkozunk újra; a HTTP-hibákat
+      // (4xx/5xx, amelyek CORS-fejléccel jönnek) azonnal továbbdobjuk.
+      const retriable =
+        err instanceof ApiError && err.code === 'NETWORK_ERROR';
+      const hasMore = attempt < maxAttempts - 1;
+      if (!retriable || !hasMore) break;
+      await sleep(NETWORK_RETRY_DELAYS_MS[attempt]!);
+    }
+  }
+  throw lastError;
 }
 
 // ── Typed endpoint helpers (Phase 1 contracts; backend wiring later) ─────────
@@ -153,6 +240,22 @@ export const authApi = {
   me(): Promise<AuthSession> {
     return apiRequest<AuthSession>('/auth/me');
   },
+  /** Jelszó-visszaállítás kérése. A `locale` az e-mail nyelvéhez. */
+  forgotPassword(email: string, locale?: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/forgot-password', {
+      method: 'POST',
+      json: locale ? { email, locale } : { email },
+      anonymous: true,
+    });
+  },
+  /** Új jelszó beállítása a visszaállító tokennel. */
+  resetPassword(token: string, password: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/reset-password', {
+      method: 'POST',
+      json: { token, password },
+      anonymous: true,
+    });
+  },
 };
 
 /** Persist tokens and select the active tenant after a successful auth call. */
@@ -172,6 +275,10 @@ export interface DocumentListItem {
   mimeType: string;
   sizeBytes: number;
   status: string;
+  /** AI-osztályozott típus (invoice | registration | compliance | other) vagy null. */
+  docType: string | null;
+  /** Tartalmi duplikátum esetén az eredeti (felülírható) dokumentum id-je. */
+  duplicateOfId: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -204,30 +311,32 @@ export interface DocumentInvoice {
   items: InvoiceItem[];
 }
 
+/** Az eredeti (felülírható) dokumentum összegzése a duplikátum-nézethez. */
+export interface DuplicateOriginal {
+  id: string;
+  fileName: string;
+  status: string;
+  createdAt: string;
+  invoice: DocumentInvoice | null;
+}
+
 export interface DocumentDetail extends DocumentListItem {
   storageKey: string;
   sha256: string;
   invoice: DocumentInvoice | null;
+  /** Duplikátum esetén: MIT írna felül (az eredeti dokumentum + számlája). */
+  duplicateOf: DuplicateOriginal | null;
 }
 
 export const documentsApi = {
-  presign(payload: { fileName: string; mimeType: string }) {
-    return apiRequest<{ documentId: string; storageKey: string; uploadUrl: string }>(
-      '/documents/presign',
-      { method: 'POST', json: payload },
-    );
-  },
-  register(payload: {
-    fileName: string;
-    mimeType: string;
-    sizeBytes: number;
-    storageKey: string;
-    sha256: string;
-  }) {
-    return apiRequest<DocumentListItem>('/documents', {
-      method: 'POST',
-      json: payload,
-    });
+  /**
+   * Fájl feltöltése EGY kéréssel (multipart). A fájl az API-n keresztül kerül a
+   * tárhelyre (szerveroldali feltöltés) – nincs közvetlen böngésző→S3 hívás.
+   */
+  upload(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<DocumentListItem>('/documents', { method: 'POST', form });
   },
   list() {
     return apiRequest<DocumentListItem[]>('/documents');
@@ -242,6 +351,20 @@ export const documentsApi = {
     return apiRequest<DocumentListItem>(`/documents/${id}/confirm`, {
       method: 'PATCH',
     });
+  },
+  /**
+   * Duplikátum feloldása felülírással: az új dokumentum felülírja az eredetit
+   * (az eredeti törlődik). A duplikátum megtartása nem lehetséges.
+   */
+  overwriteDuplicate(id: string) {
+    return apiRequest<DocumentListItem>(`/documents/${id}/overwrite-duplicate`, {
+      method: 'POST',
+      json: { action: 'overwrite' },
+    });
+  },
+  /** Teljes törlés: a számla, tételek és a tárolt fájl is törlődik. */
+  remove(id: string) {
+    return apiRequest<void>(`/documents/${id}`, { method: 'DELETE' });
   },
 };
 
@@ -263,15 +386,6 @@ export const invoicesApi = {
     });
   },
 };
-
-/** SHA-256 hash kiszámítása a fájl ArrayBuffer-éből (Web Crypto API). */
-export async function computeSha256(file: File): Promise<string> {
-  const buffer = await file.arrayBuffer();
-  const hashBuffer = await crypto.subtle.digest('SHA-256', buffer);
-  return Array.from(new Uint8Array(hashBuffer))
-    .map((b) => b.toString(16).padStart(2, '0'))
-    .join('');
-}
 
 // ── Vehicles ──────────────────────────────────────────────────────────────────
 
@@ -319,9 +433,197 @@ export interface VehicleServiceHistory {
   items: ServiceHistoryItem[];
 }
 
+// ── Jármű forgalmi-beolvasás (OCR + AI) ──────────────────────────────────────
+
+export interface VehicleRegistrationDraft {
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  firstRegistration: string | null;
+  fuelType: string | null;
+  engineCm3: number | null;
+  powerKw: number | null;
+  color: string | null;
+  category: string | null;
+  ownerName: string | null;
+  confidence: number;
+  uncertainFields: { path: string; reason: string; confidence: number }[];
+}
+
+export interface ScanFileRef {
+  storageKey: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+/** A forgalmi-beolvasás háttér-job állapotai (a shared VehicleScanStatus tükre). */
+export type VehicleScanStatus =
+  | 'PENDING'
+  | 'OCR_RUNNING'
+  | 'EXTRACTING'
+  | 'DONE'
+  | 'FAILED';
+
+/** A beolvasás indításának eredménye: ezzel pollingol a kliens. */
+export interface StartScanResult {
+  scanId: string;
+  status: VehicleScanStatus;
+}
+
+/** Egy beolvasás (job) aktuális állapota és – ha kész – az eredménye. */
+export interface VehicleScanView {
+  id: string;
+  status: VehicleScanStatus;
+  draft: VehicleRegistrationDraft | null;
+  files: ScanFileRef[];
+  matchedVehicleId: string | null;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
+}
+
+export interface ConfirmScanPayload {
+  vehicleId?: string;
+  plate?: string;
+  vin?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  odometerKm?: number;
+  files?: ScanFileRef[];
+}
+
+export interface VehicleDocumentItem {
+  id: string;
+  kind: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
+
+export interface VehicleVerificationView {
+  source: string;
+  status: string;
+  itpValidUntil: string | null;
+  rcaValidUntil: string | null;
+  vignetteValidUntil: string | null;
+  checkedAt: string;
+}
+
+export interface ComplianceScanResult {
+  type: string;
+  validUntil: string | null;
+  confidence: number;
+  file: ScanFileRef;
+}
+
+export interface ImportRowResult {
+  index: number;
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  odometerKm: number | null;
+  action: 'create' | 'update' | 'error';
+  vehicleId: string | null;
+  errors: string[];
+}
+
+export interface ImportPreview {
+  rows: ImportRowResult[];
+  summary: { total: number; create: number; update: number; error: number };
+}
+
+export interface ImportCommitResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: { index: number; message: string }[];
+}
+
 export const vehiclesApi = {
   list() {
     return apiRequest<Vehicle[]>('/vehicles');
+  },
+  /**
+   * Forgalmi engedély beolvasásának INDÍTÁSA (1–2 fájl). NEM ment járművet és
+   * NEM várja meg az OCR+AI-t: a háttér-feldolgozáshoz sorba teszi, és a
+   * `scanId`-t adja vissza. Az eredményre a `getScan`-nel pollingolj.
+   */
+  scanRegistration(files: File[], locale?: string) {
+    const form = new FormData();
+    for (const f of files) form.append('files', f);
+    const qs = locale ? `?locale=${encodeURIComponent(locale)}` : '';
+    return apiRequest<StartScanResult>(`/vehicles/scan${qs}`, {
+      method: 'POST',
+      form,
+    });
+  },
+  /** Egy beolvasás aktuális állapota és – ha kész – az eredménye (polling). */
+  getScan(scanId: string) {
+    return apiRequest<VehicleScanView>(`/vehicles/scan/${scanId}`);
+  },
+  /** A beolvasott (ellenőrzött) adatok mentése. */
+  confirmScan(payload: ConfirmScanPayload) {
+    return apiRequest<{ id: string }>('/vehicles/scan/confirm', {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  importPreview(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<ImportPreview>('/vehicles/import/preview', {
+      method: 'POST',
+      form,
+    });
+  },
+  importCommit(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<ImportCommitResult>('/vehicles/import/commit', {
+      method: 'POST',
+      form,
+    });
+  },
+  verify(id: string) {
+    return apiRequest<VehicleVerificationView>(`/vehicles/${id}/verify`, {
+      method: 'POST',
+    });
+  },
+  scanComplianceDocument(id: string, type: string, file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<ComplianceScanResult>(
+      `/vehicles/${id}/verify-document?type=${encodeURIComponent(type)}`,
+      { method: 'POST', form },
+    );
+  },
+  confirmComplianceDocument(
+    id: string,
+    payload: { type: string; validUntil: string; file: ScanFileRef },
+  ) {
+    return apiRequest<VehicleVerificationView | null>(
+      `/vehicles/${id}/verify-document/confirm`,
+      { method: 'POST', json: payload },
+    );
+  },
+  getVerification(id: string) {
+    return apiRequest<VehicleVerificationView | null>(
+      `/vehicles/${id}/verification`,
+    );
+  },
+  listDocuments(id: string) {
+    return apiRequest<VehicleDocumentItem[]>(`/vehicles/${id}/documents`);
+  },
+  getDocumentDownloadUrl(id: string, docId: string) {
+    return apiRequest<{ downloadUrl: string }>(
+      `/vehicles/${id}/documents/${docId}/download`,
+    );
   },
   getById(id: string) {
     return apiRequest<Vehicle>(`/vehicles/${id}`);
@@ -340,6 +642,98 @@ export const vehiclesApi = {
   },
 };
 
+// ── Reminders (proaktív karbantartás + lejárat-figyelés) ─────────────────────
+
+export type ReminderStatusValue = 'ok' | 'due_soon' | 'overdue';
+
+export interface Reminder {
+  id: string;
+  vehicleId: string;
+  vehicle: {
+    id: string;
+    plate: string | null;
+    make: string | null;
+    model: string | null;
+    odometerKm: number | null;
+  } | null;
+  kind: string;
+  type: string;
+  title: string | null;
+  dueDate: string | null;
+  dueOdometerKm: number | null;
+  intervalDays: number | null;
+  intervalKm: number | null;
+  lastDoneAt: string | null;
+  lastDoneKm: number | null;
+  notes: string | null;
+  active: boolean;
+  status: ReminderStatusValue;
+  daysRemaining: number | null;
+  kmRemaining: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReminderSuggestion {
+  type: string;
+  kind: string;
+  intervalKm: number | null;
+  intervalDays: number | null;
+  lastDoneAt: string | null;
+  lastDoneKm: number | null;
+  dueDate: string | null;
+  dueOdometerKm: number | null;
+  reason: string;
+  source: 'learned' | 'default';
+  dataPoints: number;
+}
+
+export interface CreateReminderPayload {
+  vehicleId: string;
+  kind: string;
+  type: string;
+  title?: string;
+  dueDate?: string;
+  dueOdometerKm?: number;
+  intervalDays?: number;
+  intervalKm?: number;
+  notes?: string;
+  active?: boolean;
+}
+
+export type UpdateReminderPayload = Partial<Omit<CreateReminderPayload, 'vehicleId'>>;
+
+export const remindersApi = {
+  list(vehicleId?: string) {
+    const qs = vehicleId ? `?vehicleId=${encodeURIComponent(vehicleId)}` : '';
+    return apiRequest<Reminder[]>(`/reminders${qs}`);
+  },
+  upcoming() {
+    return apiRequest<Reminder[]>('/reminders/upcoming');
+  },
+  suggestions(vehicleId: string) {
+    return apiRequest<ReminderSuggestion[]>(`/reminders/suggestions/${vehicleId}`);
+  },
+  create(payload: CreateReminderPayload) {
+    return apiRequest<Reminder>('/reminders', { method: 'POST', json: payload });
+  },
+  update(id: string, payload: UpdateReminderPayload) {
+    return apiRequest<Reminder>(`/reminders/${id}`, {
+      method: 'PATCH',
+      json: payload,
+    });
+  },
+  complete(id: string, payload: { doneAt?: string; doneKm?: number } = {}) {
+    return apiRequest<Reminder>(`/reminders/${id}/complete`, {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  remove(id: string) {
+    return apiRequest<void>(`/reminders/${id}`, { method: 'DELETE' });
+  },
+};
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 export interface DashboardStats {
@@ -355,11 +749,74 @@ export interface DashboardStats {
     grossTotal: string | null;
     count: number;
   };
+  automation: {
+    autoOk: number;
+    needsReview: number;
+    rate: number;
+  };
 }
 
 export const statsApi = {
   getDashboard() {
     return apiRequest<DashboardStats>('/stats');
+  },
+};
+
+// ── Insights (költség-anomáliák) ─────────────────────────────────────────────
+
+export type AnomalyTypeValue =
+  | 'price_spike'
+  | 'duplicate_invoice'
+  | 'unusual_amount';
+export type AnomalySeverityValue = 'low' | 'medium' | 'high';
+
+export interface Anomaly {
+  id: string;
+  type: AnomalyTypeValue;
+  severity: AnomalySeverityValue;
+  documentId: string | null;
+  invoiceId: string | null;
+  date: string | null;
+  supplier: string | null;
+  vehicleLabel: string | null;
+  itemName: string | null;
+  currency: string | null;
+  amount: string | null;
+  baseline: string | null;
+  deltaPct: number | null;
+  count: number | null;
+}
+
+export interface AnomalySummary {
+  total: number;
+  byType: Record<AnomalyTypeValue, number>;
+  bySeverity: Record<AnomalySeverityValue, number>;
+}
+
+export type TcoRecommendationValue = 'ok' | 'watch' | 'consider_replacement';
+
+export interface VehicleTco {
+  vehicleId: string;
+  label: string;
+  currency: string | null;
+  totalSpent: string;
+  recentCost: string;
+  priorCost: string;
+  trendPct: number | null;
+  costPerKm: string | null;
+  odometerKm: number | null;
+  recommendation: TcoRecommendationValue;
+}
+
+export const insightsApi = {
+  getAnomalies() {
+    return apiRequest<Anomaly[]>('/insights/anomalies');
+  },
+  getSummary() {
+    return apiRequest<AnomalySummary>('/insights/anomalies/summary');
+  },
+  getTco() {
+    return apiRequest<VehicleTco[]>('/insights/tco');
   },
 };
 

@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -32,6 +33,14 @@ export class StorageService implements OnModuleInit {
         accessKeyId: s3.accessKey,
         secretAccessKey: s3.secretKey,
       },
+      // Az AWS SDK v3.729+ alapból CRC32 checksumot számol (WHEN_SUPPORTED), ami a
+      // presigned URL-be `x-amz-checksum-crc32` + `x-amz-sdk-checksum-algorithm`
+      // ALÁÍRT query paramétereket tesz. A böngésző egyszerű PUT-ja ezeket nem tudja
+      // teljesíteni, így az R2/S3/MinIO 4xx-szel elutasítja a feltöltést. WHEN_REQUIRED
+      // mellett a checksum csak akkor kerül be, ha expliciten kérjük – így a presigned
+      // PUT a böngészőből újra működik.
+      requestChecksumCalculation: 'WHEN_REQUIRED',
+      responseChecksumValidation: 'WHEN_REQUIRED',
     });
   }
 
@@ -54,16 +63,20 @@ export class StorageService implements OnModuleInit {
     return `tenants/${tenantId}/documents/${documentId}/${safeName}`;
   }
 
-  /** Presigned PUT URL feltöltéshez. */
-  async presignPut(key: string, contentType: string): Promise<string> {
-    const command = new PutObjectCommand({
-      Bucket: this.bucket,
-      Key: key,
-      ContentType: contentType,
-    });
-    return getSignedUrl(this.client, command, {
-      expiresIn: this.urlExpirySeconds,
-    });
+  /**
+   * Szerveroldali feltöltés az objektumtárba. A böngésző a fájlt az API-nak
+   * küldi (multipart), az API pedig innen tölti fel – így nincs szükség
+   * böngésző→S3 CORS-ra, presigned URL-re vagy kliensoldali checksumra.
+   */
+  async upload(key: string, body: Buffer, contentType: string): Promise<void> {
+    await this.client.send(
+      new PutObjectCommand({
+        Bucket: this.bucket,
+        Key: key,
+        Body: body,
+        ContentType: contentType,
+      }),
+    );
   }
 
   /** Fájl letöltése bufferbe (OCR provider-ek számára). */
@@ -76,6 +89,13 @@ export class StorageService implements OnModuleInit {
       chunks.push(Buffer.from(chunk));
     }
     return Buffer.concat(chunks);
+  }
+
+  /** Objektum törlése a tárból. Idempotens: nem létező kulcs nem hiba (S3). */
+  async delete(key: string): Promise<void> {
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 
   /** Presigned GET URL letöltéshez. */

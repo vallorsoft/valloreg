@@ -107,10 +107,93 @@ ERP/könyvelői integrációk, nyílt API marketplace — ezek a moduláris arch
 
 ---
 
+## FÁZIS 5 – AUTOMATION LAYER (a meglévő okosítása)
+
+**Cél:** A termék ne csak *tárolja* a szerviztörténetet, hanem proaktívan
+cselekedjen a felhasználó helyett. Ez a fő versenyképességi különbség a passzív
+nyilvántartókhoz képest.
+
+> **Hatókör-elv:** NEM építünk teljeskörű TMS-t. A fókusz végig a
+> **szerviztörténet + riportok** marad – ezt tesszük proaktívvá és
+> intelligensebbé. **Nincs** könyvelő-export / ERP / SAF-T integráció.
+
+### 5/A – Proaktív emlékeztetők (KÉSZ)
+
+- [x] `Reminder` adatmodell (karbantartás + megfelelőség), tenant-izolált
+- [x] Idő- és km-alapú esedékesség, ismétlődő intervallum, „kész” → előregördülő határidő
+- [x] Számított sürgősség: `ok` / `due_soon` / `overdue`
+- [x] Napi háttér-ütemező (BullMQ ismétlődő job) – esedékesség-szkennelés, throttle-olt értesítés
+- [x] Értesítés: Web Push a céghez + e-mail a tulajdonosnak
+- [x] Történet-alapú karbantartási **javaslatok** (auto-suggest a szerviztételekből)
+- [x] UI: `/reminders` oldal, dashboard widget + **gyors feltöltés a vezérlőpulton**, jármű-szintű panel
+- [x] REMINDERS feature flag élővé tétele (eddig csak deklarált volt)
+
+### 5/B – Tier 2 (KÉSZ)
+
+- [x] **Költség-anomália detektálás:** tétel egységár vs. kategória-medián
+      (túlárazás), azonos beszállító+számlaszám (duplikátum), kiugró számlaösszeg.
+      Olvasásidőben számított, a REPORTS feature mögött. UI: `/insights` + dashboard widget
+- [x] **Tanulási hurok erősítés:** tétel-minta → kategória/típus mapping rögzítése
+      kézi felülbíráláskor (eddig az `ItemCategoryMapping` modell használatlan volt)
+- [x] **Automatizáltsági metrika:** AUTO_OK / (AUTO_OK + NEEDS_REVIEW) arány a dashboardon
+- [x] **Ütemezett havi riport e-mailben:** a MEGLÉVŐ riport automatikus kiküldése a
+      tulajdonosnak (havi BullMQ job) – NEM könyvelő-export, NEM integráció
+
+### 5/D – Jármű felvétele forgalmi engedélyből (KÉSZ)
+
+- [x] Forgalmi engedély (1–2 kép vagy PDF) **beolvasása**: OCR + AI kiolvasás
+      (új `VehicleExtractionProvider` port: stub + Gemini), szinkron `POST /vehicles/scan`
+- [x] **Ellenőrző űrlap** előtöltve, alacsony-confidence mezők kiemelve; mobil kamera (`capture`)
+- [x] **Duplikátum-felismerés** (rendszám/VIN) → meglévő jármű frissítése új helyett
+- [x] A beolvasott kép **archiválása** a jármű dokumentum-archívumában (`VehicleDocument`),
+      letöltés a részletezőn; jármű törlésekor az S3 fájl is takarítódik
+- [x] Adatvédelem: a tulajdonos neve (személyes adat) csak ellenőrzéshez, nem perzisztáljuk
+
+### 5/F – RO megfelelőség auto-lekérés (ITP / RCA / rovinietă) (KÉSZ)
+
+- [x] Pluggable `VehicleVerificationProvider` (stub + `ro` külső API-ra kész);
+      env: `VEHICLE_VERIFY_PROVIDER`, `RO_VERIFY_API_URL/KEY`. API nélkül stub/biztonságos.
+- [x] `VehicleVerification` rekord (ITP/RCA/rovinietă lejárat, forrás, állapot, ellenőrizve)
+- [x] Az eredmény **automatikusan tölti** a compliance emlékeztetők lejáratát
+      (`source="verification"`, a kézi emlékeztetőket nem írja felül) → a napi szkenner értesít
+- [x] Heti BullMQ ütemező (boot-biztos) RO-rendszámú járművekre + manuális „Ellenőrzés most"
+- [x] UI: megfelelőség-panel a jármű-részletezőn (lejáratok + státusz-badge)
+- [x] **Dokumentum-alapú (API NÉLKÜLI) lekérés:** ITP/RCA/rovinietă igazolás
+      beolvasása (OCR + AI) → lejárat kiolvasása → megerősítés után emlékeztető +
+      dokumentum-archívum. Új `ComplianceExtractionProvider` (stub + Gemini).
+      Ez a fő, legális megoldás külső adat-API nélkül.
+
+> Megjegyzés: a RO hatósági/biztosítói adat nincs garantált nyílt API-ban; az
+> automatikus lekérés kereskedelmi/saját proxy API-t igényel (a provider erre kész,
+> scraping kerülve). API nélkül a dokumentum-alapú beolvasás a javasolt út.
+
+### 5/E – Tömeges járműimport CSV-ből (KÉSZ)
+
+- [x] CSV feltöltés → **soronkénti validáció + előnézet** (create/update/error besorolás),
+      majd véglegesítés (`POST /vehicles/import/preview` és `/commit`)
+- [x] Duplikátum-kezelés (rendszám/VIN → frissítés), fájlon belüli dupla kiszűrése,
+      csomag jármű-limit érvényesítése, HU/RO/EN oszlop-aliasok, `;`/`,` elválasztó
+- [x] UI: import modal (előnézet-tábla státusz-badge-ekkel) + sablon letöltés; külső függés nélkül
+
+### 5/C – Tier 3 (KÉSZ)
+
+- [x] **Prediktív karbantartás finomítás:** a jármű SAJÁT történetéből tanult
+      intervallumok (2+ adatpontból átlagolt km-/nap-távolság); alap-intervallum
+      csak fallback. A javaslat jelzi, ha tanult (`source`, `dataPoints`)
+- [x] **Prediktív TCO / csere-javaslat:** járművenkénti összköltség, költségtrend
+      (utolsó 12 hó vs. előző 12 hó), költség/km és csere-javaslat
+      (`ok` / `watch` / `consider_replacement`). UI: `/insights` TCO szekció
+
+**Tudatosan NEM ide tartozik (külön döntéssel, később):** könyvelő-export,
+ERP / számlázz.hu / SAF-T integráció, teljes TMS (telematika, sofőr-/útdíj-/
+üzemanyag-modulok), e-mail-alapú számlabeolvasás.
+
+---
+
 ## Architektúra-útvonal összefoglaló
 
 ```
-MVP            →  Produktív SaaS      →  Skálázható enterprise
-Fázis 1–2         Fázis 3                Fázis 4 + jövőbeli modulok
-core + AI         workflow + tanulás     billing, admin, scale
+MVP            →  Produktív SaaS   →  Automatizálás     →  Skálázható enterprise
+Fázis 1–2         Fázis 3             Fázis 5/A (kész)     Fázis 4 + 5/B + jövőbeli modulok
+core + AI         workflow + tanulás  proaktív emlékeztető billing, admin, scale, okos riport
 ```

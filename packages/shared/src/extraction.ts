@@ -9,6 +9,24 @@ import { ItemCategory, ItemType, PartType } from './categories';
  * de bővítve van a megbízható feldolgozáshoz szükséges mezőkkel.
  */
 
+/**
+ * A feltöltött dokumentum AI-osztályozása. A feldolgozó először ELDÖNTI, milyen
+ * típusú a fájl, és csak a `invoice` típusból készít számlát; a többit csak
+ * jelzi (a felhasználó a megfelelő helyre tudja vinni).
+ */
+export const DocumentType = {
+  /** Szervizszámla (ebből készül Invoice + tételek). */
+  INVOICE: 'invoice',
+  /** Forgalmi engedély (jármű-regisztráció). */
+  REGISTRATION: 'registration',
+  /** Megfelelőségi igazolás (ITP/RCA/rovinietă, biztosítás stb.). */
+  COMPLIANCE: 'compliance',
+  /** Egyéb / nem felismert. */
+  OTHER: 'other',
+} as const;
+
+export type DocumentType = (typeof DocumentType)[keyof typeof DocumentType];
+
 /** Egy lehetséges jármű-azonosító, amit a motor a számlán talált/sejt. */
 export const VehicleCandidateSchema = z.object({
   /** Felismert rendszám, ha van. */
@@ -76,6 +94,12 @@ export type UncertainField = z.infer<typeof UncertainFieldSchema>;
 
 /** A motor teljes kimenete (a spec JSON kontraktusa, kibővítve). */
 export const ExtractionResultSchema = z.object({
+  /**
+   * A dokumentum osztályozása. Ha nem `invoice`, a worker NEM készít belőle
+   * számlát, csak jelzi a típust. Alapértelmezés `invoice` a visszafelé-
+   * kompatibilitásért (a régi providerek számlát adnak vissza).
+   */
+  documentType: z.nativeEnum(DocumentType).default(DocumentType.INVOICE),
   invoice: ExtractedInvoiceSchema,
   items: z.array(ExtractedItemSchema).default([]),
   uncertainFields: z.array(UncertainFieldSchema).default([]),

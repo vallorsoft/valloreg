@@ -30,16 +30,25 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    # A monorepo gyökeréből telepítünk és buildelünk. A Prisma migráció a
-    # buildben fut (idempotens), hogy ingyenes csomagon is működjön.
+    # A monorepo gyökeréből telepítünk és buildelünk. FONTOS: a Prisma migráció
+    # NEM a buildben fut, hanem az indításkor (lásd startCommand). Így egy
+    # migrációs hiba (pl. beragadt migráció) NEM bukatja meg a buildet, és az új
+    # API-verzió mindenképp deployol – a migrációs hiba a runtime-logban látszik,
+    # nem brickeli be némán az összes jövőbeli deployt.
     buildCommand: >-
       corepack enable &&
       pnpm install --frozen-lockfile &&
       pnpm --filter @valloreg/shared build &&
       pnpm --filter @valloreg/api prisma:generate &&
-      pnpm --filter @valloreg/api build &&
-      pnpm --filter @valloreg/api prisma:deploy
-    startCommand: pnpm --filter @valloreg/api start:prod
+      pnpm --filter @valloreg/api build
+    # Indításkor előbb (idempotens) migrációt futtatunk, MAJD indul az API. A
+    # migráció NEM-fatális (`|| echo …`): ha hibázik, az API akkor is elindul, és
+    # a tényleges hiba a logból kiderül. Egészséges DB esetén ez létrehozza a
+    # hiányzó táblákat is (pl. vehicle_scans).
+    startCommand: >-
+      corepack enable;
+      pnpm --filter @valloreg/api prisma:deploy || echo 'prisma migrate deploy FAILED – continuing to start API (lásd a hibat fentebb)';
+      node apps/api/dist/main.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
@@ -71,6 +80,10 @@ services:
       # A web origin a CORS-hoz (igazítsd, ha más a web URL):
       - key: CORS_ORIGINS
         value: https://valloreg-web.onrender.com
+      # A webes frontend nyilvános URL-je a jelszó-visszaállító e-mail linkjéhez.
+      # (Ha üres, a CORS_ORIGINS első elemére esik vissza.)
+      - key: WEB_APP_URL
+        value: https://valloreg-web.onrender.com
       # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
       - key: S3_ENDPOINT
         sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
@@ -90,6 +103,14 @@ services:
       - key: OCR_PROVIDER
         value: stub
       - key: GEMINI_API_KEY
+        sync: false
+      # RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). Alap: stub (álladat).
+      # Valódi forráshoz: VEHICLE_VERIFY_PROVIDER=ro + RO_VERIFY_API_URL (+ kulcs).
+      - key: VEHICLE_VERIFY_PROVIDER
+        value: stub
+      - key: RO_VERIFY_API_URL
+        sync: false
+      - key: RO_VERIFY_API_KEY
         sync: false
       # E-mail (Brevo) – opcionális, meghívókhoz:
       - key: BREVO_API_KEY

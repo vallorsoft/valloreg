@@ -53,8 +53,10 @@ export class TenantGuard implements CanActivate {
 
     request.tenant = { tenantId, role: membership.role };
 
-    // Belépés a tenant kontextusba a kérés további feldolgozásához.
-    this.tenantContext.enter({
+    // A middleware által megnyitott ALS holder feltöltése. A guard ugyanazon az
+    // async láncon fut, mint a middleware next()-je, így a beállított érték a
+    // handlerben és a scoped Prisma kliensben is látszik.
+    this.tenantContext.set({
       tenantId,
       userId: user.userId,
       role: membership.role,

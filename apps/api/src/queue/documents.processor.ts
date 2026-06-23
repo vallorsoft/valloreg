@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import { Prisma } from '@prisma/client';
-import { DocumentStatus, ItemType } from '@valloreg/shared';
+import { DocumentStatus, DocumentType, ItemType } from '@valloreg/shared';
 import type { ExtractionResult } from '@valloreg/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
@@ -71,6 +71,11 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       },
     );
 
+    // Kezeletlen 'error' esemény (pl. Redis-kapcsolat hiba) nélkül a Node
+    // leállhat ('Unhandled error event') – ezért külön, nem-fatális listener.
+    this.worker.on('error', (err) => {
+      this.logger.warn(`Documents worker hiba: ${err.message}`);
+    });
     this.worker.on('failed', (job, err) => {
       this.logger.error(
         `Job sikertelen (${job?.id}): ${err.message}`,
@@ -104,6 +109,8 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       DocumentStatus.AUTO_OK,
       DocumentStatus.NEEDS_REVIEW,
       DocumentStatus.CONFIRMED,
+      DocumentStatus.NOT_INVOICE,
+      DocumentStatus.DUPLICATE,
       DocumentStatus.ARCHIVED,
     ];
     if (terminal.includes(document.status)) {
@@ -123,12 +130,36 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
         documentId,
       });
 
-      // 2) Extraction
+      // 2) Extraction (ez OSZTÁLYOZ is: documentType).
       await this.setStatus(tenantId, documentId, DocumentStatus.EXTRACTING);
       const extraction = await this.extraction.extract(ocrResult.text, {
         tenantId,
         documentId,
       });
+
+      // 2/b) Felismerés: ha NEM számla, nem készítünk belőle számlát – csak
+      //      jelezzük a típust (a felhasználó a megfelelő helyre viszi).
+      if (extraction.documentType !== DocumentType.INVOICE) {
+        await this.markNotInvoice(
+          tenantId,
+          documentId,
+          extraction.documentType,
+        );
+        await this.audit.log({
+          tenantId,
+          action: 'document.classified_non_invoice',
+          resourceType: 'Document',
+          resourceId: documentId,
+          metadata: { docType: extraction.documentType, ocrPages: ocrResult.pages },
+        });
+        await this.notifyClassified(
+          document.uploadedById,
+          document.fileName,
+          documentId,
+          extraction.documentType,
+        );
+        return;
+      }
 
       // 3) Felismerés: beszállító feloldása + jármű-matching (a tanult mappingek
       //    és a rendszám/VIN egyezés alapján).
@@ -151,17 +182,33 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
         vehicleMatch,
       );
 
-      // 5) Státusz a confidence alapján.
-      const nextStatus =
-        extraction.invoice.confidence >= AUTO_OK_CONFIDENCE_THRESHOLD
+      // 5) Tartalmi duplikátum-figyelés: azonos beszállító + számlaszám már
+      //    létezik egy MÁSIK (nem-duplikátum) dokumentumon? Ha igen, a státusz
+      //    DUPLICATE és a felhasználó felülírhatja az eredetit.
+      const duplicateOfId = await this.findDuplicateOriginal(
+        tenantId,
+        documentId,
+        supplierId,
+        extraction.invoice.invoiceNumber,
+      );
+
+      // 6) Státusz: duplikátum > confidence-alapú.
+      const nextStatus = duplicateOfId
+        ? DocumentStatus.DUPLICATE
+        : extraction.invoice.confidence >= AUTO_OK_CONFIDENCE_THRESHOLD
           ? DocumentStatus.AUTO_OK
           : DocumentStatus.NEEDS_REVIEW;
-      await this.setStatus(tenantId, documentId, nextStatus);
+      await this.finalizeInvoiceDocument(
+        tenantId,
+        documentId,
+        nextStatus,
+        duplicateOfId,
+      );
 
-      // 6) Audit
+      // 7) Audit
       await this.audit.log({
         tenantId,
-        action: 'document.processed',
+        action: duplicateOfId ? 'document.duplicate_detected' : 'document.processed',
         resourceType: 'Document',
         resourceId: documentId,
         metadata: {
@@ -172,20 +219,26 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
           supplierId,
           matchedVehicleId: vehicleMatch.vehicleId,
           matchSource: vehicleMatch.source,
+          duplicateOfId,
         },
       });
 
-      // 7) Push értesítés a feltöltőnek (ha feliratkozott). A push hibája soha
+      // 8) Push értesítés a feltöltőnek (ha feliratkozott). A push hibája soha
       //    nem buktathatja meg a feldolgozást, ezért külön try/catch.
       try {
+        const duplicate = nextStatus === DocumentStatus.DUPLICATE;
         const needsReview = nextStatus === DocumentStatus.NEEDS_REVIEW;
         await this.notifications.sendToUser(document.uploadedById, {
-          title: needsReview
-            ? 'Dokumentum ellenőrzésre vár'
-            : 'Dokumentum feldolgozva',
-          body: needsReview
-            ? `A(z) "${document.fileName}" feldolgozása kész, de ellenőrzést igényel.`
-            : `A(z) "${document.fileName}" automatikusan feldolgozva.`,
+          title: duplicate
+            ? 'Lehetséges duplikátum'
+            : needsReview
+              ? 'Dokumentum ellenőrzésre vár'
+              : 'Dokumentum feldolgozva',
+          body: duplicate
+            ? `A(z) "${document.fileName}" azonos beszállító + számlaszám alapján már létezik. Felülírható.`
+            : needsReview
+              ? `A(z) "${document.fileName}" feldolgozása kész, de ellenőrzést igényel.`
+              : `A(z) "${document.fileName}" automatikusan feldolgozva.`,
           url: `/documents/${documentId}`,
         });
       } catch (err) {
@@ -218,6 +271,97 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       // két nominális típus áthidalása.
       data: { status: status as Prisma.DocumentUpdateManyMutationInput['status'] },
     });
+  }
+
+  /** Nem-számla dokumentum: státusz NOT_INVOICE + a felismert típus rögzítése. */
+  private async markNotInvoice(
+    tenantId: string,
+    documentId: string,
+    docType: string,
+  ): Promise<void> {
+    await this.prisma.system.document.updateMany({
+      where: { id: documentId, tenantId },
+      data: {
+        status: DocumentStatus.NOT_INVOICE as Prisma.DocumentUpdateManyMutationInput['status'],
+        docType,
+      },
+    });
+  }
+
+  /** Számla-dokumentum lezárása: státusz + docType + (esetleges) duplikátum-hivatkozás. */
+  private async finalizeInvoiceDocument(
+    tenantId: string,
+    documentId: string,
+    status: DocumentStatus,
+    duplicateOfId: string | null,
+  ): Promise<void> {
+    await this.prisma.system.document.updateMany({
+      where: { id: documentId, tenantId },
+      data: {
+        status: status as Prisma.DocumentUpdateManyMutationInput['status'],
+        docType: DocumentType.INVOICE,
+        duplicateOfId,
+      },
+    });
+  }
+
+  /**
+   * Tartalmi duplikátum keresése: azonos beszállító + (normalizált) számlaszám,
+   * de MÁS dokumentumon, amely maga NEM duplikátum. A legkorábbi találat az
+   * "eredeti", amit a felhasználó felülírhat. Üres beszállító/számlaszám → nincs
+   * megbízható egyezés (null).
+   */
+  private async findDuplicateOriginal(
+    tenantId: string,
+    documentId: string,
+    supplierId: string | null,
+    invoiceNumber: string,
+  ): Promise<string | null> {
+    const normalized = normalizeInvoiceNumber(invoiceNumber);
+    if (!supplierId || !normalized) return null;
+
+    const candidates = await this.prisma.system.invoice.findMany({
+      where: {
+        tenantId,
+        supplierId,
+        documentId: { not: documentId },
+      },
+      select: {
+        invoiceNumber: true,
+        documentId: true,
+        document: { select: { status: true, createdAt: true } },
+      },
+      orderBy: { document: { createdAt: 'asc' } },
+    });
+
+    for (const c of candidates) {
+      // A maga is duplikátumként megjelölt dokumentumot nem tekintjük eredetinek.
+      if (c.document?.status === DocumentStatus.DUPLICATE) continue;
+      if (normalizeInvoiceNumber(c.invoiceNumber ?? '') === normalized) {
+        return c.documentId;
+      }
+    }
+    return null;
+  }
+
+  /** Push értesítés a nem-számla osztályozásról (best-effort). */
+  private async notifyClassified(
+    userId: string,
+    fileName: string,
+    documentId: string,
+    docType: string,
+  ): Promise<void> {
+    try {
+      await this.notifications.sendToUser(userId, {
+        title: 'Dokumentum felismerve',
+        body: `A(z) "${fileName}" nem szervizszámla (felismert típus: ${docType}). Nem készült belőle számla.`,
+        url: `/documents/${documentId}`,
+      });
+    } catch (err) {
+      this.logger.warn(
+        `Push értesítés sikertelen (${documentId}): ${(err as Error).message}`,
+      );
+    }
   }
 
   private async persistInvoice(
@@ -289,4 +433,12 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       }
     });
   }
+}
+
+/**
+ * Számlaszám normalizálása a duplikátum-összevetéshez: nagybetű, csak betűk és
+ * számok (a "SZ-2026/0001" és "sz 2026 0001" ugyanaz). Üres → üres string.
+ */
+function normalizeInvoiceNumber(value: string): string {
+  return (value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
