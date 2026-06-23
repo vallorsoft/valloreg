@@ -97,6 +97,18 @@ export class InvoicesService {
       );
     }
 
+    // Tanulás: kategória/típus felülbíráláskor a tétel-minta → kategória mappinget
+    // súlyozzuk, hogy a jövőbeli automatikus kategorizálás pontosabb legyen.
+    if (dto.category !== undefined || dto.type !== undefined) {
+      await this.recordItemCategoryMapping(
+        tenantId,
+        item.invoice.supplierId,
+        item.name,
+        updated.category,
+        updated.type,
+      );
+    }
+
     await this.audit.log({
       tenantId,
       userId,
@@ -135,6 +147,37 @@ export class InvoicesService {
     } else {
       await this.prisma.scoped.supplierVehicleMapping.create({
         data: { tenantId, supplierId, vehicleId },
+      });
+    }
+  }
+
+  /**
+   * Tétel-minta → kategória/típus tanuló mapping súlyozása. A `pattern` a tétel
+   * normalizált neve; beszállítóhoz kötve (ha ismert), hogy beszállító-specifikus
+   * legyen a tanulás. Ha létezik, +1 a súly, különben új sor.
+   */
+  private async recordItemCategoryMapping(
+    tenantId: string,
+    supplierId: string | null,
+    name: string,
+    category: string,
+    type: string,
+  ): Promise<void> {
+    const pattern = name.toLowerCase().replace(/\s+/g, ' ').trim();
+    if (!pattern) return;
+
+    const existing = await this.prisma.scoped.itemCategoryMapping.findFirst({
+      where: { pattern, category, type, supplierId: supplierId ?? null },
+      select: { id: true },
+    });
+    if (existing) {
+      await this.prisma.scoped.itemCategoryMapping.update({
+        where: { id: existing.id },
+        data: { weight: { increment: 1 } },
+      });
+    } else {
+      await this.prisma.scoped.itemCategoryMapping.create({
+        data: { tenantId, supplierId: supplierId ?? null, pattern, category, type },
       });
     }
   }

@@ -7,6 +7,7 @@ export * from './plans';
 export * from './feature-flags';
 export * from './categories';
 export * from './reminders';
+export * from './insights';
 export * from './extraction';
 export * from './documents';
 export * from './locales';
