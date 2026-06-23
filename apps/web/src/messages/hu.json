@@ -339,6 +339,7 @@
       "documents": "Dokumentumok",
       "reminders": "Emlékeztetők",
       "reports": "Riportok",
+      "insights": "Anomáliák",
       "team": "Csapat",
       "billing": "Előfizetés",
       "admin": "Super Admin",
@@ -363,7 +364,8 @@
       "processing": "Feldolgozás alatt",
       "confirmed": "Jóváhagyva",
       "invoiceGrossTotal": "Számlázott összeg",
-      "invoiceCount": "Feldolgozott számla"
+      "invoiceCount": "Feldolgozott számla",
+      "automationRate": "Automatizáltság"
     },
     "units": {
       "currency": "Ft",
@@ -682,6 +684,36 @@
       "office": "Iroda",
       "fleet_general": "Flotta általános",
       "other": "Egyéb"
+    }
+  },
+  "insights": {
+    "title": "Költség-anomáliák",
+    "subtitle": "Túlárazott tételek, duplikált számlák és kiugró összegek a szerviztörténetből.",
+    "loading": "Betöltés…",
+    "unavailable": "Ez a funkció a csomagodban nincs engedélyezve.",
+    "empty": {
+      "title": "Nincs anomália",
+      "description": "Jelenleg nem találtunk gyanús tételt vagy számlát."
+    },
+    "types": {
+      "price_spike": "Túlárazás",
+      "duplicate_invoice": "Duplikátum",
+      "unusual_amount": "Kiugró összeg"
+    },
+    "severity": {
+      "low": "Alacsony",
+      "medium": "Közepes",
+      "high": "Magas"
+    },
+    "message": {
+      "price_spike": "{item}: {pct}%-kal drágább a szokásosnál",
+      "duplicate_invoice": "Lehetséges duplikált számla ({count}×): {number}",
+      "unusual_amount": "Kiugró számlaösszeg: {pct}%-kal a szokásos felett"
+    },
+    "widget": {
+      "title": "Költség-anomáliák",
+      "count": "{count} észlelés",
+      "viewAll": "Megnézem"
     }
   },
   "admin": {

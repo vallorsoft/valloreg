@@ -488,11 +488,56 @@ export interface DashboardStats {
     grossTotal: string | null;
     count: number;
   };
+  automation: {
+    autoOk: number;
+    needsReview: number;
+    rate: number;
+  };
 }
 
 export const statsApi = {
   getDashboard() {
     return apiRequest<DashboardStats>('/stats');
+  },
+};
+
+// ── Insights (költség-anomáliák) ─────────────────────────────────────────────
+
+export type AnomalyTypeValue =
+  | 'price_spike'
+  | 'duplicate_invoice'
+  | 'unusual_amount';
+export type AnomalySeverityValue = 'low' | 'medium' | 'high';
+
+export interface Anomaly {
+  id: string;
+  type: AnomalyTypeValue;
+  severity: AnomalySeverityValue;
+  documentId: string | null;
+  invoiceId: string | null;
+  date: string | null;
+  supplier: string | null;
+  vehicleLabel: string | null;
+  itemName: string | null;
+  currency: string | null;
+  amount: string | null;
+  baseline: string | null;
+  deltaPct: number | null;
+  count: number | null;
+}
+
+export interface AnomalySummary {
+  total: number;
+  byType: Record<AnomalyTypeValue, number>;
+  bySeverity: Record<AnomalySeverityValue, number>;
+}
+
+export const insightsApi = {
+  getAnomalies() {
+    return apiRequest<Anomaly[]>('/insights/anomalies');
+  },
+  getSummary() {
+    return apiRequest<AnomalySummary>('/insights/anomalies/summary');
   },
 };
 
