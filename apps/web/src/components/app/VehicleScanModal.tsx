@@ -5,6 +5,7 @@ import { useTranslations, useLocale } from 'next-intl';
 import {
   vehiclesApi,
   ApiError,
+  errorDebugSuffix,
   type VehicleScanView,
   type ConfirmScanPayload,
 } from '@/lib/api';
@@ -117,7 +118,9 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
       const view = await vehiclesApi.getScan(scanId);
       if (view.status === 'DONE' || view.status === 'FAILED') return view;
       if (Date.now() > deadline) {
-        return { ...view, status: 'FAILED', error: t('errorScan') };
+        // A háttér-feldolgozás nem fejeződött be időben – jellemzően a worker nem
+        // dolgozza a sort (Redis/worker probléma), vagy az OCR+AI nagyon lassú.
+        return { ...view, status: 'FAILED', error: t('errorTimeout') };
       }
       await sleep(POLL_INTERVAL_MS);
     }
@@ -166,7 +169,9 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
 
   function scanErrorMessage(err: unknown): string {
     if (err instanceof ApiError && !isTechnical(err)) return err.message;
-    return t('errorScan');
+    // Technikai hibánál (hálózat / szerver 500) a HTTP-státuszt is jelezzük, hogy
+    // a valódi ok (nincs válasz vs. 500) elkülöníthető legyen.
+    return `${t('errorScan')}${errorDebugSuffix(err)}`;
   }
 
   const d = result?.draft;
