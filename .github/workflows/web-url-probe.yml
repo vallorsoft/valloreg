@@ -1,7 +1,6 @@
 name: web-url-probe
 
-# IDEIGLENES diagnosztika: megnezi, milyen API-URL-t hiv a deployolt web bundle
-# (helyes valloreg-api.onrender.com, vagy beragadt localhost:4000 fallback).
+# IDEIGLENES diagnosztika: megnezi, milyen API-URL-t hiv a deployolt web bundle.
 on:
   workflow_dispatch: {}
 
@@ -13,22 +12,29 @@ jobs:
       - name: Web bundle API-URL kinyerese
         run: |
           WEB="https://valloreg-web.onrender.com"
-          echo "===== 1) Web fooldal HTTP statusz ====="
-          curl -s -o /tmp/index.html -w "HTTP %{http_code}\n" "$WEB" --max-time 90
+          echo "===== 1) Web /hu/login lekerese (redirect-kovetessel) ====="
+          curl -sL -o /tmp/index.html -w "vegso HTTP %{http_code}, url=%{url_effective}\n" "$WEB" --max-time 90
+          echo "HTML meret: $(wc -c < /tmp/index.html) byte"
           echo ""
           echo "===== 2) /_next/static JS chunk URL-ek ====="
           CHUNKS=$(grep -oE '/_next/static/[^"]+\.js' /tmp/index.html | sort -u)
-          echo "$CHUNKS" | head -40
+          echo "$CHUNKS" | head -50
+          echo "chunk-szam: $(echo "$CHUNKS" | grep -c . )"
           echo ""
-          echo "===== 3) API-URL keresese a chunkokban (valloreg-api / localhost:4000 / onrender) ====="
+          echo "===== 3) API-URL a chunkokban (valloreg-api / localhost:4000) ====="
+          FOUND=""
           for c in $CHUNKS; do
             curl -s "$WEB$c" --max-time 60 -o /tmp/chunk.js || continue
             HIT=$(grep -oE 'https?://[a-zA-Z0-9.-]+(:[0-9]+)?/api' /tmp/chunk.js | sort -u)
             if [ -n "$HIT" ]; then
-              echo "[$c]:"
-              echo "$HIT" | sed 's/^/   /'
+              echo "[$c]:"; echo "$HIT" | sed 's/^/   /'; FOUND="yes"
             fi
           done
+          [ -z "$FOUND" ] && echo "(egyetlen chunkban sem talaltam abszolut /api URL-t)"
           echo ""
-          echo "===== 4) Osszes elofordulo 'localhost:4000' a fooldalon? ====="
-          grep -c "localhost:4000" /tmp/index.html || echo "0 (a fooldal HTML-ben)"
+          echo "===== 4) localhost:4000 elofordulas barhol a chunkokban ====="
+          for c in $CHUNKS; do
+            curl -s "$WEB$c" --max-time 60 -o /tmp/chunk.js || continue
+            grep -q "localhost:4000" /tmp/chunk.js && echo "localhost:4000 MEGTALALVA: $c"
+          done
+          echo "(ha fent nincs 'MEGTALALVA', akkor nincs localhost fallback)"
