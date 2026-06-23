@@ -1,8 +1,11 @@
 import { Logger, Module, Provider } from '@nestjs/common';
 import { AppConfigService } from '../config/app-config.service';
 import { EXTRACTION_PROVIDER } from './extraction.provider';
+import { VEHICLE_EXTRACTION_PROVIDER } from './vehicle-extraction.provider';
 import { StubExtractionProvider } from './providers/stub-extraction.provider';
 import { GeminiExtractionProvider } from './providers/gemini-extraction.provider';
+import { StubVehicleExtractionProvider } from './providers/stub-vehicle-extraction.provider';
+import { GeminiVehicleExtractionProvider } from './providers/gemini-vehicle-extraction.provider';
 
 /**
  * Extraction provider factory. Az EXTRACTION_PROVIDER env alapján választ:
@@ -38,12 +41,45 @@ const extractionProviderFactory: Provider = {
   },
 };
 
+/**
+ * Jármű-extraction (forgalmi engedély) provider factory – ugyanaz a logika,
+ * mint a számla-extractionnél (gemini → stub fallback kulcs nélkül).
+ */
+const vehicleExtractionProviderFactory: Provider = {
+  provide: VEHICLE_EXTRACTION_PROVIDER,
+  inject: [
+    AppConfigService,
+    StubVehicleExtractionProvider,
+    GeminiVehicleExtractionProvider,
+  ],
+  useFactory: (
+    config: AppConfigService,
+    stub: StubVehicleExtractionProvider,
+    gemini: GeminiVehicleExtractionProvider,
+  ) => {
+    const logger = new Logger('VehicleExtractionProviderFactory');
+    if (config.extractionProvider === 'gemini') {
+      if (!config.gemini.apiKey) {
+        logger.warn(
+          'EXTRACTION_PROVIDER=gemini, de GEMINI_API_KEY hiányzik – stub jármű-extraction aktív.',
+        );
+        return stub;
+      }
+      return gemini;
+    }
+    return stub;
+  },
+};
+
 @Module({
   providers: [
     StubExtractionProvider,
     GeminiExtractionProvider,
     extractionProviderFactory,
+    StubVehicleExtractionProvider,
+    GeminiVehicleExtractionProvider,
+    vehicleExtractionProviderFactory,
   ],
-  exports: [EXTRACTION_PROVIDER],
+  exports: [EXTRACTION_PROVIDER, VEHICLE_EXTRACTION_PROVIDER],
 })
 export class ExtractionModule {}

@@ -366,9 +366,86 @@ export interface VehicleServiceHistory {
   items: ServiceHistoryItem[];
 }
 
+// ── Jármű forgalmi-beolvasás (OCR + AI) ──────────────────────────────────────
+
+export interface VehicleRegistrationDraft {
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  firstRegistration: string | null;
+  fuelType: string | null;
+  engineCm3: number | null;
+  powerKw: number | null;
+  color: string | null;
+  category: string | null;
+  ownerName: string | null;
+  confidence: number;
+  uncertainFields: { path: string; reason: string; confidence: number }[];
+}
+
+export interface ScanFileRef {
+  storageKey: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface VehicleScanResult {
+  draft: VehicleRegistrationDraft;
+  files: ScanFileRef[];
+  matchedVehicleId: string | null;
+}
+
+export interface ConfirmScanPayload {
+  vehicleId?: string;
+  plate?: string;
+  vin?: string;
+  make?: string;
+  model?: string;
+  year?: number;
+  odometerKm?: number;
+  files?: ScanFileRef[];
+}
+
+export interface VehicleDocumentItem {
+  id: string;
+  kind: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  createdAt: string;
+}
+
 export const vehiclesApi = {
   list() {
     return apiRequest<Vehicle[]>('/vehicles');
+  },
+  /** Forgalmi engedély beolvasása (1–2 fájl). NEM ment járművet. */
+  scanRegistration(files: File[], locale?: string) {
+    const form = new FormData();
+    for (const f of files) form.append('files', f);
+    const qs = locale ? `?locale=${encodeURIComponent(locale)}` : '';
+    return apiRequest<VehicleScanResult>(`/vehicles/scan${qs}`, {
+      method: 'POST',
+      form,
+    });
+  },
+  /** A beolvasott (ellenőrzött) adatok mentése. */
+  confirmScan(payload: ConfirmScanPayload) {
+    return apiRequest<{ id: string }>('/vehicles/scan/confirm', {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  listDocuments(id: string) {
+    return apiRequest<VehicleDocumentItem[]>(`/vehicles/${id}/documents`);
+  },
+  getDocumentDownloadUrl(id: string, docId: string) {
+    return apiRequest<{ downloadUrl: string }>(
+      `/vehicles/${id}/documents/${docId}/download`,
+    );
   },
   getById(id: string) {
     return apiRequest<Vehicle>(`/vehicles/${id}`);

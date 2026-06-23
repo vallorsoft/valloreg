@@ -448,6 +448,46 @@
         "category": "Kategória",
         "amount": "Összeg"
       }
+    },
+    "scanRegistration": "Forgalmi beolvasása",
+    "scan": {
+      "title": "Forgalmi engedély beolvasása",
+      "subtitle": "Fotózd le vagy töltsd fel (kép vagy PDF) – a rendszer kiolvassa az adatokat.",
+      "hint": "Húzd ide, vagy válassz fájlt (1–2 oldal: eleje/hátulja).",
+      "choose": "Fájl kiválasztása",
+      "scan": "Beolvasás",
+      "scanning": "Beolvasás…",
+      "cancel": "Mégse",
+      "rescan": "Újra beolvas",
+      "plate": "Rendszám",
+      "year": "Évjárat",
+      "vin": "Alvázszám (VIN)",
+      "make": "Gyártmány",
+      "model": "Típus",
+      "odometerKm": "Km-óra állás",
+      "odometerHint": "Add meg kézzel (nincs a forgalmin)",
+      "extraTitle": "További kiolvasott adatok",
+      "fuel": "Üzemanyag",
+      "power": "Teljesítmény",
+      "engine": "Hengerűrtartalom",
+      "color": "Szín",
+      "firstReg": "Első forgalomba helyezés",
+      "owner": "Tulajdonos",
+      "extraNote": "Ezeket csak ellenőrzéshez mutatjuk; a tulajdonos nevét nem tároljuk.",
+      "duplicateWarning": "Ez a jármű (rendszám/VIN) már létezik – mentéskor frissül.",
+      "save": "Mentés",
+      "update": "Frissítés",
+      "saving": "Mentés…",
+      "errorScan": "A beolvasás sikertelen, próbáld újra.",
+      "errorSave": "A mentés sikertelen, próbáld újra."
+    },
+    "documents": {
+      "title": "Dokumentumok",
+      "open": "Megnyitás",
+      "kind": {
+        "registration": "Forgalmi engedély",
+        "other": "Dokumentum"
+      }
     }
   },
   "documents": {

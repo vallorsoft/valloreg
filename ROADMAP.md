@@ -139,6 +139,16 @@ nyilvántartókhoz képest.
 - [x] **Ütemezett havi riport e-mailben:** a MEGLÉVŐ riport automatikus kiküldése a
       tulajdonosnak (havi BullMQ job) – NEM könyvelő-export, NEM integráció
 
+### 5/D – Jármű felvétele forgalmi engedélyből (KÉSZ)
+
+- [x] Forgalmi engedély (1–2 kép vagy PDF) **beolvasása**: OCR + AI kiolvasás
+      (új `VehicleExtractionProvider` port: stub + Gemini), szinkron `POST /vehicles/scan`
+- [x] **Ellenőrző űrlap** előtöltve, alacsony-confidence mezők kiemelve; mobil kamera (`capture`)
+- [x] **Duplikátum-felismerés** (rendszám/VIN) → meglévő jármű frissítése új helyett
+- [x] A beolvasott kép **archiválása** a jármű dokumentum-archívumában (`VehicleDocument`),
+      letöltés a részletezőn; jármű törlésekor az S3 fájl is takarítódik
+- [x] Adatvédelem: a tulajdonos neve (személyes adat) csak ellenőrzéshez, nem perzisztáljuk
+
 ### 5/C – Tier 3 (KÉSZ)
 
 - [x] **Prediktív karbantartás finomítás:** a jármű SAJÁT történetéből tanult

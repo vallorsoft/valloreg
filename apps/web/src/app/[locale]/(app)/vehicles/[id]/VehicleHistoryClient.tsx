@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { VehicleReminders } from '@/components/app/VehicleReminders';
+import { VehicleDocuments } from '@/components/app/VehicleDocuments';
 
 function fmtAmount(value: string | number | null | undefined, locale: string): string {
   if (value == null || value === '') return '-';
@@ -146,6 +147,7 @@ export function VehicleHistoryClient({ id }: { id: string }) {
       </Card>
 
       <VehicleReminders vehicle={vehicle} />
+      <VehicleDocuments vehicleId={vehicle.id} />
     </>
   );
 }
