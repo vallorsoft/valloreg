@@ -519,6 +519,12 @@
         "unassigned": "Unassigned",
         "assignError": "Assignment failed."
       }
+    },
+    "actions": {
+      "delete": "Delete",
+      "deleting": "Deleting…",
+      "confirmDelete": "Delete this document? The invoice, line items and the file will be permanently removed.",
+      "deleteError": "Delete failed, please try again."
     }
   },
   "reminders": {
