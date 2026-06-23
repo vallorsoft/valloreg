@@ -30,20 +30,25 @@ services:
     runtime: node
     region: frankfurt
     plan: free
-    # A monorepo gyökeréből telepítünk és buildelünk. A Prisma migráció a
-    # buildben fut (idempotens), hogy ingyenes csomagon is működjön.
+    # A monorepo gyökeréből telepítünk és buildelünk. FONTOS: a Prisma migráció
+    # NEM a buildben fut, hanem az indításkor (lásd startCommand). Így egy
+    # migrációs hiba (pl. beragadt migráció) NEM bukatja meg a buildet, és az új
+    # API-verzió mindenképp deployol – a migrációs hiba a runtime-logban látszik,
+    # nem brickeli be némán az összes jövőbeli deployt.
     buildCommand: >-
       corepack enable &&
       pnpm install --frozen-lockfile &&
       pnpm --filter @valloreg/shared build &&
       pnpm --filter @valloreg/api prisma:generate &&
-      pnpm --filter @valloreg/api build &&
-      pnpm --filter @valloreg/api prisma:deploy
-    # A Prisma migráció a BUILD-ben fut (idempotens, lásd buildCommand). Az
-    # indítás (cold start / ébredés után is) ezért NEM futtat migrációt és NEM
-    # használ pnpm/turbo wrappert – közvetlen `node` indítás a leggyorsabb boot
-    # érdekében. (Ha a DB-t reseteled, egy újradeploy újra lefuttatja a migrációt.)
-    startCommand: node apps/api/dist/main.js
+      pnpm --filter @valloreg/api build
+    # Indításkor előbb (idempotens) migrációt futtatunk, MAJD indul az API. A
+    # migráció NEM-fatális (`|| echo …`): ha hibázik, az API akkor is elindul, és
+    # a tényleges hiba a logból kiderül. Egészséges DB esetén ez létrehozza a
+    # hiányzó táblákat is (pl. vehicle_scans).
+    startCommand: >-
+      corepack enable;
+      pnpm --filter @valloreg/api prisma:deploy || echo 'prisma migrate deploy FAILED – continuing to start API (lásd a hibat fentebb)';
+      node apps/api/dist/main.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
