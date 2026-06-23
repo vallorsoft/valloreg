@@ -488,6 +488,34 @@
         "registration": "Talon",
         "other": "Document"
       }
+    },
+    "import": {
+      "button": "Import în masă",
+      "title": "Import vehicule (CSV)",
+      "subtitle": "Încarcă un CSV pentru adăugarea rapidă a flotei. Coloane: plate, vin, make, model, year, odometerKm.",
+      "choose": "Alege CSV",
+      "template": "Descarcă șablon",
+      "preview": "Previzualizare",
+      "loading": "Se procesează…",
+      "import": "Importă",
+      "importing": "Se importă…",
+      "cancel": "Anulare",
+      "close": "Închide",
+      "status": "Status",
+      "plate": "Nr.",
+      "vin": "Serie șasiu",
+      "makeModel": "Marca / model",
+      "row": "Rând",
+      "action": {
+        "create": "Nou",
+        "update": "Actualizare",
+        "error": "Eroare"
+      },
+      "summaryPreview": "Total {total} rânduri: {create} noi, {update} actualizări, {error} cu erori.",
+      "summaryDone": "{created} create, {updated} actualizate, {skipped} omise.",
+      "doneTitle": "Import finalizat",
+      "errorPreview": "Previzualizarea a eșuat.",
+      "errorCommit": "Importul a eșuat."
     }
   },
   "documents": {

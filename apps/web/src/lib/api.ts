@@ -418,6 +418,31 @@ export interface VehicleDocumentItem {
   createdAt: string;
 }
 
+export interface ImportRowResult {
+  index: number;
+  plate: string | null;
+  vin: string | null;
+  make: string | null;
+  model: string | null;
+  year: number | null;
+  odometerKm: number | null;
+  action: 'create' | 'update' | 'error';
+  vehicleId: string | null;
+  errors: string[];
+}
+
+export interface ImportPreview {
+  rows: ImportRowResult[];
+  summary: { total: number; create: number; update: number; error: number };
+}
+
+export interface ImportCommitResult {
+  created: number;
+  updated: number;
+  skipped: number;
+  errors: { index: number; message: string }[];
+}
+
 export const vehiclesApi = {
   list() {
     return apiRequest<Vehicle[]>('/vehicles');
@@ -437,6 +462,22 @@ export const vehiclesApi = {
     return apiRequest<{ id: string }>('/vehicles/scan/confirm', {
       method: 'POST',
       json: payload,
+    });
+  },
+  importPreview(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<ImportPreview>('/vehicles/import/preview', {
+      method: 'POST',
+      form,
+    });
+  },
+  importCommit(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<ImportCommitResult>('/vehicles/import/commit', {
+      method: 'POST',
+      form,
     });
   },
   listDocuments(id: string) {

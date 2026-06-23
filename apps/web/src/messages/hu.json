@@ -488,6 +488,34 @@
         "registration": "Forgalmi engedély",
         "other": "Dokumentum"
       }
+    },
+    "import": {
+      "button": "Tömeges import",
+      "title": "Járművek tömeges importja (CSV)",
+      "subtitle": "Tölts fel egy CSV-t a flotta gyors felviteléhez. Oszlopok: plate, vin, make, model, year, odometerKm.",
+      "choose": "CSV kiválasztása",
+      "template": "Sablon letöltése",
+      "preview": "Előnézet",
+      "loading": "Feldolgozás…",
+      "import": "Importálás",
+      "importing": "Importálás…",
+      "cancel": "Mégse",
+      "close": "Bezárás",
+      "status": "Státusz",
+      "plate": "Rendszám",
+      "vin": "Alvázszám",
+      "makeModel": "Gyártmány / típus",
+      "row": "Sor",
+      "action": {
+        "create": "Új",
+        "update": "Frissítés",
+        "error": "Hiba"
+      },
+      "summaryPreview": "Összesen {total} sor: {create} új, {update} frissítés, {error} hibás.",
+      "summaryDone": "{created} létrehozva, {updated} frissítve, {skipped} kihagyva.",
+      "doneTitle": "Import kész",
+      "errorPreview": "Az előnézet sikertelen.",
+      "errorCommit": "Az import sikertelen."
     }
   },
   "documents": {
