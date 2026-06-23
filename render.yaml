@@ -39,13 +39,11 @@ services:
       pnpm --filter @valloreg/api prisma:generate &&
       pnpm --filter @valloreg/api build &&
       pnpm --filter @valloreg/api prisma:deploy
-    # A migrációt INDÍTÁSKOR is lefuttatjuk (idempotens): így a futó app által
-    # használt élő adatbázisban biztosan léteznek a táblák akkor is, ha a build
-    # másik DB-vel futott, a DB-t reseteltük, vagy a build-időbeli deploy kimaradt.
-    # E nélkül minden lekérdezés (login/register is) 500-zal (INTERNAL_ERROR) bukik.
-    startCommand: >-
-      pnpm --filter @valloreg/api prisma:deploy &&
-      pnpm --filter @valloreg/api start:prod
+    # A Prisma migráció a BUILD-ben fut (idempotens, lásd buildCommand). Az
+    # indítás (cold start / ébredés után is) ezért NEM futtat migrációt és NEM
+    # használ pnpm/turbo wrappert – közvetlen `node` indítás a leggyorsabb boot
+    # érdekében. (Ha a DB-t reseteled, egy újradeploy újra lefuttatja a migrációt.)
+    startCommand: node apps/api/dist/main.js
     healthCheckPath: /api/health
     envVars:
       - key: NODE_ENV
