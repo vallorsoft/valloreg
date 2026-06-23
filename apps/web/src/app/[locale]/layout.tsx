@@ -20,8 +20,14 @@ export const metadata: Metadata = {
     title: 'Valloreg',
   },
   icons: {
-    icon: '/icons/icon.svg',
-    apple: '/icons/icon.svg',
+    // SVG az asztali böngészőknek + PNG fallback és Apple touch ikon (iOS a
+    // SVG apple-touch-icont figyelmen kívül hagyja, ezért kötelező a PNG).
+    icon: [
+      { url: '/icons/icon.svg', type: 'image/svg+xml' },
+      { url: '/icons/icon-192.png', type: 'image/png', sizes: '192x192' },
+      { url: '/icons/icon-512.png', type: 'image/png', sizes: '512x512' },
+    ],
+    apple: [{ url: '/icons/apple-touch-icon.png', sizes: '180x180' }],
   },
 };
 

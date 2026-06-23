@@ -350,7 +350,12 @@
       "noTenant": "Nicio companie selectată",
       "menu": "Meniu"
     },
-    "phaseNote": "Vizualizare demo – conectarea datelor reale va veni în fazele următoare."
+    "phaseNote": "Vizualizare demo – conectarea datelor reale va veni în fazele următoare.",
+    "install": {
+      "label": "Instalează aplicația",
+      "iosTitle": "Instalare pe iPhone / iPad",
+      "iosSteps": "Apasă butonul Partajare, apoi alege „Adaugă la ecranul principal”."
+    }
   },
   "dashboard": {
     "title": "Panou de control",
