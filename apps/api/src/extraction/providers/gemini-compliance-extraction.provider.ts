@@ -8,7 +8,8 @@ import type {
 } from '../compliance-extraction.provider';
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const FALLBACK_STATUSES = new Set([429, 500, 503]);
+// 404 is fallback: kivezetett/ismeretlen modellnévnél lépjünk a következőre.
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
 
 /**
  * Gemini alapú megfelelőség-kiolvasás: ITP/RCA/rovinietă igazolás OCR

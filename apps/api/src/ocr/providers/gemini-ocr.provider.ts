@@ -5,7 +5,9 @@ import type { OcrInput, OcrProvider, OcrResult } from '../ocr.provider';
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 
-const FALLBACK_STATUSES = new Set([429, 500, 503]);
+// 404 is fallback: kivezetett/ismeretlen modellnévnél lépjünk a következőre
+// (ne hasaljon el a teljes lánc egyetlen retired modell – pl. gemini-1.5-flash – miatt).
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
 
 const OCR_PROMPT =
   'Extract all text from this document. Return the complete text content exactly ' +
