@@ -70,6 +70,13 @@ export const ExtractedItemSchema = z.object({
   category: z.nativeEnum(ItemCategory).default(ItemCategory.OTHER),
   /** Alkatrész-típus, ha releváns (fék, motor, szűrő…). */
   partType: z.nativeEnum(PartType).nullable().default(null),
+  /**
+   * A számlán szereplő alkatrész cikkszám / cikkkód (pl. "FB-1234", OEM-szám),
+   * ha látható. Ez az alkatrész legpontosabb azonosítója: ebből épül a
+   * jármű-javaslat (mely járművekre lett már felrakva ugyanez a cikkszám).
+   * Ha nincs a számlán, `null` – ekkor a típus + név alapján képződik kulcs.
+   */
+  articleNumber: z.string().nullable().default(null),
   /** vehicle | tool | general */
   type: z.nativeEnum(ItemType).default(ItemType.GENERAL),
   /** Ha a motor konkrét meglévő járműhöz kötötte. */

@@ -18,6 +18,7 @@ import { EXTRACTION_PROVIDER } from '../extraction/extraction.provider';
 import type { ExtractionProvider } from '../extraction/extraction.provider';
 import { MatchingService } from '../matching/matching.service';
 import type { VehicleMatch } from '../matching/matching.service';
+import { normalizePartKey } from '../matching/matching.util';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   DOCUMENTS_QUEUE,
@@ -411,25 +412,59 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       });
 
       if (extraction.items.length > 0) {
-        await tx.invoiceItem.createMany({
-          data: extraction.items.map((item) => ({
+        // A javaslat-számításhoz a számla dátuma/km-állása a viszonyítási pont.
+        const asOfDate = inv.date ? new Date(inv.date) : new Date();
+        const asOfKm = inv.odometerKm ?? null;
+
+        const itemsData: Prisma.InvoiceItemCreateManyInput[] = [];
+        for (const item of extraction.items) {
+          const partKey = normalizePartKey(
+            item.articleNumber,
+            item.partType,
+            item.name,
+          );
+
+          // Jármű-hozzárendelés prioritása: az extrakció által megadott id, majd
+          // a matching motor egyezése – csak a jármű-típusú tételekre.
+          const vehicleId =
+            item.vehicleId ??
+            (item.type === ItemType.VEHICLE ? vehicleMatch.vehicleId : null);
+
+          // JAVASLAT: csak jármű-típusú alkatrész-tételre, aminek van partKey-je
+          // és nincs hard egyezése (különben felesleges – már tudjuk a járművet).
+          let suggestion = null;
+          if (partKey && item.type === ItemType.VEHICLE && !vehicleId) {
+            suggestion = await this.matching.suggestVehicleForItem(
+              tenantId,
+              partKey,
+              item.partType ?? null,
+              asOfDate,
+              asOfKm,
+              invoice.id,
+            );
+          }
+
+          itemsData.push({
             tenantId,
             invoiceId: invoice.id,
             name: item.name,
             category: item.category,
             partType: item.partType ?? null,
             type: item.type,
-            // Jármű-hozzárendelés prioritása: az extrakció által megadott id, majd
-            // a matching motor egyezése – csak a jármű-típusú tételekre.
-            vehicleId:
-              item.vehicleId ??
-              (item.type === ItemType.VEHICLE ? vehicleMatch.vehicleId : null),
+            articleNumber: item.articleNumber ?? null,
+            partKey,
+            vehicleId,
+            suggestedVehicleId: suggestion?.vehicleId ?? null,
+            suggestionConfidence: suggestion?.confidence ?? null,
+            suggestionReason: suggestion?.reason ?? null,
             quantity: item.quantity,
             unitPrice: item.unitPrice ?? null,
             price: item.price,
             confidence: item.confidence,
-          })),
-        });
+          });
+        }
+
+        await tx.invoiceItem.createMany({ data: itemsData });
       }
     });
   }
