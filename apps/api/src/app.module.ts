@@ -67,6 +67,6 @@ export class AppModule implements NestModule {
    * (unscoped) útvonalakat (auth, health) nem érinti – ott csak üres marad.
    */
   configure(consumer: MiddlewareConsumer): void {
-    consumer.apply(TenantContextMiddleware).forRoutes('*');
+    consumer.apply(TenantContextMiddleware).forRoutes('*path');
   }
 }
