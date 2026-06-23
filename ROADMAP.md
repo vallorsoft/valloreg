@@ -158,9 +158,14 @@ nyilvántartókhoz képest.
       (`source="verification"`, a kézi emlékeztetőket nem írja felül) → a napi szkenner értesít
 - [x] Heti BullMQ ütemező (boot-biztos) RO-rendszámú járművekre + manuális „Ellenőrzés most"
 - [x] UI: megfelelőség-panel a jármű-részletezőn (lejáratok + státusz-badge)
+- [x] **Dokumentum-alapú (API NÉLKÜLI) lekérés:** ITP/RCA/rovinietă igazolás
+      beolvasása (OCR + AI) → lejárat kiolvasása → megerősítés után emlékeztető +
+      dokumentum-archívum. Új `ComplianceExtractionProvider` (stub + Gemini).
+      Ez a fő, legális megoldás külső adat-API nélkül.
 
-> Megjegyzés: a RO hatósági/biztosítói adat nincs garantált nyílt API-ban; valódi
-> forráshoz kereskedelmi/saját proxy API kell (a provider erre kész). Scraping kerülve.
+> Megjegyzés: a RO hatósági/biztosítói adat nincs garantált nyílt API-ban; az
+> automatikus lekérés kereskedelmi/saját proxy API-t igényel (a provider erre kész,
+> scraping kerülve). API nélkül a dokumentum-alapú beolvasás a javasolt út.
 
 ### 5/E – Tömeges járműimport CSV-ből (KÉSZ)
 

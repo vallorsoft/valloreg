@@ -533,6 +533,21 @@
         "soon": "Expiră curând",
         "expired": "Expirat",
         "unknown": "Necunoscut"
+      },
+      "scan": {
+        "button": "Scanare",
+        "title": "Scanare document {type}",
+        "subtitle": "Fotografiază sau încarcă documentul – extragem data expirării.",
+        "choose": "Alege fișier",
+        "scan": "Scanează",
+        "scanning": "Se scanează…",
+        "rescan": "Din nou",
+        "validUntil": "Valabil până la",
+        "save": "Salvare",
+        "saving": "Se salvează…",
+        "cancel": "Anulare",
+        "errorScan": "Scanarea a eșuat.",
+        "errorSave": "Salvarea a eșuat."
       }
     }
   },
