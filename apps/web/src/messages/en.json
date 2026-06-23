@@ -533,6 +533,21 @@
         "soon": "Expiring soon",
         "expired": "Expired",
         "unknown": "Unknown"
+      },
+      "scan": {
+        "button": "Scan",
+        "title": "Scan {type} document",
+        "subtitle": "Photograph or upload the document – we extract the expiry date.",
+        "choose": "Choose file",
+        "scan": "Scan",
+        "scanning": "Scanning…",
+        "rescan": "Again",
+        "validUntil": "Valid until",
+        "save": "Save",
+        "saving": "Saving…",
+        "cancel": "Cancel",
+        "errorScan": "Scan failed.",
+        "errorSave": "Save failed."
       }
     }
   },

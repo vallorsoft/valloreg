@@ -427,6 +427,13 @@ export interface VehicleVerificationView {
   checkedAt: string;
 }
 
+export interface ComplianceScanResult {
+  type: string;
+  validUntil: string | null;
+  confidence: number;
+  file: ScanFileRef;
+}
+
 export interface ImportRowResult {
   index: number;
   plate: string | null;
@@ -493,6 +500,23 @@ export const vehiclesApi = {
     return apiRequest<VehicleVerificationView>(`/vehicles/${id}/verify`, {
       method: 'POST',
     });
+  },
+  scanComplianceDocument(id: string, type: string, file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<ComplianceScanResult>(
+      `/vehicles/${id}/verify-document?type=${encodeURIComponent(type)}`,
+      { method: 'POST', form },
+    );
+  },
+  confirmComplianceDocument(
+    id: string,
+    payload: { type: string; validUntil: string; file: ScanFileRef },
+  ) {
+    return apiRequest<VehicleVerificationView | null>(
+      `/vehicles/${id}/verify-document/confirm`,
+      { method: 'POST', json: payload },
+    );
   },
   getVerification(id: string) {
     return apiRequest<VehicleVerificationView | null>(

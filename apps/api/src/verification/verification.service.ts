@@ -1,13 +1,57 @@
 import { Inject, Injectable, Logger } from '@nestjs/common';
-import { ReminderKind, ReminderType } from '@valloreg/shared';
+import { randomUUID } from 'node:crypto';
+import {
+  ComplianceType,
+  isAllowedDocumentMimeType,
+  MAX_DOCUMENT_SIZE_BYTES,
+  ReminderKind,
+  ReminderType,
+} from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/exceptions/app.exception';
+import { StorageService } from '../storage/storage.service';
+import { OCR_PROVIDER } from '../ocr/ocr.provider';
+import type { OcrProvider } from '../ocr/ocr.provider';
+import { COMPLIANCE_EXTRACTION_PROVIDER } from '../extraction/compliance-extraction.provider';
+import type { ComplianceExtractionProvider } from '../extraction/compliance-extraction.provider';
 import {
   VEHICLE_VERIFICATION_PROVIDER,
   type VehicleVerificationData,
   type VehicleVerificationProvider,
 } from './verification.provider';
+
+/** Egy beolvasott (staging) fájl leírója – a confirm ezzel köti a járműhöz. */
+export interface VerifyScanFile {
+  storageKey: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+}
+
+export interface ComplianceScanResult {
+  type: ComplianceType;
+  validUntil: string | null;
+  confidence: number;
+  file: VerifyScanFile;
+}
+
+const SCAN_PREFIX = 'vehicle-scans';
+
+/** Megfelelőség-típus → emlékeztető-típus és VehicleVerification mező. */
+const COMPLIANCE_TO_REMINDER: Record<ComplianceType, ReminderType> = {
+  itp: ReminderType.INSPECTION,
+  rca: ReminderType.INSURANCE,
+  vignette: ReminderType.VIGNETTE,
+};
+const COMPLIANCE_TO_FIELD: Record<
+  ComplianceType,
+  'itpValidUntil' | 'rcaValidUntil' | 'vignetteValidUntil'
+> = {
+  itp: 'itpValidUntil',
+  rca: 'rcaValidUntil',
+  vignette: 'vignetteValidUntil',
+};
 
 export interface VerificationView {
   source: string;
@@ -47,9 +91,166 @@ export class VerificationService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly storage: StorageService,
     @Inject(VEHICLE_VERIFICATION_PROVIDER)
     private readonly provider: VehicleVerificationProvider,
+    @Inject(OCR_PROVIDER) private readonly ocr: OcrProvider,
+    @Inject(COMPLIANCE_EXTRACTION_PROVIDER)
+    private readonly complianceExtraction: ComplianceExtractionProvider,
   ) {}
+
+  // ── Dokumentum-alapú lekérés (API nélkül, OCR-rel) ───────────────────────────
+
+  /**
+   * ITP/RCA/rovinietă igazolás beolvasása: staging feltöltés → OCR → lejárat
+   * kiolvasása. NEM ment – a draftot adja vissza ellenőrzésre.
+   */
+  async scanDocument(
+    tenantId: string,
+    type: ComplianceType,
+    file:
+      | { originalname: string; mimetype: string; size: number; buffer: Buffer }
+      | undefined,
+  ): Promise<ComplianceScanResult> {
+    if (!file?.buffer?.length) {
+      throw AppException.validation('Hiányzik a beolvasandó fájl.');
+    }
+    const mimeType = file.mimetype || 'application/octet-stream';
+    if (!isAllowedDocumentMimeType(mimeType)) {
+      throw AppException.unsupportedDocumentType();
+    }
+    if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
+      throw AppException.documentTooLarge();
+    }
+
+    const scanId = randomUUID();
+    const storageKey = `tenants/${tenantId}/${SCAN_PREFIX}/${scanId}/0`;
+    await this.storage.upload(storageKey, file.buffer, mimeType);
+
+    const ocr = await this.ocr.recognize({
+      storageKey,
+      mimeType,
+      tenantId,
+      documentId: scanId,
+    });
+    const extracted = await this.complianceExtraction.extractCompliance(
+      ocr.text,
+      { tenantId, expectedType: type },
+    );
+
+    return {
+      type,
+      validUntil: extracted.validUntil,
+      confidence: extracted.confidence,
+      file: {
+        storageKey,
+        fileName: file.originalname,
+        mimeType,
+        sizeBytes: file.size,
+      },
+    };
+  }
+
+  /**
+   * A beolvasott (ellenőrzött) lejárat mentése: emlékeztető beállítása, a
+   * VehicleVerification adott mezőjének frissítése, és a dokumentum archiválása.
+   */
+  async confirmDocument(
+    tenantId: string,
+    userId: string,
+    vehicleId: string,
+    type: ComplianceType,
+    validUntil: string,
+    file: VerifyScanFile,
+  ): Promise<VerificationView | null> {
+    const vehicle = await this.prisma.system.vehicle.findFirst({
+      where: { id: vehicleId, tenantId },
+      select: { id: true },
+    });
+    if (!vehicle) throw AppException.notFound('A jármű nem található.');
+
+    if (!file.storageKey.startsWith(`tenants/${tenantId}/${SCAN_PREFIX}/`)) {
+      throw AppException.forbidden('Érvénytelen fájlhivatkozás.');
+    }
+    const due = new Date(validUntil);
+    if (isNaN(due.getTime())) {
+      throw AppException.validation('Érvénytelen lejárati dátum.');
+    }
+
+    // 1) Emlékeztető beállítása (a típushoz tartozó compliance emlékeztető).
+    const reminderType = COMPLIANCE_TO_REMINDER[type];
+    const existing = await this.prisma.system.reminder.findFirst({
+      where: {
+        tenantId,
+        vehicleId,
+        type: reminderType,
+        kind: ReminderKind.COMPLIANCE,
+      },
+      select: { id: true },
+    });
+    if (existing) {
+      await this.prisma.system.reminder.updateMany({
+        where: { id: existing.id, tenantId },
+        data: {
+          dueDate: due,
+          active: true,
+          source: 'document',
+          notifiedStage: null,
+          lastNotifiedAt: null,
+        },
+      });
+    } else {
+      await this.prisma.system.reminder.create({
+        data: {
+          tenantId,
+          vehicleId,
+          kind: ReminderKind.COMPLIANCE,
+          type: reminderType,
+          source: 'document',
+          dueDate: due,
+          intervalDays: 365,
+        },
+      });
+    }
+
+    // 2) VehicleVerification adott mezőjének frissítése (cache/megjelenítés).
+    const field = COMPLIANCE_TO_FIELD[type];
+    await this.prisma.system.vehicleVerification.upsert({
+      where: { vehicleId },
+      create: {
+        tenantId,
+        vehicleId,
+        source: 'document',
+        status: 'ok',
+        [field]: due,
+      },
+      update: { source: 'document', status: 'ok', checkedAt: new Date(), [field]: due },
+    });
+
+    // 3) Dokumentum archiválása a járműhöz.
+    await this.prisma.system.vehicleDocument.create({
+      data: {
+        tenantId,
+        vehicleId,
+        kind: type,
+        fileName: file.fileName,
+        mimeType: file.mimeType,
+        sizeBytes: file.sizeBytes,
+        storageKey: file.storageKey,
+      },
+    });
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'vehicle.compliance_document',
+      resourceType: 'Vehicle',
+      resourceId: vehicleId,
+      metadata: { type, validUntil },
+    });
+
+    return this.getLatest(vehicleId);
+  }
 
   /** Egy jármű manuális ellenőrzése (tenant-scope-olt létezés-ellenőrzéssel). */
   async verify(

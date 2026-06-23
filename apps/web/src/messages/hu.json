@@ -533,6 +533,21 @@
         "soon": "Hamarosan lejár",
         "expired": "Lejárt",
         "unknown": "Ismeretlen"
+      },
+      "scan": {
+        "button": "Beolvasás",
+        "title": "{type} igazolás beolvasása",
+        "subtitle": "Fotózd le vagy töltsd fel az igazolást – kiolvassuk a lejáratot.",
+        "choose": "Fájl kiválasztása",
+        "scan": "Beolvasás",
+        "scanning": "Beolvasás…",
+        "rescan": "Újra",
+        "validUntil": "Érvényes eddig",
+        "save": "Mentés",
+        "saving": "Mentés…",
+        "cancel": "Mégse",
+        "errorScan": "A beolvasás sikertelen.",
+        "errorSave": "A mentés sikertelen."
       }
     }
   },
