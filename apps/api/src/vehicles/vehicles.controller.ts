@@ -122,12 +122,33 @@ export class VehiclesController {
     );
   }
 
+  /** A feldolgozási „inbox": a még meg nem erősített beolvasások státusszal. */
+  @Get('scans')
+  @RequireFeature(FeatureKey.AI_PROCESSING)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  listScans() {
+    return this.vehiclesService.listScans();
+  }
+
   /** Egy beolvasás (job) állapota és – ha kész – az eredménye (polling). */
   @Get('scan/:scanId')
   @RequireFeature(FeatureKey.AI_PROCESSING)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   getScan(@Param('scanId') scanId: string) {
     return this.vehiclesService.getScan(scanId);
+  }
+
+  /** Egy beolvasás elvetése a feldolgozási listából (rekord + staging fájlok). */
+  @Delete('scan/:scanId')
+  @RequireFeature(FeatureKey.AI_PROCESSING)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteScan(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Param('scanId') scanId: string,
+  ): Promise<void> {
+    await this.vehiclesService.deleteScan(tenant.tenantId, user.userId, scanId);
   }
 
   /** A beolvasott (ellenőrzött) adatok mentése: új jármű vagy meglévő frissítése. */

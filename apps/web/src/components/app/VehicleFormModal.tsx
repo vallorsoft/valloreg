@@ -5,6 +5,13 @@ import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { vehiclesApi, ApiError, type Vehicle, type CreateVehiclePayload } from '@/lib/api';
+import {
+  VehicleDetailsFields,
+  emptyExtraState,
+  extraStateFromVehicle,
+  extraStateToPayload,
+  type VehicleExtraState,
+} from '@/components/app/VehicleDetailsFields';
 
 interface Props {
   vehicle?: Vehicle | null;
@@ -24,6 +31,7 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
     vin: '',
     odometerKm: undefined,
   });
+  const [extra, setExtra] = useState<VehicleExtraState>(emptyExtraState());
 
   useEffect(() => {
     if (vehicle) {
@@ -35,6 +43,7 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
         vin: vehicle.vin ?? '',
         odometerKm: vehicle.odometerKm ?? undefined,
       });
+      setExtra(extraStateFromVehicle(vehicle));
     }
   }, [vehicle]);
 
@@ -52,7 +61,7 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
     setSaving(true);
     setError(null);
     try {
-      const payload: CreateVehiclePayload = {};
+      const payload: CreateVehiclePayload = { ...extraStateToPayload(extra) };
       if (form.plate) payload.plate = form.plate;
       if (form.make) payload.make = form.make;
       if (form.model) payload.model = form.model;
@@ -78,7 +87,7 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-card-hover">
+      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover">
         <h2 className="mb-6 text-lg font-semibold text-anthracite-900">
           {vehicle ? t('form.editTitle') : t('form.addTitle')}
         </h2>
@@ -125,6 +134,11 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
             value={form.vin ?? ''}
             onChange={(e) => set('vin', e.target.value)}
           />
+
+          <div className="border-t border-anthracite-100 pt-4">
+            <VehicleDetailsFields value={extra} onChange={setExtra} />
+          </div>
+
           {error && <p className="text-sm text-red-600">{error}</p>}
           <div className="flex justify-end gap-3 pt-2">
             <Button type="button" variant="outline" size="sm" onClick={onClose}>
