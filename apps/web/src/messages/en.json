@@ -485,7 +485,8 @@
       "saving": "Saving…",
       "errorScan": "Scan failed, please try again.",
       "errorSave": "Save failed, please try again.",
-      "notRegistrationWarning": "This image does not look like a vehicle registration (no plate or VIN found). Check the fields or fill them in manually."
+      "notRegistrationWarning": "This image does not look like a vehicle registration (no plate or VIN found). Check the fields or fill them in manually.",
+      "errorTimeout": "Processing took too long. Please try again in a few minutes."
     },
     "documents": {
       "title": "Documents",

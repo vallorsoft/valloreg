@@ -485,7 +485,8 @@
       "saving": "Se salvează…",
       "errorScan": "Scanarea a eșuat, încearcă din nou.",
       "errorSave": "Salvarea a eșuat, încearcă din nou.",
-      "notRegistrationWarning": "Această imagine nu pare a fi un certificat de înmatriculare (nu s-a găsit număr de înmatriculare sau serie de șasiu). Verifică câmpurile sau completează manual."
+      "notRegistrationWarning": "Această imagine nu pare a fi un certificat de înmatriculare (nu s-a găsit număr de înmatriculare sau serie de șasiu). Verifică câmpurile sau completează manual.",
+      "errorTimeout": "Procesarea a durat prea mult. Încearcă din nou peste câteva minute."
     },
     "documents": {
       "title": "Documente",
