@@ -408,7 +408,18 @@ model InvoiceItem {
   category   String // ItemCategory string union (part, labor, …)
   partType   String? // PartType string union (brakes, engine, …)
   type       String // ItemType string union (vehicle, tool, general)
+  // A számlán szereplő alkatrész cikkszám/cikkkód (ha van) + a belőle (vagy a
+  // típus+név alapján) képzett normalizált alkatrész-identitás. A partKey-re
+  // épül a jármű-javaslat (mely járművekre lett már felrakva ugyanez).
+  articleNumber String?
+  partKey       String?
   vehicleId  String?
+  // AI-JAVASLAT: melyik járműhöz tartozhat ez a tétel a csere-előzmény alapján
+  // (a legrégebben cserélt jelölt). Csak javaslat – a felhasználó dönt; a hard
+  // vehicleId ettől független.
+  suggestedVehicleId   String?
+  suggestionConfidence Float?
+  suggestionReason     String?
   quantity   Float    @default(1)
   unitPrice  Decimal?
   price      Decimal  @default(0)
@@ -421,6 +432,8 @@ model InvoiceItem {
 
   @@index([tenantId])
   @@index([invoiceId])
+  // A jármű-javaslat előzmény-lekérdezéséhez (tenant + alkatrész-identitás).
+  @@index([tenantId, partKey])
   @@map("invoice_items")
 }
 
