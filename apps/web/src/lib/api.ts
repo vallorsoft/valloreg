@@ -117,13 +117,17 @@ async function parseError(response: Response): Promise<ApiError> {
 }
 
 /**
- * Hálózati hiba (fetch dobott) utáni várakozások ms-ben. Az ingyenes (Render
- * free) háttér ~15 perc tétlenség után leáll; ilyenkor az ELSŐ kérés a hideg
- * indítás közben kapcsolat-szinten elbukhat ("Failed to fetch"). Egy-két
- * újrapróba a backoff alatt felébreszti a szolgáltatást, és a kérés átmegy.
- * Csak NETWORK_ERROR-ra próbálkozunk újra (a válasszal érkező HTTP-hibákra nem).
+ * Hideg indítás (Render free) utáni újrapróba-várakozások ms-ben. A háttér ~15
+ * perc tétlenség után leáll; az ELSŐ kérés ilyenkor vagy kapcsolat-szinten bukik
+ * ("Failed to fetch"), VAGY – jellemzőbben – a Render routere 30–60 mp ébredés
+ * után 502/503/504-et ad, mert a boot tovább tart a router-timeoutnál. Mindkettő
+ * ÁTMENETI: pár újrapróbával, elég hosszú ablakkal (~70 mp összes várakozás) a
+ * szolgáltatás felébred és a kérés átmegy.
  */
-const NETWORK_RETRY_DELAYS_MS = [1500, 4000, 8000];
+const NETWORK_RETRY_DELAYS_MS = [2000, 5000, 10000, 15000, 18000, 20000];
+
+/** Hideg indításra utaló átmeneti HTTP-státuszok (Render gateway ébredés közben). */
+const COLD_START_STATUSES = new Set([502, 503, 504]);
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -187,10 +191,12 @@ export async function apiRequest<T>(
       return await performRequest<T>(url, options, body, init);
     } catch (err) {
       lastError = err;
-      // Csak hálózati hibára (nincs válasz) próbálkozunk újra; a HTTP-hibákat
-      // (4xx/5xx, amelyek CORS-fejléccel jönnek) azonnal továbbdobjuk.
+      // Újrapróba CSAK átmeneti hideg-indítás-hibára: (a) nincs válasz
+      // (NETWORK_ERROR / "Failed to fetch"), vagy (b) a Render gateway 502/503/504-e
+      // ébredés közben. A valódi 4xx/5xx alkalmazás-hibákat azonnal továbbdobjuk.
       const retriable =
-        err instanceof ApiError && err.code === 'NETWORK_ERROR';
+        err instanceof ApiError &&
+        (err.code === 'NETWORK_ERROR' || COLD_START_STATUSES.has(err.status));
       const hasMore = attempt < maxAttempts - 1;
       if (!retriable || !hasMore) break;
       await sleep(NETWORK_RETRY_DELAYS_MS[attempt]!);
