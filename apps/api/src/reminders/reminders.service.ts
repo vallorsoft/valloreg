@@ -61,6 +61,10 @@ export interface ReminderSuggestion {
   dueDate: string | null;
   dueOdometerKm: number | null;
   reason: string;
+  /** 'learned' = a jármű saját történetéből számolt; 'default' = alap-intervallum. */
+  source: 'learned' | 'default';
+  /** Hány korábbi szervizből származik a becslés. */
+  dataPoints: number;
 }
 
 /** Alapértelmezett karbantartási intervallumok a történet-alapú javaslatokhoz. */
@@ -461,45 +465,61 @@ export class RemindersService {
       orderBy: { createdAt: 'desc' },
     });
 
-    // Típusonként a legutóbbi (legfrissebb dátumú) szerviz dátuma + km-állása.
-    const latest = new Map<
+    // Típusonként az ÖSSZES előfordulás (dátum + km), hogy a jármű saját
+    // intervallumát ki tudjuk számolni (nem csak az alap-intervallumot).
+    const occurrences = new Map<
       ReminderTypeT,
-      { date: Date | null; km: number | null }
+      { date: Date | null; km: number | null }[]
     >();
     for (const item of items) {
       const t = detectMaintenanceType(item.partType, item.name);
       if (!t) continue;
-      const date = item.invoice?.date ?? null;
-      const km = item.invoice?.odometerKm ?? null;
-      const prev = latest.get(t);
-      if (!prev || (date && (!prev.date || date > prev.date))) {
-        latest.set(t, { date, km });
-      }
+      const arr = occurrences.get(t) ?? [];
+      arr.push({
+        date: item.invoice?.date ?? null,
+        km: item.invoice?.odometerKm ?? null,
+      });
+      occurrences.set(t, arr);
     }
 
     const suggestions: ReminderSuggestion[] = [];
-    for (const [type, info] of latest) {
+    for (const [type, list] of occurrences) {
       if (existingTypes.has(type)) continue;
-      const interval = DEFAULT_MAINTENANCE_INTERVALS[type];
-      if (!interval) continue;
+      const def = DEFAULT_MAINTENANCE_INTERVALS[type];
+      if (!def) continue;
+
+      const learned = learnIntervals(list);
+      // Tanult intervallum, ha legalább egy dimenzióban van adat; különben alap.
+      const intervalKm = learned.km ?? def.km;
+      const intervalDays = learned.days ?? def.days;
+      const source: 'learned' | 'default' =
+        learned.km != null || learned.days != null ? 'learned' : 'default';
+
+      // A legutóbbi (legfrissebb dátumú, vagy legmagasabb km-ű) előfordulás.
+      const last = latestOccurrence(list);
 
       const dueDate =
-        info.date && interval.days
-          ? new Date(info.date.getTime() + interval.days * DAY_MS)
+        last.date && intervalDays
+          ? new Date(last.date.getTime() + intervalDays * DAY_MS)
           : null;
       const dueOdometerKm =
-        info.km != null && interval.km != null ? info.km + interval.km : null;
+        last.km != null && intervalKm != null ? last.km + intervalKm : null;
 
       suggestions.push({
         type,
         kind: ReminderKind.MAINTENANCE,
-        intervalKm: interval.km,
-        intervalDays: interval.days,
-        lastDoneAt: info.date?.toISOString() ?? null,
-        lastDoneKm: info.km,
+        intervalKm,
+        intervalDays,
+        lastDoneAt: last.date?.toISOString() ?? null,
+        lastDoneKm: last.km,
         dueDate: dueDate?.toISOString() ?? null,
         dueOdometerKm,
-        reason: 'Korábbi szervizből becsült esedékesség.',
+        reason:
+          source === 'learned'
+            ? `A jármű ${list.length} korábbi szervizéből tanult intervallum.`
+            : 'Korábbi szervizből, alap-intervallummal becsült esedékesség.',
+        source,
+        dataPoints: list.length,
       });
     }
 
@@ -616,6 +636,67 @@ export class RemindersService {
       });
     }
   }
+}
+
+/**
+ * A jármű saját karbantartási intervallumát tanulja az előfordulásokból:
+ * a (km / dátum szerint rendezett) egymást követő szervizek közti átlagos
+ * km- és nap-távolság. Legalább 2 adatpont kell egy dimenzióhoz, különben null.
+ */
+function learnIntervals(
+  list: { date: Date | null; km: number | null }[],
+): { km: number | null; days: number | null } {
+  // Km-intervallum: a km-adatok növekvő sorrendben, pozitív gap-ek átlaga.
+  const kms = list
+    .map((o) => o.km)
+    .filter((k): k is number => k != null)
+    .sort((a, b) => a - b);
+  const kmGaps: number[] = [];
+  for (let i = 1; i < kms.length; i++) {
+    const gap = (kms[i] ?? 0) - (kms[i - 1] ?? 0);
+    if (gap > 0) kmGaps.push(gap);
+  }
+
+  // Nap-intervallum: a dátumok növekvő sorrendben, pozitív gap-ek átlaga.
+  const dates = list
+    .map((o) => o.date)
+    .filter((d): d is Date => d != null)
+    .sort((a, b) => a.getTime() - b.getTime());
+  const dayGaps: number[] = [];
+  for (let i = 1; i < dates.length; i++) {
+    const gap = Math.round(
+      ((dates[i]?.getTime() ?? 0) - (dates[i - 1]?.getTime() ?? 0)) / DAY_MS,
+    );
+    if (gap > 0) dayGaps.push(gap);
+  }
+
+  return {
+    km: kmGaps.length > 0 ? Math.round(average(kmGaps)) : null,
+    days: dayGaps.length > 0 ? Math.round(average(dayGaps)) : null,
+  };
+}
+
+/** A legutóbbi előfordulás: legfrissebb dátum, vagy ha nincs dátum, a legmagasabb km. */
+function latestOccurrence(
+  list: { date: Date | null; km: number | null }[],
+): { date: Date | null; km: number | null } {
+  let best: { date: Date | null; km: number | null } = {
+    date: null,
+    km: null,
+  };
+  for (const o of list) {
+    if (o.date) {
+      if (!best.date || o.date > best.date) best = o;
+    } else if (!best.date && o.km != null && (best.km == null || o.km > best.km)) {
+      best = o;
+    }
+  }
+  return best;
+}
+
+function average(values: number[]): number {
+  if (values.length === 0) return 0;
+  return values.reduce((a, b) => a + b, 0) / values.length;
 }
 
 /** Típus → ember-olvasható (magyar) címke az értesítésekhez. */

@@ -425,6 +425,8 @@ export interface ReminderSuggestion {
   dueDate: string | null;
   dueOdometerKm: number | null;
   reason: string;
+  source: 'learned' | 'default';
+  dataPoints: number;
 }
 
 export interface CreateReminderPayload {
@@ -532,12 +534,30 @@ export interface AnomalySummary {
   bySeverity: Record<AnomalySeverityValue, number>;
 }
 
+export type TcoRecommendationValue = 'ok' | 'watch' | 'consider_replacement';
+
+export interface VehicleTco {
+  vehicleId: string;
+  label: string;
+  currency: string | null;
+  totalSpent: string;
+  recentCost: string;
+  priorCost: string;
+  trendPct: number | null;
+  costPerKm: string | null;
+  odometerKm: number | null;
+  recommendation: TcoRecommendationValue;
+}
+
 export const insightsApi = {
   getAnomalies() {
     return apiRequest<Anomaly[]>('/insights/anomalies');
   },
   getSummary() {
     return apiRequest<AnomalySummary>('/insights/anomalies/summary');
+  },
+  getTco() {
+    return apiRequest<VehicleTco[]>('/insights/tco');
   },
 };
 

@@ -4,6 +4,9 @@ import {
   AnomalySeverity,
   AnomalyType,
   PRICE_SPIKE_RATIO,
+  TCO_REPLACE_TREND_PCT,
+  TCO_WATCH_TREND_PCT,
+  TcoRecommendation,
   UNUSUAL_AMOUNT_RATIO,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
@@ -34,6 +37,23 @@ export interface AnomalySummary {
   total: number;
   byType: Record<AnomalyType, number>;
   bySeverity: Record<AnomalySeverity, number>;
+}
+
+/** Egy jármű TCO-ja, költségtrendje és csere-javaslata. */
+export interface VehicleTco {
+  vehicleId: string;
+  label: string;
+  currency: string | null;
+  totalSpent: string;
+  /** Utolsó 12 hó költsége. */
+  recentCost: string;
+  /** Az azt megelőző 12 hó költsége. */
+  priorCost: string;
+  /** A két időszak változása százalékban (null, ha nincs korábbi adat). */
+  trendPct: number | null;
+  costPerKm: string | null;
+  odometerKm: number | null;
+  recommendation: TcoRecommendation;
 }
 
 const SEVERITY_RANK: Record<AnomalySeverity, number> = {
@@ -108,6 +128,112 @@ export class InsightsService {
       summary.bySeverity[a.severity]++;
     }
     return summary;
+  }
+
+  // ── Prediktív TCO / csere-javaslat ───────────────────────────────────────────
+
+  /**
+   * Járművenkénti összköltség (TCO), költségtrend (utolsó 12 hó vs. az azt
+   * megelőző 12 hó) és csere-javaslat. A növekvő szervizköltség jelzi, mikor
+   * éri meg lecserélni a járművet. A szerviztörténetre épül (nincs új tábla).
+   */
+  async getFleetTco(now: Date = new Date()): Promise<VehicleTco[]> {
+    const recentStart = new Date(now);
+    recentStart.setFullYear(recentStart.getFullYear() - 1);
+    const priorStart = new Date(now);
+    priorStart.setFullYear(priorStart.getFullYear() - 2);
+
+    const [vehicles, items] = await Promise.all([
+      this.prisma.scoped.vehicle.findMany({
+        select: {
+          id: true,
+          plate: true,
+          make: true,
+          model: true,
+          odometerKm: true,
+        },
+      }),
+      this.prisma.scoped.invoiceItem.findMany({
+        where: { vehicleId: { not: null }, price: { gt: 0 } },
+        select: {
+          vehicleId: true,
+          price: true,
+          invoice: { select: { date: true, currency: true } },
+        },
+      }),
+    ]);
+
+    // Aggregálás járművenként.
+    const agg = new Map<
+      string,
+      { total: number; recent: number; prior: number; currency: string | null }
+    >();
+    for (const item of items) {
+      if (!item.vehicleId) continue;
+      const price = item.price.toNumber();
+      const date = item.invoice?.date ?? null;
+      const cur = item.invoice?.currency ?? null;
+      const a = agg.get(item.vehicleId) ?? {
+        total: 0,
+        recent: 0,
+        prior: 0,
+        currency: null,
+      };
+      a.total += price;
+      if (!a.currency && cur) a.currency = cur;
+      if (date) {
+        if (date >= recentStart) a.recent += price;
+        else if (date >= priorStart) a.prior += price;
+      }
+      agg.set(item.vehicleId, a);
+    }
+
+    const result: VehicleTco[] = [];
+    for (const v of vehicles) {
+      const a = agg.get(v.id);
+      if (!a || a.total <= 0) continue;
+
+      const trendPct =
+        a.prior > 0 ? Math.round((a.recent / a.prior - 1) * 100) : null;
+      const costPerKm =
+        v.odometerKm && v.odometerKm > 0
+          ? (a.total / v.odometerKm).toFixed(2)
+          : null;
+
+      let recommendation: TcoRecommendation = TcoRecommendation.OK;
+      if (trendPct != null) {
+        if (trendPct >= TCO_REPLACE_TREND_PCT) {
+          recommendation = TcoRecommendation.CONSIDER_REPLACEMENT;
+        } else if (trendPct >= TCO_WATCH_TREND_PCT) {
+          recommendation = TcoRecommendation.WATCH;
+        }
+      }
+
+      result.push({
+        vehicleId: v.id,
+        label: vehicleLabel(v),
+        currency: a.currency,
+        totalSpent: a.total.toFixed(2),
+        recentCost: a.recent.toFixed(2),
+        priorCost: a.prior.toFixed(2),
+        trendPct,
+        costPerKm,
+        odometerKm: v.odometerKm,
+        recommendation,
+      });
+    }
+
+    // Csere-jelöltek elöl, majd csökkenő összköltség szerint.
+    const rank: Record<TcoRecommendation, number> = {
+      consider_replacement: 0,
+      watch: 1,
+      ok: 2,
+    };
+    return result.sort(
+      (x, y) =>
+        rank[x.recommendation] - rank[y.recommendation] ||
+        Number(y.totalSpent) - Number(x.totalSpent),
+    );
   }
 
   // ── Detektorok ─────────────────────────────────────────────────────────────

@@ -28,4 +28,10 @@ export class InsightsController {
   summary() {
     return this.insights.getSummary();
   }
+
+  /** Prediktív TCO / csere-javaslat járművenként. */
+  @Get('tco')
+  tco() {
+    return this.insights.getFleetTco();
+  }
 }

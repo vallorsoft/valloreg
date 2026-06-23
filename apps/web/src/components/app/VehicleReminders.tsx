@@ -163,10 +163,16 @@ export function VehicleReminders({ vehicle }: { vehicle: Vehicle }) {
               <button
                 key={s.type}
                 onClick={() => void applySuggestion(s)}
+                title={s.reason}
                 className="inline-flex items-center gap-1.5 rounded-full border border-primary-200 bg-white px-3 py-1.5 text-xs font-medium text-primary-700 hover:bg-primary-50"
               >
                 <span aria-hidden="true">+</span>
                 {t(`types.${s.type as ReminderType}`)}
+                {s.source === 'learned' && (
+                  <span className="text-[10px] text-primary-400">
+                    {t('suggestionLearned')}
+                  </span>
+                )}
               </button>
             ))}
           </div>
