@@ -1,0 +1,34 @@
+name: web-url-probe
+
+# IDEIGLENES diagnosztika: megnezi, milyen API-URL-t hiv a deployolt web bundle
+# (helyes valloreg-api.onrender.com, vagy beragadt localhost:4000 fallback).
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Web bundle API-URL kinyerese
+        run: |
+          WEB="https://valloreg-web.onrender.com"
+          echo "===== 1) Web fooldal HTTP statusz ====="
+          curl -s -o /tmp/index.html -w "HTTP %{http_code}\n" "$WEB" --max-time 90
+          echo ""
+          echo "===== 2) /_next/static JS chunk URL-ek ====="
+          CHUNKS=$(grep -oE '/_next/static/[^"]+\.js' /tmp/index.html | sort -u)
+          echo "$CHUNKS" | head -40
+          echo ""
+          echo "===== 3) API-URL keresese a chunkokban (valloreg-api / localhost:4000 / onrender) ====="
+          for c in $CHUNKS; do
+            curl -s "$WEB$c" --max-time 60 -o /tmp/chunk.js || continue
+            HIT=$(grep -oE 'https?://[a-zA-Z0-9.-]+(:[0-9]+)?/api' /tmp/chunk.js | sort -u)
+            if [ -n "$HIT" ]; then
+              echo "[$c]:"
+              echo "$HIT" | sed 's/^/   /'
+            fi
+          done
+          echo ""
+          echo "===== 4) Osszes elofordulo 'localhost:4000' a fooldalon? ====="
+          grep -c "localhost:4000" /tmp/index.html || echo "0 (a fooldal HTML-ben)"
