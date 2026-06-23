@@ -44,39 +44,55 @@ export class ReportsScheduler implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const connection = this.config.redis;
+    // FONTOS: a háttér-ütemező SOHA nem buktathatja meg az API bootját
+    // (lásd RemindersScheduler). Hiba esetén csak logolunk és továbblépünk.
+    try {
+      const connection = this.config.redis;
 
-    this.queue = new Queue(REPORTS_QUEUE, {
-      connection,
-      defaultJobOptions: {
-        attempts: 2,
-        backoff: { type: 'exponential', delay: 30_000 },
-        removeOnComplete: 50,
-        removeOnFail: 50,
-      },
-    });
-
-    // Minden hónap 1-jén 08:00-kor.
-    await this.queue.add(
-      MONTHLY_JOB,
-      {},
-      { repeat: { pattern: '0 8 1 * *' }, jobId: 'reports-monthly' },
-    );
-
-    this.worker = new Worker(
-      REPORTS_QUEUE,
-      async () => this.sendMonthlyReports(),
-      { connection, concurrency: 1 },
-    );
-
-    this.worker.on('failed', (job, err) => {
-      this.logger.error(
-        `Havi riport-küldés sikertelen (${job?.id}): ${err.message}`,
-        err.stack,
+      this.queue = new Queue(REPORTS_QUEUE, {
+        connection,
+        defaultJobOptions: {
+          attempts: 2,
+          backoff: { type: 'exponential', delay: 30_000 },
+          removeOnComplete: 50,
+          removeOnFail: 50,
+        },
+      });
+      this.queue.on('error', (err) =>
+        this.logger.warn(`Riport-queue hiba: ${err.message}`),
       );
-    });
 
-    this.logger.log('Havi riport-ütemező elindult (1-jén 08:00).');
+      this.worker = new Worker(
+        REPORTS_QUEUE,
+        async () => this.sendMonthlyReports(),
+        { connection, concurrency: 1 },
+      );
+
+      this.worker.on('error', (err) =>
+        this.logger.warn(`Riport-worker hiba: ${err.message}`),
+      );
+      this.worker.on('failed', (job, err) => {
+        this.logger.error(
+          `Havi riport-küldés sikertelen (${job?.id}): ${err.message}`,
+          err.stack,
+        );
+      });
+
+      // Minden hónap 1-jén 08:00-kor – fire-and-forget, nem blokkolja a bootot.
+      void this.queue
+        .add(MONTHLY_JOB, {}, { repeat: { pattern: '0 8 1 * *' } })
+        .catch((err) =>
+          this.logger.warn(
+            `Havi riport ütemezése később: ${(err as Error).message}`,
+          ),
+        );
+
+      this.logger.log('Havi riport-ütemező elindult (1-jén 08:00).');
+    } catch (err) {
+      this.logger.error(
+        `A havi riport-ütemező indítása sikertelen (a boot folytatódik): ${(err as Error).message}`,
+      );
+    }
   }
 
   async onModuleDestroy(): Promise<void> {
