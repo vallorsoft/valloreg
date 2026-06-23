@@ -94,6 +94,7 @@ model Tenant {
   supportAccesses      SupportAccess[]
   supplierVehicleMappings SupplierVehicleMapping[]
   itemCategoryMappings ItemCategoryMapping[]
+  reminders            Reminder[]
 
   @@map("tenants")
 }
@@ -276,6 +277,7 @@ model Vehicle {
   tenant       Tenant        @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   invoiceItems InvoiceItem[]
   supplierVehicleMappings SupplierVehicleMapping[]
+  reminders    Reminder[]
 
   @@index([tenantId])
   @@index([tenantId, plate])
@@ -431,4 +433,44 @@ model ItemCategoryMapping {
   @@index([tenantId])
   @@index([tenantId, pattern])
   @@map("item_category_mappings")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Emlékeztetők (proaktív karbantartás + megfelelőség/lejárat figyelés)
+// ──────────────────────────────────────────────────────────────────────────
+//
+// A `kind` / `type` String-ként tárol (a @valloreg/shared ReminderKind/
+// ReminderType string-union értékeivel azonosan). A számított `status`
+// (ok/due_soon/overdue) NEM tárolt: futásidőben dől el a dueDate/dueOdometerKm
+// és a jármű aktuális km-állása alapján.
+model Reminder {
+  id             String    @id @default(uuid())
+  tenantId       String
+  vehicleId      String
+  kind           String // ReminderKind: maintenance | compliance
+  type           String // ReminderType: oil_change | inspection | insurance | …
+  title          String?
+  // Esedékesség: idő- és/vagy km-alapon (legalább az egyik ajánlott).
+  dueDate        DateTime?
+  dueOdometerKm  Int?
+  // Ismétlődés: a "kész" jelöléskor ennyivel gördül előre a következő esedékesség.
+  intervalDays   Int?
+  intervalKm     Int?
+  lastDoneAt     DateTime?
+  lastDoneKm     Int?
+  notes          String?
+  active         Boolean   @default(true)
+  // Értesítés-throttle: mikor és milyen állapotról ment ki utoljára értesítés.
+  lastNotifiedAt DateTime?
+  notifiedStage  String? // a legutóbb értesített status (due_soon | overdue)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@index([tenantId, active, dueDate])
+  @@map("reminders")
 }

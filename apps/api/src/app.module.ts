@@ -20,6 +20,7 @@ import { ReportsModule } from './reports/reports.module';
 import { AdminModule } from './admin/admin.module';
 import { BillingModule } from './billing/billing.module';
 import { NotificationsModule } from './notifications/notifications.module';
+import { RemindersModule } from './reminders/reminders.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -52,6 +53,7 @@ import { NotificationsModule } from './notifications/notifications.module';
     ReportsModule,
     AdminModule,
     BillingModule,
+    RemindersModule,
   ],
 })
 export class AppModule implements NestModule {
