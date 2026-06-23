@@ -116,21 +116,24 @@ async function parseError(response: Response): Promise<ApiError> {
   return new ApiError(code, response.status, message, body?.details);
 }
 
-/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
-export async function apiRequest<T>(
-  path: string,
-  options: RequestOptions = {},
+/**
+ * Hálózati hiba (fetch dobott) utáni várakozások ms-ben. Az ingyenes (Render
+ * free) háttér ~15 perc tétlenség után leáll; ilyenkor az ELSŐ kérés a hideg
+ * indítás közben kapcsolat-szinten elbukhat ("Failed to fetch"). Egy-két
+ * újrapróba a backoff alatt felébreszti a szolgáltatást, és a kérés átmegy.
+ * Csak NETWORK_ERROR-ra próbálkozunk újra (a válasszal érkező HTTP-hibákra nem).
+ */
+const NETWORK_RETRY_DELAYS_MS = [1500, 4000, 8000];
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
+/** Egyetlen kérés végrehajtása (újrapróba nélkül). */
+async function performRequest<T>(
+  url: string,
+  options: RequestOptions,
+  body: BodyInit | undefined,
+  init: Omit<RequestOptions, 'json' | 'form' | 'anonymous'>,
 ): Promise<T> {
-  const { json, form, anonymous: _anonymous, ...init } = options;
-  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
-
-  const body =
-    form !== undefined
-      ? form
-      : json !== undefined
-        ? JSON.stringify(json)
-        : undefined;
-
   let response: Response;
   try {
     response = await fetch(url, {
@@ -155,6 +158,45 @@ export async function apiRequest<T>(
   }
 
   return (await response.json()) as T;
+}
+
+/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  const { json, form, anonymous: _anonymous, ...init } = options;
+  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+
+  const body =
+    form !== undefined
+      ? form
+      : json !== undefined
+        ? JSON.stringify(json)
+        : undefined;
+
+  // Hálózati hibára (a kérés el sem ért a szerverig) backoff-fal újrapróbálunk –
+  // fájlfeltöltésnél (FormData) is, mert a FormData objektum minden fetch-hívásnál
+  // újrakódolódik (nem "elfogyó" stream), és a hideg indítás miatti "Failed to
+  // fetch" jellemzően azonnal, szerver-érintés nélkül jön.
+  const maxAttempts = NETWORK_RETRY_DELAYS_MS.length + 1;
+
+  let lastError: unknown;
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    try {
+      return await performRequest<T>(url, options, body, init);
+    } catch (err) {
+      lastError = err;
+      // Csak hálózati hibára (nincs válasz) próbálkozunk újra; a HTTP-hibákat
+      // (4xx/5xx, amelyek CORS-fejléccel jönnek) azonnal továbbdobjuk.
+      const retriable =
+        err instanceof ApiError && err.code === 'NETWORK_ERROR';
+      const hasMore = attempt < maxAttempts - 1;
+      if (!retriable || !hasMore) break;
+      await sleep(NETWORK_RETRY_DELAYS_MS[attempt]!);
+    }
+  }
+  throw lastError;
 }
 
 // ── Typed endpoint helpers (Phase 1 contracts; backend wiring later) ─────────

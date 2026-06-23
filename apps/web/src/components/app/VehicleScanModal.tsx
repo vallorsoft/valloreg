@@ -72,7 +72,9 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
         odometerKm: '',
       });
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('errorScan'));
+      // Hálózati/technikai hibánál a nyers "Failed to fetch" helyett lokalizált
+      // üzenetet mutatunk (a háttér épp ébredhet – pár másodperc múlva újra).
+      setError(scanErrorMessage(err));
     } finally {
       setScanning(false);
     }
@@ -106,10 +108,22 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
       const saved = await vehiclesApi.confirmScan(payload);
       onSaved(saved.id);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('errorSave'));
+      setError(
+        err instanceof ApiError && !isTechnical(err) ? err.message : t('errorSave'),
+      );
     } finally {
       setSaving(false);
     }
+  }
+
+  /** Technikai (nem üzleti) hiba: hálózati vagy szerver 500 – nyers üzenet helyett lokalizált. */
+  function isTechnical(err: ApiError): boolean {
+    return err.code === 'NETWORK_ERROR' || err.code === 'INTERNAL_ERROR';
+  }
+
+  function scanErrorMessage(err: unknown): string {
+    if (err instanceof ApiError && !isTechnical(err)) return err.message;
+    return t('errorScan');
   }
 
   const d = result?.draft;
