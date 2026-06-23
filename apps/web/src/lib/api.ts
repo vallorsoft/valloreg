@@ -395,14 +395,51 @@ export const invoicesApi = {
 
 // ── Vehicles ──────────────────────────────────────────────────────────────────
 
+/** Egy jármű-fél szerepe és típusa. */
+export type VehiclePartyRole = 'owner' | 'user';
+export type VehiclePartyType = 'person' | 'company';
+
+/** Tulajdonos (C.2) vagy üzembentartó/lízingbevevő (C.1) – DB-rekord. */
+export interface VehicleParty {
+  id: string;
+  role: VehiclePartyRole;
+  partyType: VehiclePartyType;
+  name: string | null;
+  address: string | null;
+  /** CNP (magánszemély) vagy CUI (cég). */
+  idNumber: string | null;
+}
+
+/** Egy fél írásakor küldött payload (id nélkül). */
+export interface VehiclePartyPayload {
+  role: VehiclePartyRole;
+  partyType?: VehiclePartyType;
+  name?: string;
+  address?: string;
+  idNumber?: string;
+}
+
 export interface Vehicle {
   id: string;
   plate: string | null;
   vin: string | null;
   make: string | null;
   model: string | null;
+  vehicleType: string | null;
   year: number | null;
   odometerKm: number | null;
+  firstRegistration: string | null;
+  category: string | null;
+  fuelType: string | null;
+  engineCm3: number | null;
+  powerKw: number | null;
+  color: string | null;
+  seats: number | null;
+  maxMassKg: number | null;
+  kerbWeightKg: number | null;
+  euroClass: string | null;
+  typeApproval: string | null;
+  parties?: VehicleParty[];
   createdAt: string;
   updatedAt: string;
 }
@@ -412,8 +449,21 @@ export interface CreateVehiclePayload {
   vin?: string;
   make?: string;
   model?: string;
+  vehicleType?: string;
   year?: number;
   odometerKm?: number;
+  firstRegistration?: string;
+  category?: string;
+  fuelType?: string;
+  engineCm3?: number;
+  powerKw?: number;
+  color?: string;
+  seats?: number;
+  maxMassKg?: number;
+  kerbWeightKg?: number;
+  euroClass?: string;
+  typeApproval?: string;
+  parties?: VehiclePartyPayload[];
 }
 
 export interface ServiceHistoryItem extends InvoiceItem {
@@ -446,6 +496,7 @@ export interface VehicleRegistrationDraft {
   vin: string | null;
   make: string | null;
   model: string | null;
+  vehicleType: string | null;
   year: number | null;
   firstRegistration: string | null;
   fuelType: string | null;
@@ -453,7 +504,19 @@ export interface VehicleRegistrationDraft {
   powerKw: number | null;
   color: string | null;
   category: string | null;
+  seats: number | null;
+  maxMassKg: number | null;
+  kerbWeightKg: number | null;
+  euroClass: string | null;
+  typeApproval: string | null;
   ownerName: string | null;
+  ownerAddress: string | null;
+  ownerType: string | null;
+  ownerIdNumber: string | null;
+  userName: string | null;
+  userAddress: string | null;
+  userType: string | null;
+  userIdNumber: string | null;
   confidence: number;
   uncertainFields: { path: string; reason: string; confidence: number }[];
 }
@@ -471,7 +534,8 @@ export type VehicleScanStatus =
   | 'OCR_RUNNING'
   | 'EXTRACTING'
   | 'DONE'
-  | 'FAILED';
+  | 'FAILED'
+  | 'CONFIRMED';
 
 /** A beolvasás indításának eredménye: ezzel pollingol a kliens. */
 export interface StartScanResult {
@@ -490,15 +554,24 @@ export interface VehicleScanView {
   error: string | null;
 }
 
-export interface ConfirmScanPayload {
+export interface ConfirmScanPayload extends CreateVehiclePayload {
   vehicleId?: string;
-  plate?: string;
-  vin?: string;
-  make?: string;
-  model?: string;
-  year?: number;
-  odometerKm?: number;
+  /** A beolvasás id-je – mentés után a háttér CONFIRMED-re állítja. */
+  scanId?: string;
   files?: ScanFileRef[];
+}
+
+/** Egy beolvasás listaeleme (feldolgozási „inbox" sor). */
+export interface VehicleScanListItem {
+  id: string;
+  status: VehicleScanStatus;
+  fileName: string;
+  fileCount: number;
+  plate: string | null;
+  matchedVehicleId: string | null;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
+  createdAt: string;
 }
 
 export interface VehicleDocumentItem {
@@ -569,9 +642,17 @@ export const vehiclesApi = {
       form,
     });
   },
+  /** A feldolgozási „inbox": a még meg nem erősített beolvasások státusszal. */
+  listScans() {
+    return apiRequest<VehicleScanListItem[]>('/vehicles/scans');
+  },
   /** Egy beolvasás aktuális állapota és – ha kész – az eredménye (polling). */
   getScan(scanId: string) {
     return apiRequest<VehicleScanView>(`/vehicles/scan/${scanId}`);
+  },
+  /** Egy beolvasás elvetése a feldolgozási listából. */
+  deleteScan(scanId: string) {
+    return apiRequest<void>(`/vehicles/scan/${scanId}`, { method: 'DELETE' });
   },
   /** A beolvasott (ellenőrzött) adatok mentése. */
   confirmScan(payload: ConfirmScanPayload) {

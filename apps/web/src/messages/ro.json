@@ -454,6 +454,61 @@
         "amount": "Sumă"
       }
     },
+    "fields": {
+      "sectionTech": "Date tehnice",
+      "sectionOwner": "Proprietar",
+      "sectionUser": "Utilizator / utilizator în leasing",
+      "vehicleType": "Tip/variantă (D.2)",
+      "firstRegistration": "Prima înmatriculare",
+      "category": "Categoria vehiculului (J)",
+      "fuelType": "Combustibil",
+      "engineCm3": "Capacitate cilindrică (cm³)",
+      "powerKw": "Putere (kW)",
+      "color": "Culoare",
+      "seats": "Număr de locuri",
+      "maxMassKg": "Masa maximă autorizată (kg)",
+      "kerbWeightKg": "Masa proprie (kg)",
+      "euroClass": "Clasă de emisii (Euro)",
+      "typeApproval": "Număr omologare de tip (K)",
+      "party": {
+        "type": "Tip",
+        "person": "Persoană fizică",
+        "company": "Firmă",
+        "name": "Nume",
+        "address": "Adresă",
+        "cnp": "CNP",
+        "cui": "CUI"
+      }
+    },
+    "scans": {
+      "title": "Scanări talon",
+      "subtitle": "Încarcă talonul (1–2 pagini) — după procesare îl poți salva ca vehicul.",
+      "uploadHint": "Trage aici poza/PDF-ul talonului sau alege un fișier (max. 2 pagini).",
+      "choose": "Alege fișier",
+      "uploading": "Se încarcă…",
+      "loading": "Se încarcă…",
+      "empty": "Nicio scanare în curs.",
+      "pages": "({count} pagini)",
+      "saveAsVehicle": "Salvează ca vehicul",
+      "updateVehicle": "Actualizează existentul",
+      "dismiss": "Renunță",
+      "dismissing": "Se renunță…",
+      "errorUpload": "Încărcarea a eșuat, încearcă din nou.",
+      "table": {
+        "file": "Fișier / număr",
+        "uploadedAt": "Încărcat",
+        "status": "Stare",
+        "actions": "Acțiuni"
+      },
+      "status": {
+        "PENDING": "În coadă",
+        "OCR_RUNNING": "Recunoaștere text",
+        "EXTRACTING": "Extragere date",
+        "DONE": "Gata",
+        "FAILED": "Eșuat",
+        "CONFIRMED": "Salvat"
+      }
+    },
     "scanRegistration": "Scanare talon",
     "scan": {
       "title": "Scanare talon (certificat de înmatriculare)",

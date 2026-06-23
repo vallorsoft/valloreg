@@ -3,12 +3,12 @@ import {
   IsInt,
   IsOptional,
   IsString,
-  Max,
-  MaxLength,
   Min,
+  MaxLength,
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { CreateVehicleDto } from './create-vehicle.dto';
 
 /** Egy beolvasott (staging) fájl hivatkozása, amit a járműhöz kötünk. */
 export class ScanFileRefDto {
@@ -31,44 +31,18 @@ export class ScanFileRefDto {
 
 /**
  * A forgalmi-beolvasás megerősítése: a felhasználó által ellenőrzött jármű-mezők
- * + a beolvasott fájl(ok) hivatkozása. `vehicleId` megadva = meglévő jármű
- * frissítése (duplikátum esetén), különben új jármű.
+ * (CreateVehicleDto: műszaki adatok + felek) + a beolvasott fájl(ok) hivatkozása.
+ * `vehicleId` megadva = meglévő jármű frissítése (duplikátum esetén), különben új.
  */
-export class ConfirmScanDto {
+export class ConfirmScanDto extends CreateVehicleDto {
   @IsOptional()
   @IsString()
   vehicleId?: string;
 
+  /** A beolvasás (VehicleScan) id-je – mentés után CONFIRMED-re állítjuk. */
   @IsOptional()
   @IsString()
-  @MaxLength(20)
-  plate?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  vin?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  make?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  model?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1900)
-  @Max(2100)
-  year?: number;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  odometerKm?: number;
+  scanId?: string;
 
   @IsOptional()
   @IsArray()
