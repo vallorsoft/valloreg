@@ -177,6 +177,11 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
         {/* 2. fázis: ellenőrzés + mentés */}
         {result && d && (
           <div className="space-y-4">
+            {!result.looksLikeRegistration && (
+              <div className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                {t('notRegistrationWarning')}
+              </div>
+            )}
             {result.matchedVehicleId && (
               <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800">
                 {t('duplicateWarning')}
