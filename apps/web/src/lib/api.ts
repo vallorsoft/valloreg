@@ -418,6 +418,15 @@ export interface VehicleDocumentItem {
   createdAt: string;
 }
 
+export interface VehicleVerificationView {
+  source: string;
+  status: string;
+  itpValidUntil: string | null;
+  rcaValidUntil: string | null;
+  vignetteValidUntil: string | null;
+  checkedAt: string;
+}
+
 export interface ImportRowResult {
   index: number;
   plate: string | null;
@@ -479,6 +488,16 @@ export const vehiclesApi = {
       method: 'POST',
       form,
     });
+  },
+  verify(id: string) {
+    return apiRequest<VehicleVerificationView>(`/vehicles/${id}/verify`, {
+      method: 'POST',
+    });
+  },
+  getVerification(id: string) {
+    return apiRequest<VehicleVerificationView | null>(
+      `/vehicles/${id}/verification`,
+    );
   },
   listDocuments(id: string) {
     return apiRequest<VehicleDocumentItem[]>(`/vehicles/${id}/documents`);

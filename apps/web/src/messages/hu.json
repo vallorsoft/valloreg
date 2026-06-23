@@ -516,6 +516,24 @@
       "doneTitle": "Import kész",
       "errorPreview": "Az előnézet sikertelen.",
       "errorCommit": "Az import sikertelen."
+    },
+    "verification": {
+      "title": "Megfelelőség (RO)",
+      "verifyNow": "Ellenőrzés most",
+      "checking": "Ellenőrzés…",
+      "itp": "Műszaki (ITP)",
+      "rca": "Biztosítás (RCA)",
+      "vignette": "Matrica (rovinietă)",
+      "checkedAt": "Ellenőrizve: {date}",
+      "demoNote": "demó adat",
+      "empty": "Még nincs ellenőrzés. Indítsd el az „Ellenőrzés most\" gombbal.",
+      "error": "Az ellenőrzés sikertelen.",
+      "state": {
+        "ok": "Érvényes",
+        "soon": "Hamarosan lejár",
+        "expired": "Lejárt",
+        "unknown": "Ismeretlen"
+      }
     }
   },
   "documents": {

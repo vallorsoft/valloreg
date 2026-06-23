@@ -79,6 +79,12 @@ export const envSchema = z.object({
   // Opcionális: a TELJES modell-láncot felülírja (vesszős lista).
   GEMINI_MODELS: z.string().optional().default(''),
 
+  // RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). `stub` = dev/álladat;
+  // `ro` = külső API a RO_VERIFY_API_URL-en (kulccsal). API nélkül stubra esik.
+  VEHICLE_VERIFY_PROVIDER: z.enum(['stub', 'ro']).default('stub'),
+  RO_VERIFY_API_URL: z.string().optional().default(''),
+  RO_VERIFY_API_KEY: z.string().optional().default(''),
+
   // E-mail: Brevo (transactional API). Ha nincs kulcs, a mailer csak logol.
   BREVO_API_KEY: z.string().optional().default(''),
   BREVO_SENDER: z.string().default('noreply@valloreg.local'),

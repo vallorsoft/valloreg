@@ -138,6 +138,18 @@ export class AppConfigService {
     return this.get('EXTRACTION_PROVIDER');
   }
 
+  get vehicleVerifyProvider(): AppEnv['VEHICLE_VERIFY_PROVIDER'] {
+    return this.get('VEHICLE_VERIFY_PROVIDER');
+  }
+
+  /** RO megfelelőség-ellenőrző külső API konfigurációja. */
+  get roVerify(): { apiUrl: string; apiKey: string } {
+    return {
+      apiUrl: this.get('RO_VERIFY_API_URL'),
+      apiKey: this.get('RO_VERIFY_API_KEY'),
+    };
+  }
+
   /**
    * Gemini konfiguráció. A `models` a feldolgozó modell-lánc: 429 (kvóta) esetén
    * a provider a következő modellre vált. A láncot a GEMINI_MODELS felülírja;

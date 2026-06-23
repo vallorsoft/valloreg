@@ -149,6 +149,19 @@ nyilvántartókhoz képest.
       letöltés a részletezőn; jármű törlésekor az S3 fájl is takarítódik
 - [x] Adatvédelem: a tulajdonos neve (személyes adat) csak ellenőrzéshez, nem perzisztáljuk
 
+### 5/F – RO megfelelőség auto-lekérés (ITP / RCA / rovinietă) (KÉSZ)
+
+- [x] Pluggable `VehicleVerificationProvider` (stub + `ro` külső API-ra kész);
+      env: `VEHICLE_VERIFY_PROVIDER`, `RO_VERIFY_API_URL/KEY`. API nélkül stub/biztonságos.
+- [x] `VehicleVerification` rekord (ITP/RCA/rovinietă lejárat, forrás, állapot, ellenőrizve)
+- [x] Az eredmény **automatikusan tölti** a compliance emlékeztetők lejáratát
+      (`source="verification"`, a kézi emlékeztetőket nem írja felül) → a napi szkenner értesít
+- [x] Heti BullMQ ütemező (boot-biztos) RO-rendszámú járművekre + manuális „Ellenőrzés most"
+- [x] UI: megfelelőség-panel a jármű-részletezőn (lejáratok + státusz-badge)
+
+> Megjegyzés: a RO hatósági/biztosítói adat nincs garantált nyílt API-ban; valódi
+> forráshoz kereskedelmi/saját proxy API kell (a provider erre kész). Scraping kerülve.
+
 ### 5/E – Tömeges járműimport CSV-ből (KÉSZ)
 
 - [x] CSV feltöltés → **soronkénti validáció + előnézet** (create/update/error besorolás),

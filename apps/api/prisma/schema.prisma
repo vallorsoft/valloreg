@@ -96,6 +96,7 @@ model Tenant {
   itemCategoryMappings ItemCategoryMapping[]
   reminders            Reminder[]
   vehicleDocuments     VehicleDocument[]
+  vehicleVerifications VehicleVerification[]
 
   @@map("tenants")
 }
@@ -280,6 +281,7 @@ model Vehicle {
   supplierVehicleMappings SupplierVehicleMapping[]
   reminders    Reminder[]
   documents    VehicleDocument[]
+  verification VehicleVerification?
 
   @@index([tenantId])
   @@index([tenantId, plate])
@@ -462,6 +464,8 @@ model Reminder {
   lastDoneKm     Int?
   notes          String?
   active         Boolean   @default(true)
+  // Forrás: "manual" (felhasználó) vagy "verification" (RO auto-lekérés).
+  source         String    @default("manual")
   // Értesítés-throttle: mikor és milyen állapotról ment ki utoljára értesítés.
   lastNotifiedAt DateTime?
   notifiedStage  String? // a legutóbb értesített status (due_soon | overdue)
@@ -497,4 +501,25 @@ model VehicleDocument {
   @@index([tenantId])
   @@index([tenantId, vehicleId])
   @@map("vehicle_documents")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Megfelelőség-ellenőrzés (RO): ITP, RCA, rovinietă lejáratok külső forrásból
+// ──────────────────────────────────────────────────────────────────────────
+model VehicleVerification {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  vehicleId          String    @unique
+  source             String // "stub" | "ro"
+  status             String // "ok" | "not_found" | "error"
+  itpValidUntil      DateTime? // műszaki (ITP)
+  rcaValidUntil      DateTime? // kötelező biztosítás (RCA)
+  vignetteValidUntil DateTime? // autópálya-matrica (rovinietă)
+  checkedAt          DateTime  @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@map("vehicle_verifications")
 }
