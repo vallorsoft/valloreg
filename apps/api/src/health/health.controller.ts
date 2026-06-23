@@ -12,4 +12,15 @@ export class HealthController {
   check() {
     return this.healthService.check();
   }
+
+  /**
+   * Diagnosztika: a BullMQ sorok tényleges állapota (waiting/active/completed/
+   * failed/…) mindkét queue-ra. Megmutatja, hogy a job egyáltalán sorba kerül-e,
+   * és kiveszi-e a worker. Publikus (csak aggregált számokat ad vissza).
+   */
+  @Public()
+  @Get('queues')
+  queues() {
+    return this.healthService.queueStats();
+  }
 }

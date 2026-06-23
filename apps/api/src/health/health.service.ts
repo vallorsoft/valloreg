@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import Redis from 'ioredis';
+import { Queue } from 'bullmq';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppConfigService } from '../config/app-config.service';
+import {
+  DOCUMENTS_QUEUE,
+  VEHICLE_SCANS_QUEUE,
+} from '../queue/queue.constants';
 
 export interface HealthReport {
   status: 'ok' | 'degraded';
@@ -75,6 +80,37 @@ export class HealthService {
       );
       return 'unknown';
     }
+  }
+
+  /**
+   * Diagnosztika: a BullMQ sorok job-számai. Külön, friss Queue-kapcsolaton
+   * (nem a producer példányon) kérdezi le, hogy a health független legyen.
+   * A counts kulcsai: waiting, active, completed, failed, delayed, paused.
+   */
+  async queueStats(): Promise<Record<string, unknown>> {
+    const connection = this.config.redis;
+    const names = [DOCUMENTS_QUEUE, VEHICLE_SCANS_QUEUE];
+    const out: Record<string, unknown> = {};
+    await Promise.all(
+      names.map(async (name) => {
+        const queue = new Queue(name, { connection });
+        try {
+          out[name] = await queue.getJobCounts(
+            'waiting',
+            'active',
+            'completed',
+            'failed',
+            'delayed',
+            'paused',
+          );
+        } catch (err) {
+          out[name] = { error: (err as Error).message };
+        } finally {
+          await queue.close();
+        }
+      }),
+    );
+    return { queues: out, timestamp: new Date().toISOString() };
   }
 
   private async checkRedis(): Promise<'up' | 'down'> {
