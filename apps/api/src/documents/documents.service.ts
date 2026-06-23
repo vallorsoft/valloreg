@@ -175,6 +175,50 @@ export class DocumentsService {
     return { ...document, status: DocumentStatus.CONFIRMED };
   }
 
+  /**
+   * Dokumentum teljes törlése: a Document rekorddal a séma cascade-je törli a
+   * hozzá tartozó Invoice-t és minden InvoiceItem-et is (így a riport/stat/
+   * insight/TCO – amelyek ezekből számolnak – automatikusan frissül). A tárolt
+   * fájlt is töröljük az objektumtárból (best-effort, hogy ne maradjon árva fájl).
+   *
+   * Megjegyzés: a tanuló mappingek (SupplierVehicleMapping/ItemCategoryMapping)
+   * több dokumentum hozzájárulásából képzett aggregált súlyok – ezeket
+   * szándékosan NEM bontjuk vissza (nem dokumentumonként követjük, és más számlák
+   * tanulását is rontaná).
+   */
+  async remove(tenantId: string, userId: string, id: string): Promise<void> {
+    const document = await this.prisma.scoped.document.findFirst({
+      where: { id },
+      select: { id: true, fileName: true, storageKey: true },
+    });
+    if (!document) throw AppException.notFound('A dokumentum nem található.');
+
+    // DB törlés (cascade: Invoice + InvoiceItem) – ez a felhasználó számára a
+    // mérvadó művelet, ezért előbb ezt végezzük el.
+    await this.prisma.scoped.document.delete({ where: { id } });
+
+    // A tárolt fájl törlése best-effort: ha az objektumtár épp hibázik, az adat
+    // már eltűnt a rendszerből; az árva fájl később takarítható.
+    try {
+      await this.storage.delete(document.storageKey);
+    } catch (err) {
+      this.logger.warn(
+        `A fájl törlése a tárból sikertelen (${document.storageKey}): ${
+          err instanceof Error ? err.message : String(err)
+        }`,
+      );
+    }
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'document.deleted',
+      resourceType: 'Document',
+      resourceId: id,
+      metadata: { fileName: document.fileName },
+    });
+  }
+
   list() {
     return this.prisma.scoped.document.findMany({
       orderBy: { createdAt: 'desc' },

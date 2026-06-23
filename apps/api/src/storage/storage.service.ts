@@ -1,5 +1,6 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
+  DeleteObjectCommand,
   GetObjectCommand,
   PutObjectCommand,
   S3Client,
@@ -88,6 +89,13 @@ export class StorageService implements OnModuleInit {
       chunks.push(Buffer.from(chunk));
     }
     return Buffer.concat(chunks);
+  }
+
+  /** Objektum törlése a tárból. Idempotens: nem létező kulcs nem hiba (S3). */
+  async delete(key: string): Promise<void> {
+    await this.client.send(
+      new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
+    );
   }
 
   /** Presigned GET URL letöltéshez. */

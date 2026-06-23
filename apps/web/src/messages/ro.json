@@ -519,6 +519,12 @@
         "unassigned": "Neatribuit",
         "assignError": "Atribuirea a eșuat."
       }
+    },
+    "actions": {
+      "delete": "Ștergere",
+      "deleting": "Se șterge…",
+      "confirmDelete": "Sigur ștergeți acest document? Factura, articolele și fișierul vor fi șterse definitiv.",
+      "deleteError": "Ștergerea a eșuat, încercați din nou."
     }
   },
   "reminders": {
