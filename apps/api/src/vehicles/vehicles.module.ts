@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
-import { OcrModule } from '../ocr/ocr.module';
-import { ExtractionModule } from '../extraction/extraction.module';
+import { QueueModule } from '../queue/queue.module';
 import { VerificationModule } from '../verification/verification.module';
 import { VehiclesService } from './vehicles.service';
 import { VehiclesController } from './vehicles.controller';
 
+/**
+ * A forgalmi-beolvasás aszinkron: a service a QueueModule producer-ét
+ * (VehicleScansQueueService) használja, a tényleges OCR+AI a queue workerében
+ * fut. A VerificationModule a megfelelőség-ellenőrzéshez (ITP/RCA) kell.
+ */
 @Module({
-  imports: [OcrModule, ExtractionModule, VerificationModule],
+  imports: [QueueModule, VerificationModule],
   controllers: [VehiclesController],
   providers: [VehiclesService],
   exports: [VehiclesService],

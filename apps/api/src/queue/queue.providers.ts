@@ -1,7 +1,12 @@
 import { Provider } from '@nestjs/common';
 import { Queue } from 'bullmq';
 import { AppConfigService } from '../config/app-config.service';
-import { DOCUMENTS_QUEUE, DOCUMENTS_QUEUE_TOKEN } from './queue.constants';
+import {
+  DOCUMENTS_QUEUE,
+  DOCUMENTS_QUEUE_TOKEN,
+  VEHICLE_SCANS_QUEUE,
+  VEHICLE_SCANS_QUEUE_TOKEN,
+} from './queue.constants';
 
 /**
  * A `documents` BullMQ Queue (producer oldal) provider-e. A Redis kapcsolatot
@@ -22,6 +27,28 @@ export const documentsQueueProvider: Provider = {
         backoff: { type: 'exponential', delay: 5000 },
         removeOnComplete: 1000,
         // Hibás jobok megtartása (DLQ-szerű viselkedés monitorozáshoz).
+        removeOnFail: false,
+      },
+    });
+  },
+};
+
+/**
+ * A `vehicle-scans` BullMQ Queue (producer oldal) provider-e. Ugyanaz a
+ * retry/backoff politika, mint a documents-nél; a job állapotát/eredményét a
+ * VehicleScan DB-rekord hordozza (a kliens onnan pollingol).
+ */
+export const vehicleScansQueueProvider: Provider = {
+  provide: VEHICLE_SCANS_QUEUE_TOKEN,
+  inject: [AppConfigService],
+  useFactory: (config: AppConfigService): Queue => {
+    const redis = config.redis;
+    return new Queue(VEHICLE_SCANS_QUEUE, {
+      connection: redis,
+      defaultJobOptions: {
+        attempts: 3,
+        backoff: { type: 'exponential', delay: 5000 },
+        removeOnComplete: 1000,
         removeOnFail: false,
       },
     });

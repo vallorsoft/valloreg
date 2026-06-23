@@ -350,7 +350,12 @@
       "noTenant": "No company selected",
       "menu": "Menu"
     },
-    "phaseNote": "Demo view – real data wiring lands in later phases."
+    "phaseNote": "Demo view – real data wiring lands in later phases.",
+    "install": {
+      "label": "Install app",
+      "iosTitle": "Install on iPhone / iPad",
+      "iosSteps": "Tap the Share button, then choose “Add to Home Screen”."
+    }
   },
   "dashboard": {
     "title": "Dashboard",

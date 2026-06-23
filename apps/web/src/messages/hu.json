@@ -350,7 +350,12 @@
       "noTenant": "Nincs kiválasztott cég",
       "menu": "Menü"
     },
-    "phaseNote": "Demó nézet – a valós adatok bekötése a következő fázisokban érkezik."
+    "phaseNote": "Demó nézet – a valós adatok bekötése a következő fázisokban érkezik.",
+    "install": {
+      "label": "App telepítése",
+      "iosTitle": "Telepítés iPhone-on / iPaden",
+      "iosSteps": "Nyomd meg a Megosztás gombot, majd válaszd a „Főképernyőhöz adás” lehetőséget."
+    }
   },
   "dashboard": {
     "title": "Vezérlőpult",
