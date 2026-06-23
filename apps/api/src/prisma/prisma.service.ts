@@ -35,6 +35,7 @@ const TENANT_SCOPED_MODELS = new Set<string>([
   'SupplierVehicleMapping',
   'ItemCategoryMapping',
   'Reminder',
+  'VehicleDocument',
   // Tenant és AuditLog NEM itt: lásd alább a megjegyzést.
 ]);
 

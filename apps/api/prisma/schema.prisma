@@ -95,6 +95,7 @@ model Tenant {
   supplierVehicleMappings SupplierVehicleMapping[]
   itemCategoryMappings ItemCategoryMapping[]
   reminders            Reminder[]
+  vehicleDocuments     VehicleDocument[]
 
   @@map("tenants")
 }
@@ -278,6 +279,7 @@ model Vehicle {
   invoiceItems InvoiceItem[]
   supplierVehicleMappings SupplierVehicleMapping[]
   reminders    Reminder[]
+  documents    VehicleDocument[]
 
   @@index([tenantId])
   @@index([tenantId, plate])
@@ -473,4 +475,26 @@ model Reminder {
   @@index([tenantId, vehicleId])
   @@index([tenantId, active, dueDate])
   @@map("reminders")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Jármű dokumentum-archívum (pl. forgalmi engedély beolvasott képe/PDF-je)
+// ──────────────────────────────────────────────────────────────────────────
+model VehicleDocument {
+  id         String   @id @default(uuid())
+  tenantId   String
+  vehicleId  String
+  kind       String // pl. "registration" (forgalmi engedély)
+  fileName   String
+  mimeType   String
+  sizeBytes  Int
+  storageKey String
+  createdAt  DateTime @default(now())
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@map("vehicle_documents")
 }

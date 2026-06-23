@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { VehicleFormModal } from '@/components/app/VehicleFormModal';
+import { VehicleScanModal } from '@/components/app/VehicleScanModal';
 
 export function VehiclesClient() {
   const t = useTranslations('vehicles');
@@ -15,6 +16,7 @@ export function VehiclesClient() {
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
+  const [scanOpen, setScanOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
@@ -81,9 +83,14 @@ export function VehiclesClient() {
         title={t('title')}
         subtitle={t('subtitle')}
         action={
-          <Button size="sm" onClick={openAdd}>
-            {t('addVehicle')}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" size="sm" onClick={() => setScanOpen(true)}>
+              {t('scanRegistration')}
+            </Button>
+            <Button size="sm" onClick={openAdd}>
+              {t('addVehicle')}
+            </Button>
+          </div>
         }
       />
 
@@ -175,6 +182,17 @@ export function VehiclesClient() {
           vehicle={editing}
           onClose={() => { setModalOpen(false); setEditing(null); }}
           onSaved={handleSaved}
+        />
+      )}
+
+      {scanOpen && (
+        <VehicleScanModal
+          onClose={() => setScanOpen(false)}
+          onSaved={(vehicleId) => {
+            setScanOpen(false);
+            void refresh();
+            router.push(`/${locale}/vehicles/${vehicleId}`);
+          }}
         />
       )}
     </>

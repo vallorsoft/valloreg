@@ -448,6 +448,46 @@
         "category": "Categorie",
         "amount": "Sumă"
       }
+    },
+    "scanRegistration": "Scanare talon",
+    "scan": {
+      "title": "Scanare talon (certificat de înmatriculare)",
+      "subtitle": "Fotografiază sau încarcă (imagine sau PDF) – sistemul extrage datele.",
+      "hint": "Trage aici sau alege fișier (1–2 pagini: față/verso).",
+      "choose": "Alege fișier",
+      "scan": "Scanează",
+      "scanning": "Se scanează…",
+      "cancel": "Anulare",
+      "rescan": "Scanează din nou",
+      "plate": "Nr. înmatriculare",
+      "year": "An",
+      "vin": "Serie șasiu (VIN)",
+      "make": "Marca",
+      "model": "Model",
+      "odometerKm": "Kilometraj",
+      "odometerHint": "Introdu manual (nu e pe talon)",
+      "extraTitle": "Alte date extrase",
+      "fuel": "Combustibil",
+      "power": "Putere",
+      "engine": "Capacitate cilindrică",
+      "color": "Culoare",
+      "firstReg": "Prima înmatriculare",
+      "owner": "Proprietar",
+      "extraNote": "Afișate doar pentru verificare; numele proprietarului nu este stocat.",
+      "duplicateWarning": "Acest vehicul (nr./VIN) există deja – va fi actualizat la salvare.",
+      "save": "Salvare",
+      "update": "Actualizare",
+      "saving": "Se salvează…",
+      "errorScan": "Scanarea a eșuat, încearcă din nou.",
+      "errorSave": "Salvarea a eșuat, încearcă din nou."
+    },
+    "documents": {
+      "title": "Documente",
+      "open": "Deschide",
+      "kind": {
+        "registration": "Talon",
+        "other": "Document"
+      }
     }
   },
   "documents": {

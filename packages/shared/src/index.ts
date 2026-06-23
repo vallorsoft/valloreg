@@ -9,6 +9,7 @@ export * from './categories';
 export * from './reminders';
 export * from './insights';
 export * from './extraction';
+export * from './vehicle-extraction';
 export * from './documents';
 export * from './locales';
 export * from './errors';
