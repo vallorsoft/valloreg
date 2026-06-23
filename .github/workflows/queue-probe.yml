@@ -1,0 +1,30 @@
+name: queue-probe
+
+# IDEIGLENES: a /api/health/queues sor-allapotot kerdezi le (varja a deployt is).
+on:
+  workflow_dispatch: {}
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Queue allapot lekerese (deploy bevarasaval)
+        run: |
+          URL="https://valloreg-api.onrender.com/api/health/queues"
+          for i in $(seq 1 20); do
+            BODY=$(curl -s "$URL" --max-time 90)
+            CODE=$(curl -s -o /dev/null -w '%{http_code}' "$URL" --max-time 90)
+            echo "[$i] HTTP $CODE"
+            # Ha mar van 'queues' a valaszban -> kesz a deploy, kiirjuk es vege.
+            if echo "$BODY" | grep -q '"queues"'; then
+              echo "===== QUEUES JSON ====="
+              echo "$BODY"
+              exit 0
+            fi
+            echo "  meg nem elheto (deploy folyamatban?), varok 20s..."
+            sleep 20
+          done
+          echo "Nem lett elerheto a vegpont a varakozasi ablakban."
+          echo "Utolso valasz: $BODY"
+          exit 1
