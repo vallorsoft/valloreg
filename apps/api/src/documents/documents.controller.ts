@@ -1,6 +1,9 @@
 import {
   Controller,
+  Delete,
   Get,
+  HttpCode,
+  HttpStatus,
   Param,
   Patch,
   Post,
@@ -85,5 +88,21 @@ export class DocumentsController {
     @CurrentUser() user: AuthUser,
   ) {
     return this.documentsService.confirm(tenant.tenantId, user.userId, id);
+  }
+
+  /**
+   * Dokumentum teljes törlése: a számla, a tételek és a tárolt fájl is törlődik
+   * (a riport/stat/insight/TCO ebből számol, így automatikusan frissül).
+   */
+  @Delete(':id')
+  @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async remove(
+    @Param('id') id: string,
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+  ): Promise<void> {
+    await this.documentsService.remove(tenant.tenantId, user.userId, id);
   }
 }

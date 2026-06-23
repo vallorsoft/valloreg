@@ -55,6 +55,7 @@ export function DocumentReviewClient({ id }: { id: string }) {
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
   const [confirming, setConfirming] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [itemError, setItemError] = useState<string | null>(null);
@@ -96,6 +97,19 @@ export function DocumentReviewClient({ id }: { id: string }) {
       window.open(downloadUrl, '_blank');
     } catch {
       // silent – presign errors are transient
+    }
+  }
+
+  async function handleDelete() {
+    if (!window.confirm(t('actions.confirmDelete'))) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      await documentsApi.remove(id);
+      router.push(`/${locale}/documents`);
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('actions.deleteError'));
+      setDeleting(false);
     }
   }
 
@@ -174,6 +188,15 @@ export function DocumentReviewClient({ id }: { id: string }) {
         )}
         <Button variant="outline" size="sm" onClick={() => void handleDownload()}>
           {t('review.download')}
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          className="ml-auto border-red-200 text-red-600 hover:bg-red-50"
+          disabled={deleting}
+          onClick={() => void handleDelete()}
+        >
+          {deleting ? t('actions.deleting') : t('actions.delete')}
         </Button>
       </div>
 

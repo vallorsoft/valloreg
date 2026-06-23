@@ -295,6 +295,10 @@ export const documentsApi = {
       method: 'PATCH',
     });
   },
+  /** Teljes törlés: a számla, tételek és a tárolt fájl is törlődik. */
+  remove(id: string) {
+    return apiRequest<void>(`/documents/${id}`, { method: 'DELETE' });
+  },
 };
 
 // ── Invoices ────────────────────────────────────────────────────────────────

@@ -519,6 +519,12 @@
         "unassigned": "Nincs hozzárendelve",
         "assignError": "A hozzárendelés sikertelen."
       }
+    },
+    "actions": {
+      "delete": "Törlés",
+      "deleting": "Törlés…",
+      "confirmDelete": "Biztosan törli ezt a dokumentumot? A számla, a tételek és a fájl is véglegesen törlődik.",
+      "deleteError": "A törlés sikertelen, próbálja újra."
     }
   },
   "reminders": {
