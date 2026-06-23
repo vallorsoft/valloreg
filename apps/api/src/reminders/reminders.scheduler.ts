@@ -35,43 +35,62 @@ export class RemindersScheduler implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
-    const connection = this.config.redis;
+    // FONTOS: a háttér-ütemező SOHA nem buktathatja meg az API bootját. Ha a
+    // Redis a deploy pillanatában még nem elérhető, csak logolunk és továbblépünk;
+    // a workerek ioredis-retry-vel maguktól csatlakoznak, az ismétlődő job pedig
+    // egy későbbi bootnál/elérhetőségnél regisztrálódik.
+    try {
+      const connection = this.config.redis;
 
-    this.queue = new Queue(REMINDERS_QUEUE, {
-      connection,
-      defaultJobOptions: {
-        attempts: 2,
-        backoff: { type: 'exponential', delay: 10_000 },
-        removeOnComplete: 100,
-        removeOnFail: 100,
-      },
-    });
-
-    // Napi futás 07:00-kor (szerver-idő). Ismétlődő job – a repeat-kulcs alapján
-    // deduplikálódik, ezért biztonságos minden bootstrapnél meghívni.
-    await this.queue.add(
-      SCAN_JOB,
-      {},
-      { repeat: { pattern: '0 7 * * *' }, jobId: 'reminders-daily' },
-    );
-
-    this.worker = new Worker(
-      REMINDERS_QUEUE,
-      async () => {
-        const result = await this.reminders.scanAndNotify();
-        return result;
-      },
-      { connection, concurrency: 1 },
-    );
-
-    this.worker.on('failed', (job, err) => {
-      this.logger.error(
-        `Emlékeztető-szkennelés sikertelen (${job?.id}): ${err.message}`,
-        err.stack,
+      this.queue = new Queue(REMINDERS_QUEUE, {
+        connection,
+        defaultJobOptions: {
+          attempts: 2,
+          backoff: { type: 'exponential', delay: 10_000 },
+          removeOnComplete: 100,
+          removeOnFail: 100,
+        },
+      });
+      this.queue.on('error', (err) =>
+        this.logger.warn(`Emlékeztető-queue hiba: ${err.message}`),
       );
-    });
 
-    this.logger.log('Emlékeztető-ütemező elindult (napi szkennelés 07:00).');
+      this.worker = new Worker(
+        REMINDERS_QUEUE,
+        async () => {
+          const result = await this.reminders.scanAndNotify();
+          return result;
+        },
+        { connection, concurrency: 1 },
+      );
+
+      // Kezeletlen 'error' esemény nélkül a Node leállna – ezért külön listener.
+      this.worker.on('error', (err) =>
+        this.logger.warn(`Emlékeztető-worker hiba: ${err.message}`),
+      );
+      this.worker.on('failed', (job, err) => {
+        this.logger.error(
+          `Emlékeztető-szkennelés sikertelen (${job?.id}): ${err.message}`,
+          err.stack,
+        );
+      });
+
+      // Az ismétlődő job regisztrálása NEM blokkolja a bootot (fire-and-forget):
+      // a repeat-kulcs deduplikál, ezért biztonságos minden bootstrapnél.
+      void this.queue
+        .add(SCAN_JOB, {}, { repeat: { pattern: '0 7 * * *' } })
+        .catch((err) =>
+          this.logger.warn(
+            `Napi emlékeztető-szkennelés ütemezése később: ${(err as Error).message}`,
+          ),
+        );
+
+      this.logger.log('Emlékeztető-ütemező elindult (napi szkennelés 07:00).');
+    } catch (err) {
+      this.logger.error(
+        `Az emlékeztető-ütemező indítása sikertelen (a boot folytatódik): ${(err as Error).message}`,
+      );
+    }
   }
 
   async onModuleDestroy(): Promise<void> {
