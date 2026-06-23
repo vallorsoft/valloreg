@@ -528,7 +528,8 @@ export type VehicleScanStatus =
   | 'OCR_RUNNING'
   | 'EXTRACTING'
   | 'DONE'
-  | 'FAILED';
+  | 'FAILED'
+  | 'CONFIRMED';
 
 /** A beolvasás indításának eredménye: ezzel pollingol a kliens. */
 export interface StartScanResult {
@@ -549,7 +550,22 @@ export interface VehicleScanView {
 
 export interface ConfirmScanPayload extends CreateVehiclePayload {
   vehicleId?: string;
+  /** A beolvasás id-je – mentés után a háttér CONFIRMED-re állítja. */
+  scanId?: string;
   files?: ScanFileRef[];
+}
+
+/** Egy beolvasás listaeleme (feldolgozási „inbox" sor). */
+export interface VehicleScanListItem {
+  id: string;
+  status: VehicleScanStatus;
+  fileName: string;
+  fileCount: number;
+  plate: string | null;
+  matchedVehicleId: string | null;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
+  createdAt: string;
 }
 
 export interface VehicleDocumentItem {
@@ -620,9 +636,17 @@ export const vehiclesApi = {
       form,
     });
   },
+  /** A feldolgozási „inbox": a még meg nem erősített beolvasások státusszal. */
+  listScans() {
+    return apiRequest<VehicleScanListItem[]>('/vehicles/scans');
+  },
   /** Egy beolvasás aktuális állapota és – ha kész – az eredménye (polling). */
   getScan(scanId: string) {
     return apiRequest<VehicleScanView>(`/vehicles/scan/${scanId}`);
+  },
+  /** Egy beolvasás elvetése a feldolgozási listából. */
+  deleteScan(scanId: string) {
+    return apiRequest<void>(`/vehicles/scan/${scanId}`, { method: 'DELETE' });
   },
   /** A beolvasott (ellenőrzött) adatok mentése. */
   confirmScan(payload: ConfirmScanPayload) {

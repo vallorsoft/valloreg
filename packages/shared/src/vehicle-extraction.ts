@@ -103,6 +103,8 @@ export const VehicleScanStatus = {
   EXTRACTING: 'EXTRACTING',
   DONE: 'DONE',
   FAILED: 'FAILED',
+  // A felhasználó megerősítette és járműként mentette – kikerül a feldolgozási listából.
+  CONFIRMED: 'CONFIRMED',
 } as const;
 
 export type VehicleScanStatus =

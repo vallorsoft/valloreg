@@ -39,6 +39,11 @@ export class ConfirmScanDto extends CreateVehicleDto {
   @IsString()
   vehicleId?: string;
 
+  /** A beolvasás (VehicleScan) id-je – mentés után CONFIRMED-re állítjuk. */
+  @IsOptional()
+  @IsString()
+  scanId?: string;
+
   @IsOptional()
   @IsArray()
   @ValidateNested({ each: true })

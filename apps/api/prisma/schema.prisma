@@ -315,6 +315,8 @@ model Vehicle {
 // aki a járművet üzemelteti. `partyType` dönti el, hogy az `idNumber` CNP
 // (magánszemély) vagy CUI (cég). A névhez/címhez SZEMÉLYES ADAT tartozhat – csak
 // a tenanton belül elérhető (tenant-scope).
+// TODO(GDPR – később): ezt a részt (név, cím, CNP/CUI) be kell vonni a GDPR-
+// kezelésbe (adatkezelési tájékoztató, hozzáférés/törlés, megőrzési idő).
 // ──────────────────────────────────────────────────────────────────────────
 model VehicleParty {
   id        String   @id @default(uuid())
@@ -586,6 +588,8 @@ model VehicleScan {
   matchedVehicleId      String?
   // Forgalmi engedélynek tűnik-e (van rendszám/VIN).
   looksLikeRegistration Boolean?
+  // Ha a felhasználó már mentette járműként (status=CONFIRMED): a létrejött/frissített jármű id-je.
+  confirmedVehicleId    String?
   // Hibaüzenet, ha FAILED.
   error                 String?
   createdAt             DateTime @default(now())

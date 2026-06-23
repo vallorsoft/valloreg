@@ -480,6 +480,35 @@
         "cui": "CUI"
       }
     },
+    "scans": {
+      "title": "Scanări talon",
+      "subtitle": "Încarcă talonul (1–2 pagini) — după procesare îl poți salva ca vehicul.",
+      "uploadHint": "Trage aici poza/PDF-ul talonului sau alege un fișier (max. 2 pagini).",
+      "choose": "Alege fișier",
+      "uploading": "Se încarcă…",
+      "loading": "Se încarcă…",
+      "empty": "Nicio scanare în curs.",
+      "pages": "({count} pagini)",
+      "saveAsVehicle": "Salvează ca vehicul",
+      "updateVehicle": "Actualizează existentul",
+      "dismiss": "Renunță",
+      "dismissing": "Se renunță…",
+      "errorUpload": "Încărcarea a eșuat, încearcă din nou.",
+      "table": {
+        "file": "Fișier / număr",
+        "uploadedAt": "Încărcat",
+        "status": "Stare",
+        "actions": "Acțiuni"
+      },
+      "status": {
+        "PENDING": "În coadă",
+        "OCR_RUNNING": "Recunoaștere text",
+        "EXTRACTING": "Extragere date",
+        "DONE": "Gata",
+        "FAILED": "Eșuat",
+        "CONFIRMED": "Salvat"
+      }
+    },
     "scanRegistration": "Scanare talon",
     "scan": {
       "title": "Scanare talon (certificat de înmatriculare)",

@@ -61,6 +61,21 @@ export interface VehicleScanView {
   error: string | null;
 }
 
+/** Egy beolvasás listaeleme (a feldolgozási „inbox" sora). */
+export interface VehicleScanListItem {
+  id: string;
+  status: VehicleScanStatus;
+  /** Megjelenítendő fájlnév (az első staging fájl neve) + a fájlok száma. */
+  fileName: string;
+  fileCount: number;
+  /** A kiolvasott rendszám (gyors azonosításhoz a listában), ha van. */
+  plate: string | null;
+  matchedVehicleId: string | null;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
+  createdAt: Date;
+}
+
 /** Egy CSV-import sor elemzési eredménye. */
 export interface ImportRowResult {
   /** A sor száma a fájlban (1-alapú, a fejléc utáni). */
@@ -407,6 +422,63 @@ export class VehiclesService {
     return { scanId, status: VehicleScanStatus.PENDING };
   }
 
+  /**
+   * A feldolgozási „inbox": a még meg nem erősített beolvasások (a CONFIRMED-eket
+   * kihagyjuk – azok már járműként mentve). Státusszal, hogy a UI lássa, mikor kész.
+   */
+  async listScans(): Promise<VehicleScanListItem[]> {
+    const scans = await this.prisma.scoped.vehicleScan.findMany({
+      where: { status: { not: VehicleScanStatus.CONFIRMED } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return scans.map((scan) => {
+      const files = (scan.files as unknown as ScanFileRef[]) ?? [];
+      const draft = scan.draft as unknown as VehicleRegistrationResult | null;
+      return {
+        id: scan.id,
+        status: scan.status as VehicleScanStatus,
+        fileName: files[0]?.fileName ?? '—',
+        fileCount: files.length,
+        plate: draft?.plate ?? null,
+        matchedVehicleId: scan.matchedVehicleId,
+        looksLikeRegistration: scan.looksLikeRegistration,
+        error: scan.error,
+        createdAt: scan.createdAt,
+      };
+    });
+  }
+
+  /** Egy beolvasás elvetése (a feldolgozási listából): rekord + staging fájlok törlése. */
+  async deleteScan(tenantId: string, userId: string, scanId: string): Promise<void> {
+    const scan = await this.prisma.scoped.vehicleScan.findFirst({
+      where: { id: scanId },
+    });
+    if (!scan) throw AppException.notFound('A beolvasás nem található.');
+
+    await this.prisma.scoped.vehicleScan.delete({ where: { id: scanId } });
+
+    const files = (scan.files as unknown as ScanFileRef[]) ?? [];
+    for (const f of files) {
+      try {
+        await this.storage.delete(f.storageKey);
+      } catch (err) {
+        this.logger.warn(
+          `Staging fájl törlése sikertelen (${f.storageKey}): ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      }
+    }
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'vehicle.scan_dismissed',
+      resourceType: 'VehicleScan',
+      resourceId: scanId,
+    });
+  }
+
   /** Egy beolvasás (job) aktuális állapota és – ha kész – az eredménye. */
   async getScan(scanId: string): Promise<VehicleScanView> {
     const scan = await this.prisma.scoped.vehicleScan.findFirst({
@@ -480,6 +552,18 @@ export class VehiclesService {
           sizeBytes: f.sizeBytes,
           storageKey: f.storageKey,
         })),
+      });
+    }
+
+    // A beolvasás kikerül a feldolgozási listából (CONFIRMED), és a létrejött
+    // járműre mutat. updateMany: idempotens, nem dob, ha a scan már nincs meg.
+    if (dto.scanId) {
+      await this.prisma.scoped.vehicleScan.updateMany({
+        where: { id: dto.scanId },
+        data: {
+          status: VehicleScanStatus.CONFIRMED,
+          confirmedVehicleId: vehicle.id,
+        },
       });
     }
 

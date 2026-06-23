@@ -480,6 +480,35 @@
         "cui": "CUI (tax ID)"
       }
     },
+    "scans": {
+      "title": "Registration scans",
+      "subtitle": "Upload the registration (1–2 pages) — once processed you can save it as a vehicle.",
+      "uploadHint": "Drop the registration photo/PDF here, or pick a file (max 2 pages).",
+      "choose": "Choose file",
+      "uploading": "Uploading…",
+      "loading": "Loading…",
+      "empty": "No scans in progress yet.",
+      "pages": "({count} pages)",
+      "saveAsVehicle": "Save as vehicle",
+      "updateVehicle": "Update existing",
+      "dismiss": "Dismiss",
+      "dismissing": "Dismissing…",
+      "errorUpload": "Upload failed, please try again.",
+      "table": {
+        "file": "File / plate",
+        "uploadedAt": "Uploaded",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "PENDING": "Queued",
+        "OCR_RUNNING": "Text recognition",
+        "EXTRACTING": "Extracting data",
+        "DONE": "Ready",
+        "FAILED": "Failed",
+        "CONFIRMED": "Saved"
+      }
+    },
     "scanRegistration": "Scan registration",
     "scan": {
       "title": "Scan registration certificate",

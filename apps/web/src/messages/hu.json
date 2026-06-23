@@ -480,6 +480,35 @@
         "cui": "CUI (adószám)"
       }
     },
+    "scans": {
+      "title": "Forgalmi beolvasások",
+      "subtitle": "Töltsd fel a forgalmit (1–2 oldal) – feldolgozás után járműként mentheted.",
+      "uploadHint": "Húzd ide a forgalmi fotóját/PDF-jét, vagy válassz fájlt (max. 2 oldal).",
+      "choose": "Fájl kiválasztása",
+      "uploading": "Feltöltés…",
+      "loading": "Betöltés…",
+      "empty": "Még nincs folyamatban lévő beolvasás.",
+      "pages": "({count} oldal)",
+      "saveAsVehicle": "Mentés járműként",
+      "updateVehicle": "Meglévő frissítése",
+      "dismiss": "Elvetés",
+      "dismissing": "Elvetés…",
+      "errorUpload": "A feltöltés sikertelen, próbáld újra.",
+      "table": {
+        "file": "Fájl / rendszám",
+        "uploadedAt": "Feltöltve",
+        "status": "Státusz",
+        "actions": "Műveletek"
+      },
+      "status": {
+        "PENDING": "Sorban",
+        "OCR_RUNNING": "Szövegfelismerés",
+        "EXTRACTING": "Adatkiolvasás",
+        "DONE": "Kész",
+        "FAILED": "Sikertelen",
+        "CONFIRMED": "Mentve"
+      }
+    },
     "scanRegistration": "Forgalmi beolvasása",
     "scan": {
       "title": "Forgalmi engedély beolvasása",
