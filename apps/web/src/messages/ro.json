@@ -516,6 +516,24 @@
       "doneTitle": "Import finalizat",
       "errorPreview": "Previzualizarea a eșuat.",
       "errorCommit": "Importul a eșuat."
+    },
+    "verification": {
+      "title": "Conformitate (RO)",
+      "verifyNow": "Verifică acum",
+      "checking": "Se verifică…",
+      "itp": "ITP",
+      "rca": "RCA",
+      "vignette": "Rovinietă",
+      "checkedAt": "Verificat: {date}",
+      "demoNote": "date demo",
+      "empty": "Încă nicio verificare. Apasă „Verifică acum\".",
+      "error": "Verificarea a eșuat.",
+      "state": {
+        "ok": "Valabil",
+        "soon": "Expiră curând",
+        "expired": "Expirat",
+        "unknown": "Necunoscut"
+      }
     }
   },
   "documents": {
