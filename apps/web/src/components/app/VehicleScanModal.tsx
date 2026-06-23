@@ -1,15 +1,22 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   vehiclesApi,
   ApiError,
-  type VehicleScanResult,
+  type VehicleScanView,
   type ConfirmScanPayload,
 } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+
+/** Polling: ennyi időnként kérdezzük le a beolvasás állapotát. */
+const POLL_INTERVAL_MS = 2000;
+/** Polling felső korlát (ms) – e fölött feladjuk és hibát mutatunk. */
+const POLL_TIMEOUT_MS = 90_000;
+
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
 interface Props {
   onClose: () => void;
@@ -37,7 +44,7 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
   const [scanning, setScanning] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [result, setResult] = useState<VehicleScanResult | null>(null);
+  const [result, setResult] = useState<VehicleScanView | null>(null);
   const [form, setForm] = useState<FormState>({
     plate: '',
     vin: '',
@@ -47,7 +54,17 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
     odometerKm: '',
   });
 
-  const uncertain = new Set(result?.draft.uncertainFields.map((u) => u.path));
+  // A modal bezárása közben futó pollingot le kell állítani (ne állítson state-et
+  // egy lecsatolt komponensen).
+  const cancelledRef = useRef(false);
+  useEffect(() => {
+    cancelledRef.current = false;
+    return () => {
+      cancelledRef.current = true;
+    };
+  }, []);
+
+  const uncertain = new Set(result?.draft?.uncertainFields.map((u) => u.path));
 
   function pickFiles(list: FileList | null) {
     if (!list) return;
@@ -55,20 +72,32 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
     setError(null);
   }
 
+  /**
+   * Indítja a háttér-beolvasást, majd pollingol az eredményre. A hosszú OCR+AI
+   * a szerveren, háttérben fut – itt csak az állapotot kérdezzük le.
+   */
   async function handleScan() {
     if (files.length === 0) return;
     setScanning(true);
     setError(null);
     try {
-      const res = await vehiclesApi.scanRegistration(files, locale);
-      setResult(res);
-      const d = res.draft;
+      const { scanId } = await vehiclesApi.scanRegistration(files, locale);
+      const view = await pollScan(scanId);
+      if (!view) return; // megszakítva (bezárták a modalt)
+
+      if (view.status === 'FAILED') {
+        setError(view.error || t('errorScan'));
+        return;
+      }
+
+      setResult(view);
+      const d = view.draft;
       setForm({
-        plate: d.plate ?? '',
-        vin: d.vin ?? '',
-        make: d.make ?? '',
-        model: d.model ?? '',
-        year: d.year?.toString() ?? '',
+        plate: d?.plate ?? '',
+        vin: d?.vin ?? '',
+        make: d?.make ?? '',
+        model: d?.model ?? '',
+        year: d?.year?.toString() ?? '',
         odometerKm: '',
       });
     } catch (err) {
@@ -76,7 +105,21 @@ export function VehicleScanModal({ onClose, onSaved }: Props) {
       // üzenetet mutatunk (a háttér épp ébredhet – pár másodperc múlva újra).
       setError(scanErrorMessage(err));
     } finally {
-      setScanning(false);
+      if (!cancelledRef.current) setScanning(false);
+    }
+  }
+
+  /** Lekérdezi a beolvasás állapotát, amíg DONE/FAILED nem lesz (vagy timeout). */
+  async function pollScan(scanId: string): Promise<VehicleScanView | null> {
+    const deadline = Date.now() + POLL_TIMEOUT_MS;
+    for (;;) {
+      if (cancelledRef.current) return null;
+      const view = await vehiclesApi.getScan(scanId);
+      if (view.status === 'DONE' || view.status === 'FAILED') return view;
+      if (Date.now() > deadline) {
+        return { ...view, status: 'FAILED', error: t('errorScan') };
+      }
+      await sleep(POLL_INTERVAL_MS);
     }
   }
 

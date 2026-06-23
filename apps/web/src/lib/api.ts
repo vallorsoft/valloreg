@@ -459,12 +459,29 @@ export interface ScanFileRef {
   sizeBytes: number;
 }
 
-export interface VehicleScanResult {
-  draft: VehicleRegistrationDraft;
+/** A forgalmi-beolvasás háttér-job állapotai (a shared VehicleScanStatus tükre). */
+export type VehicleScanStatus =
+  | 'PENDING'
+  | 'OCR_RUNNING'
+  | 'EXTRACTING'
+  | 'DONE'
+  | 'FAILED';
+
+/** A beolvasás indításának eredménye: ezzel pollingol a kliens. */
+export interface StartScanResult {
+  scanId: string;
+  status: VehicleScanStatus;
+}
+
+/** Egy beolvasás (job) aktuális állapota és – ha kész – az eredménye. */
+export interface VehicleScanView {
+  id: string;
+  status: VehicleScanStatus;
+  draft: VehicleRegistrationDraft | null;
   files: ScanFileRef[];
   matchedVehicleId: string | null;
-  /** Forgalmi engedélynek tűnik-e (van rendszám/VIN). Ha nem, a UI figyelmeztet. */
-  looksLikeRegistration: boolean;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
 }
 
 export interface ConfirmScanPayload {
@@ -532,15 +549,23 @@ export const vehiclesApi = {
   list() {
     return apiRequest<Vehicle[]>('/vehicles');
   },
-  /** Forgalmi engedély beolvasása (1–2 fájl). NEM ment járművet. */
+  /**
+   * Forgalmi engedély beolvasásának INDÍTÁSA (1–2 fájl). NEM ment járművet és
+   * NEM várja meg az OCR+AI-t: a háttér-feldolgozáshoz sorba teszi, és a
+   * `scanId`-t adja vissza. Az eredményre a `getScan`-nel pollingolj.
+   */
   scanRegistration(files: File[], locale?: string) {
     const form = new FormData();
     for (const f of files) form.append('files', f);
     const qs = locale ? `?locale=${encodeURIComponent(locale)}` : '';
-    return apiRequest<VehicleScanResult>(`/vehicles/scan${qs}`, {
+    return apiRequest<StartScanResult>(`/vehicles/scan${qs}`, {
       method: 'POST',
       form,
     });
+  },
+  /** Egy beolvasás aktuális állapota és – ha kész – az eredménye (polling). */
+  getScan(scanId: string) {
+    return apiRequest<VehicleScanView>(`/vehicles/scan/${scanId}`);
   },
   /** A beolvasott (ellenőrzött) adatok mentése. */
   confirmScan(payload: ConfirmScanPayload) {

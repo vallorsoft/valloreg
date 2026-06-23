@@ -44,6 +44,23 @@ export type VehicleRegistrationResult = z.infer<
   typeof VehicleRegistrationResultSchema
 >;
 
+/**
+ * A forgalmi-beolvasás (OCR + AI) háttér-feldolgozásának állapotai. A beolvasás
+ * aszinkron: a kliens egy `scanId`-t kap, és lekérdezéssel (polling) követi az
+ * állapotot, amíg `DONE`/`FAILED` nem lesz. Így a hosszú OCR+AI nem a HTTP-kérés
+ * idejét terheli (nincs időtúllépés / "Failed to fetch" hideg indításkor).
+ */
+export const VehicleScanStatus = {
+  PENDING: 'PENDING',
+  OCR_RUNNING: 'OCR_RUNNING',
+  EXTRACTING: 'EXTRACTING',
+  DONE: 'DONE',
+  FAILED: 'FAILED',
+} as const;
+
+export type VehicleScanStatus =
+  (typeof VehicleScanStatus)[keyof typeof VehicleScanStatus];
+
 /** Validál + kitölti a defaultokat (single source of truth). */
 export function parseVehicleRegistration(
   input: unknown,
