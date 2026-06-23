@@ -128,15 +128,19 @@ nyilvántartókhoz képest.
 - [x] UI: `/reminders` oldal, dashboard widget + **gyors feltöltés a vezérlőpulton**, jármű-szintű panel
 - [x] REMINDERS feature flag élővé tétele (eddig csak deklarált volt)
 
-### 5/B – Következő feladatok (Tier 2/3)
+### 5/B – Tier 2 (KÉSZ)
 
-- [ ] **Költség-anomália detektálás:** új tétel ára vs. a jármű/flotta/beszállító
-      történeti ára → túlárazás, duplikált számla, szokatlan tétel jelzése
-      (a meglévő riport + tanuló mappingre épül)
-- [ ] **Auto-approve küszöb finomítás + tanulási hurok erősítés:** ismert
-      beszállító-minta + magas confidence → kevesebb kézi review; mérőszám a review-arányról
-- [ ] **Ütemezett riport e-mailben:** a MEGLÉVŐ havi riport automatikus kiküldése
-      (NEM könyvelő-export, NEM integráció)
+- [x] **Költség-anomália detektálás:** tétel egységár vs. kategória-medián
+      (túlárazás), azonos beszállító+számlaszám (duplikátum), kiugró számlaösszeg.
+      Olvasásidőben számított, a REPORTS feature mögött. UI: `/insights` + dashboard widget
+- [x] **Tanulási hurok erősítés:** tétel-minta → kategória/típus mapping rögzítése
+      kézi felülbíráláskor (eddig az `ItemCategoryMapping` modell használatlan volt)
+- [x] **Automatizáltsági metrika:** AUTO_OK / (AUTO_OK + NEEDS_REVIEW) arány a dashboardon
+- [x] **Ütemezett havi riport e-mailben:** a MEGLÉVŐ riport automatikus kiküldése a
+      tulajdonosnak (havi BullMQ job) – NEM könyvelő-export, NEM integráció
+
+### 5/C – Tier 3 (következő feladatok)
+
 - [ ] **Prediktív karbantartás finomítás:** tanult intervallumok 2+ adatpontból
       (az alapértelmezett intervallumok helyett/mellett)
 - [ ] **Prediktív TCO / csere-javaslat:** növekvő szervizköltség-trend a szerviztörténetből

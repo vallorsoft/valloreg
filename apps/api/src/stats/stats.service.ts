@@ -15,6 +15,16 @@ export interface DashboardStats {
     grossTotal: string | null;
     count: number;
   };
+  /**
+   * Automatizáltság: a frissen feldolgozott számlák közül hány ment át emberi
+   * ellenőrzés NÉLKÜL (AUTO_OK) a beavatkozást igénylőkhöz (NEEDS_REVIEW) képest.
+   * `rate` = autoOk / (autoOk + needsReview), 0 ha még nincs adat.
+   */
+  automation: {
+    autoOk: number;
+    needsReview: number;
+    rate: number;
+  };
 }
 
 @Injectable()
@@ -39,6 +49,7 @@ export class StatsService {
       documentNeedsReview,
       documentProcessing,
       documentConfirmed,
+      documentAutoOk,
       invoiceAgg,
     ] = await Promise.all([
       this.prisma.scoped.vehicle.count(),
@@ -55,11 +66,18 @@ export class StatsService {
       this.prisma.scoped.document.count({
         where: { status: { in: CONFIRMED_STATUSES } },
       }),
+      this.prisma.scoped.document.count({
+        where: { status: DocumentStatus.AUTO_OK },
+      }),
       this.prisma.scoped.invoice.aggregate({
         _sum: { grossTotal: true },
         _count: true,
       }),
     ]);
+
+    const automationDenom = documentAutoOk + documentNeedsReview;
+    const automationRate =
+      automationDenom > 0 ? documentAutoOk / automationDenom : 0;
 
     return {
       vehicles: { total: vehicleCount },
@@ -73,6 +91,11 @@ export class StatsService {
       invoices: {
         grossTotal: invoiceAgg._sum.grossTotal?.toString() ?? null,
         count: invoiceAgg._count,
+      },
+      automation: {
+        autoOk: documentAutoOk,
+        needsReview: documentNeedsReview,
+        rate: automationRate,
       },
     };
   }

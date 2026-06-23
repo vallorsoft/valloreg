@@ -339,6 +339,7 @@
       "documents": "Documents",
       "reminders": "Reminders",
       "reports": "Reports",
+      "insights": "Insights",
       "team": "Team",
       "billing": "Billing",
       "admin": "Super Admin",
@@ -363,7 +364,8 @@
       "processing": "Processing",
       "confirmed": "Confirmed",
       "invoiceGrossTotal": "Invoiced amount",
-      "invoiceCount": "Processed invoices"
+      "invoiceCount": "Processed invoices",
+      "automationRate": "Automation"
     },
     "units": {
       "currency": "HUF",
@@ -682,6 +684,36 @@
       "office": "Office",
       "fleet_general": "Fleet general",
       "other": "Other"
+    }
+  },
+  "insights": {
+    "title": "Cost anomalies",
+    "subtitle": "Overpriced items, duplicate invoices and unusual amounts from your service history.",
+    "loading": "Loading…",
+    "unavailable": "This feature is not enabled in your plan.",
+    "empty": {
+      "title": "No anomalies",
+      "description": "No suspicious items or invoices found right now."
+    },
+    "types": {
+      "price_spike": "Overpriced",
+      "duplicate_invoice": "Duplicate",
+      "unusual_amount": "Unusual amount"
+    },
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    },
+    "message": {
+      "price_spike": "{item}: {pct}% more expensive than usual",
+      "duplicate_invoice": "Possible duplicate invoice ({count}×): {number}",
+      "unusual_amount": "Unusual invoice amount: {pct}% above usual"
+    },
+    "widget": {
+      "title": "Cost anomalies",
+      "count": "{count} detected",
+      "viewAll": "View"
     }
   },
   "admin": {

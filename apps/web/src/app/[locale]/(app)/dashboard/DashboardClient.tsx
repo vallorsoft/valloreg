@@ -7,8 +7,10 @@ import { Link } from '@/i18n/routing';
 import {
   statsApi,
   remindersApi,
+  insightsApi,
   type DashboardStats,
   type Reminder,
+  type AnomalySummary,
 } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -33,9 +35,11 @@ export function DashboardClient() {
   const t = useTranslations('dashboard');
   const tr = useTranslations('reminders');
   const locale = useLocale();
+  const ti = useTranslations('insights');
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [reminders, setReminders] = useState<Reminder[]>([]);
+  const [anomalies, setAnomalies] = useState<AnomalySummary | null>(null);
 
   const loadStats = useCallback(() => {
     return statsApi
@@ -52,6 +56,11 @@ export function DashboardClient() {
       .upcoming()
       .then(setReminders)
       .catch(() => setReminders([]));
+    // Anomália-összegző (REPORTS feature mögött) – hiba esetén csendben kihagyjuk.
+    insightsApi
+      .getSummary()
+      .then(setAnomalies)
+      .catch(() => setAnomalies(null));
   }, [loadStats]);
 
   const currency = t('units.currency');
@@ -113,6 +122,30 @@ export function DashboardClient() {
         </Card>
       )}
 
+      {/* Költség-anomáliák – figyelmeztető widget, ha van észlelés. */}
+      {anomalies && anomalies.total > 0 && (
+        <Link href="/insights" className="mb-6 block">
+          <Card hoverable className="border-l-4 border-amber-400">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <span aria-hidden="true" className="text-xl">⚠️</span>
+                <div>
+                  <p className="text-sm font-semibold text-anthracite-900">
+                    {ti('widget.title')}
+                  </p>
+                  <p className="text-xs text-anthracite-500">
+                    {ti('widget.count', { count: anomalies.total })}
+                  </p>
+                </div>
+              </div>
+              <span className="text-sm font-medium text-primary-600">
+                {ti('widget.viewAll')} →
+              </span>
+            </div>
+          </Card>
+        </Link>
+      )}
+
       {loading ? (
         <div className="py-10 text-center text-sm text-anthracite-500">{t('loading')}</div>
       ) : !stats ? (
@@ -158,6 +191,11 @@ export function DashboardClient() {
             label={t('stats.invoiceGrossTotal')}
             value={fmtAmount(stats.invoices.grossTotal)}
             unit={stats.invoices.grossTotal ? currency : undefined}
+          />
+          <StatCard
+            label={t('stats.automationRate')}
+            value={Math.round(stats.automation.rate * 100)}
+            unit="%"
           />
         </div>
       )}

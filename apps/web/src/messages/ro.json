@@ -339,6 +339,7 @@
       "documents": "Documente",
       "reminders": "Mementouri",
       "reports": "Rapoarte",
+      "insights": "Anomalii",
       "team": "Echipă",
       "billing": "Abonament",
       "admin": "Super Admin",
@@ -363,7 +364,8 @@
       "processing": "În procesare",
       "confirmed": "Confirmate",
       "invoiceGrossTotal": "Sumă facturată",
-      "invoiceCount": "Facturi procesate"
+      "invoiceCount": "Facturi procesate",
+      "automationRate": "Grad de automatizare"
     },
     "units": {
       "currency": "RON",
@@ -682,6 +684,36 @@
       "office": "Birou",
       "fleet_general": "Flotă general",
       "other": "Altele"
+    }
+  },
+  "insights": {
+    "title": "Anomalii de cost",
+    "subtitle": "Articole supraevaluate, facturi duplicate și sume neobișnuite din istoricul de service.",
+    "loading": "Se încarcă…",
+    "unavailable": "Această funcție nu este activată în planul tău.",
+    "empty": {
+      "title": "Nicio anomalie",
+      "description": "Momentan nu am găsit articole sau facturi suspecte."
+    },
+    "types": {
+      "price_spike": "Supraevaluare",
+      "duplicate_invoice": "Duplicat",
+      "unusual_amount": "Sumă neobișnuită"
+    },
+    "severity": {
+      "low": "Scăzut",
+      "medium": "Mediu",
+      "high": "Ridicat"
+    },
+    "message": {
+      "price_spike": "{item}: cu {pct}% mai scump decât de obicei",
+      "duplicate_invoice": "Posibilă factură duplicată ({count}×): {number}",
+      "unusual_amount": "Sumă neobișnuită: cu {pct}% peste medie"
+    },
+    "widget": {
+      "title": "Anomalii de cost",
+      "count": "{count} detectări",
+      "viewAll": "Vezi"
     }
   },
   "admin": {
