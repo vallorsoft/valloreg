@@ -8,6 +8,11 @@
   ágon → PR a `main` ellen → squash/merge a `main`-be → a Render onnan deployol.
 - A korábbi integrációs ágak (`claude/serene-ptolemy-3dd850` stb.) már nem a
   deploy-forrás; mindig a `main` a kanonikus ág.
+- **Minden squash-merge commit a PR-számmal KEZDŐDJÖN** a `main`-en, hogy könnyen
+  visszakövethető legyen, pl. `#30 fix(gemini): …`. Gyakorlatban: a PR létrehozása
+  után a kapott `#NN`-nel kezdődjön a merge commit címe (a squash-merge
+  `commit_title`-jét eszerint kell beállítani). Így a `git log` minden sora egy
+  konkrét PR-hez vezet.
 
 ## AI / Gemini (INGYENES szint)
 
