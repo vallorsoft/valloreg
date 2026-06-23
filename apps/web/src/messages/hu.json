@@ -337,6 +337,7 @@
       "dashboard": "Vezérlőpult",
       "vehicles": "Járművek",
       "documents": "Dokumentumok",
+      "reminders": "Emlékeztetők",
       "reports": "Riportok",
       "team": "Csapat",
       "billing": "Előfizetés",
@@ -370,7 +371,12 @@
       "items": "db",
       "events": "esemény"
     },
-    "noData": "Még nincs elég adat. Töltson fel dokumentumokat és adjon hozzá járműveket."
+    "noData": "Még nincs elég adat. Töltson fel dokumentumokat és adjon hozzá járműveket.",
+    "quickUpload": {
+      "title": "Gyors feltöltés",
+      "subtitle": "Húzzon ide egy számlát – a rendszer feldolgozza.",
+      "allDocuments": "Összes dokumentum"
+    }
   },
   "vehicles": {
     "title": "Járművek",
@@ -512,6 +518,77 @@
         "assignError": "A hozzárendelés sikertelen."
       }
     }
+  },
+  "reminders": {
+    "title": "Emlékeztetők",
+    "subtitle": "Proaktív karbantartás és lejárati határidők járművenként.",
+    "loading": "Betöltés…",
+    "addReminder": "Új emlékeztető",
+    "groups": {
+      "overdue": "Lejárt",
+      "due_soon": "Hamarosan esedékes",
+      "ok": "Rendben"
+    },
+    "status": {
+      "ok": "Rendben",
+      "due_soon": "Esedékes",
+      "overdue": "Lejárt"
+    },
+    "types": {
+      "oil_change": "Olajcsere",
+      "timing_belt": "Vezérműszíj",
+      "brake_service": "Fékszerviz",
+      "tire_change": "Gumicsere",
+      "general_service": "Általános szerviz",
+      "inspection": "Műszaki vizsga",
+      "insurance": "Biztosítás",
+      "tachograph": "Tachográf",
+      "vignette": "Autópálya-matrica",
+      "other": "Egyéb"
+    },
+    "remaining": {
+      "days": "{days} nap múlva",
+      "km": "{km} km múlva",
+      "overdueDays": "{days} napja lejárt",
+      "overdueKm": "{km} km-rel túllépve"
+    },
+    "actions": {
+      "complete": "Kész",
+      "edit": "Szerkesztés",
+      "delete": "Törlés",
+      "confirmDelete": "Biztosan törli ezt az emlékeztetőt?"
+    },
+    "widget": {
+      "title": "Esedékes emlékeztetők",
+      "viewAll": "Összes"
+    },
+    "empty": {
+      "title": "Nincs emlékeztető",
+      "description": "Vegyen fel karbantartási vagy lejárati emlékeztetőt egy járműhöz.",
+      "noVehicles": "Előbb vegyen fel járművet, hogy emlékeztetőt adhasson hozzá.",
+      "cta": "Új emlékeztető"
+    },
+    "form": {
+      "addTitle": "Új emlékeztető",
+      "editTitle": "Emlékeztető szerkesztése",
+      "vehicle": "Jármű",
+      "type": "Típus",
+      "titleLabel": "Megnevezés (opcionális)",
+      "titlePlaceholder": "pl. Olajcsere",
+      "dueDate": "Esedékesség (dátum)",
+      "dueOdometerKm": "Esedékesség (km)",
+      "intervalDays": "Ismétlés (nap)",
+      "intervalKm": "Ismétlés (km)",
+      "notes": "Megjegyzés",
+      "notesPlaceholder": "Opcionális megjegyzés",
+      "hint": "Adjon meg legalább egy esedékességet (dátum vagy km). Az intervallum a „Kész” jelölés után előregördíti a következő határidőt.",
+      "cancel": "Mégse",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "errorGeneric": "Váratlan hiba, próbálja újra."
+    },
+    "vehicleSectionTitle": "Emlékeztetők",
+    "suggestionsTitle": "Javaslatok a szerviztörténetből"
   },
   "team": {
     "title": "Csapat",

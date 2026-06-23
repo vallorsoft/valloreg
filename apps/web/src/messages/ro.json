@@ -337,6 +337,7 @@
       "dashboard": "Panou de control",
       "vehicles": "Vehicule",
       "documents": "Documente",
+      "reminders": "Mementouri",
       "reports": "Rapoarte",
       "team": "Echipă",
       "billing": "Abonament",
@@ -370,7 +371,12 @@
       "items": "buc.",
       "events": "evenimente"
     },
-    "noData": "Nu există încă suficiente date. Încărcați documente și adăugați vehicule."
+    "noData": "Nu există încă suficiente date. Încărcați documente și adăugați vehicule.",
+    "quickUpload": {
+      "title": "Încărcare rapidă",
+      "subtitle": "Trageți o factură aici – sistemul o procesează.",
+      "allDocuments": "Toate documentele"
+    }
   },
   "vehicles": {
     "title": "Vehicule",
@@ -512,6 +518,77 @@
         "assignError": "Atribuirea a eșuat."
       }
     }
+  },
+  "reminders": {
+    "title": "Mementouri",
+    "subtitle": "Întreținere proactivă și termene de expirare per vehicul.",
+    "loading": "Se încarcă…",
+    "addReminder": "Memento nou",
+    "groups": {
+      "overdue": "Expirate",
+      "due_soon": "În curând",
+      "ok": "În regulă"
+    },
+    "status": {
+      "ok": "În regulă",
+      "due_soon": "Scadent",
+      "overdue": "Expirat"
+    },
+    "types": {
+      "oil_change": "Schimb ulei",
+      "timing_belt": "Curea distribuție",
+      "brake_service": "Service frâne",
+      "tire_change": "Schimb anvelope",
+      "general_service": "Service general",
+      "inspection": "ITP",
+      "insurance": "Asigurare",
+      "tachograph": "Tahograf",
+      "vignette": "Rovinietă",
+      "other": "Altele"
+    },
+    "remaining": {
+      "days": "peste {days} zile",
+      "km": "peste {km} km",
+      "overdueDays": "expirat de {days} zile",
+      "overdueKm": "depășit cu {km} km"
+    },
+    "actions": {
+      "complete": "Gata",
+      "edit": "Editare",
+      "delete": "Ștergere",
+      "confirmDelete": "Sigur ștergeți acest memento?"
+    },
+    "widget": {
+      "title": "Mementouri scadente",
+      "viewAll": "Toate"
+    },
+    "empty": {
+      "title": "Niciun memento",
+      "description": "Adăugați un memento de întreținere sau de expirare pentru un vehicul.",
+      "noVehicles": "Adăugați mai întâi un vehicul pentru a putea crea un memento.",
+      "cta": "Memento nou"
+    },
+    "form": {
+      "addTitle": "Memento nou",
+      "editTitle": "Editare memento",
+      "vehicle": "Vehicul",
+      "type": "Tip",
+      "titleLabel": "Denumire (opțional)",
+      "titlePlaceholder": "ex. Schimb ulei",
+      "dueDate": "Scadență (dată)",
+      "dueOdometerKm": "Scadență (km)",
+      "intervalDays": "Repetare (zile)",
+      "intervalKm": "Repetare (km)",
+      "notes": "Notă",
+      "notesPlaceholder": "Notă opțională",
+      "hint": "Indicați cel puțin o scadență (dată sau km). Intervalul mută înainte următoarea scadență după marcarea „Gata”.",
+      "cancel": "Anulare",
+      "save": "Salvare",
+      "saving": "Se salvează…",
+      "errorGeneric": "Eroare neașteptată, încercați din nou."
+    },
+    "vehicleSectionTitle": "Mementouri",
+    "suggestionsTitle": "Sugestii din istoricul de service"
   },
   "team": {
     "title": "Echipă",

@@ -107,10 +107,50 @@ ERP/könyvelői integrációk, nyílt API marketplace — ezek a moduláris arch
 
 ---
 
+## FÁZIS 5 – AUTOMATION LAYER (a meglévő okosítása)
+
+**Cél:** A termék ne csak *tárolja* a szerviztörténetet, hanem proaktívan
+cselekedjen a felhasználó helyett. Ez a fő versenyképességi különbség a passzív
+nyilvántartókhoz képest.
+
+> **Hatókör-elv:** NEM építünk teljeskörű TMS-t. A fókusz végig a
+> **szerviztörténet + riportok** marad – ezt tesszük proaktívvá és
+> intelligensebbé. **Nincs** könyvelő-export / ERP / SAF-T integráció.
+
+### 5/A – Proaktív emlékeztetők (KÉSZ)
+
+- [x] `Reminder` adatmodell (karbantartás + megfelelőség), tenant-izolált
+- [x] Idő- és km-alapú esedékesség, ismétlődő intervallum, „kész” → előregördülő határidő
+- [x] Számított sürgősség: `ok` / `due_soon` / `overdue`
+- [x] Napi háttér-ütemező (BullMQ ismétlődő job) – esedékesség-szkennelés, throttle-olt értesítés
+- [x] Értesítés: Web Push a céghez + e-mail a tulajdonosnak
+- [x] Történet-alapú karbantartási **javaslatok** (auto-suggest a szerviztételekből)
+- [x] UI: `/reminders` oldal, dashboard widget + **gyors feltöltés a vezérlőpulton**, jármű-szintű panel
+- [x] REMINDERS feature flag élővé tétele (eddig csak deklarált volt)
+
+### 5/B – Következő feladatok (Tier 2/3)
+
+- [ ] **Költség-anomália detektálás:** új tétel ára vs. a jármű/flotta/beszállító
+      történeti ára → túlárazás, duplikált számla, szokatlan tétel jelzése
+      (a meglévő riport + tanuló mappingre épül)
+- [ ] **Auto-approve küszöb finomítás + tanulási hurok erősítés:** ismert
+      beszállító-minta + magas confidence → kevesebb kézi review; mérőszám a review-arányról
+- [ ] **Ütemezett riport e-mailben:** a MEGLÉVŐ havi riport automatikus kiküldése
+      (NEM könyvelő-export, NEM integráció)
+- [ ] **Prediktív karbantartás finomítás:** tanult intervallumok 2+ adatpontból
+      (az alapértelmezett intervallumok helyett/mellett)
+- [ ] **Prediktív TCO / csere-javaslat:** növekvő szervizköltség-trend a szerviztörténetből
+
+**Tudatosan NEM ide tartozik (külön döntéssel, később):** könyvelő-export,
+ERP / számlázz.hu / SAF-T integráció, teljes TMS (telematika, sofőr-/útdíj-/
+üzemanyag-modulok), e-mail-alapú számlabeolvasás.
+
+---
+
 ## Architektúra-útvonal összefoglaló
 
 ```
-MVP            →  Produktív SaaS      →  Skálázható enterprise
-Fázis 1–2         Fázis 3                Fázis 4 + jövőbeli modulok
-core + AI         workflow + tanulás     billing, admin, scale
+MVP            →  Produktív SaaS   →  Automatizálás     →  Skálázható enterprise
+Fázis 1–2         Fázis 3             Fázis 5/A (kész)     Fázis 4 + 5/B + jövőbeli modulok
+core + AI         workflow + tanulás  proaktív emlékeztető billing, admin, scale, okos riport
 ```

@@ -383,6 +383,96 @@ export const vehiclesApi = {
   },
 };
 
+// ── Reminders (proaktív karbantartás + lejárat-figyelés) ─────────────────────
+
+export type ReminderStatusValue = 'ok' | 'due_soon' | 'overdue';
+
+export interface Reminder {
+  id: string;
+  vehicleId: string;
+  vehicle: {
+    id: string;
+    plate: string | null;
+    make: string | null;
+    model: string | null;
+    odometerKm: number | null;
+  } | null;
+  kind: string;
+  type: string;
+  title: string | null;
+  dueDate: string | null;
+  dueOdometerKm: number | null;
+  intervalDays: number | null;
+  intervalKm: number | null;
+  lastDoneAt: string | null;
+  lastDoneKm: number | null;
+  notes: string | null;
+  active: boolean;
+  status: ReminderStatusValue;
+  daysRemaining: number | null;
+  kmRemaining: number | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ReminderSuggestion {
+  type: string;
+  kind: string;
+  intervalKm: number | null;
+  intervalDays: number | null;
+  lastDoneAt: string | null;
+  lastDoneKm: number | null;
+  dueDate: string | null;
+  dueOdometerKm: number | null;
+  reason: string;
+}
+
+export interface CreateReminderPayload {
+  vehicleId: string;
+  kind: string;
+  type: string;
+  title?: string;
+  dueDate?: string;
+  dueOdometerKm?: number;
+  intervalDays?: number;
+  intervalKm?: number;
+  notes?: string;
+  active?: boolean;
+}
+
+export type UpdateReminderPayload = Partial<Omit<CreateReminderPayload, 'vehicleId'>>;
+
+export const remindersApi = {
+  list(vehicleId?: string) {
+    const qs = vehicleId ? `?vehicleId=${encodeURIComponent(vehicleId)}` : '';
+    return apiRequest<Reminder[]>(`/reminders${qs}`);
+  },
+  upcoming() {
+    return apiRequest<Reminder[]>('/reminders/upcoming');
+  },
+  suggestions(vehicleId: string) {
+    return apiRequest<ReminderSuggestion[]>(`/reminders/suggestions/${vehicleId}`);
+  },
+  create(payload: CreateReminderPayload) {
+    return apiRequest<Reminder>('/reminders', { method: 'POST', json: payload });
+  },
+  update(id: string, payload: UpdateReminderPayload) {
+    return apiRequest<Reminder>(`/reminders/${id}`, {
+      method: 'PATCH',
+      json: payload,
+    });
+  },
+  complete(id: string, payload: { doneAt?: string; doneKm?: number } = {}) {
+    return apiRequest<Reminder>(`/reminders/${id}/complete`, {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  remove(id: string) {
+    return apiRequest<void>(`/reminders/${id}`, { method: 'DELETE' });
+  },
+};
+
 // ── Stats ─────────────────────────────────────────────────────────────────────
 
 export interface DashboardStats {
