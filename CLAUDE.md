@@ -8,3 +8,18 @@
   ágon → PR a `main` ellen → squash/merge a `main`-be → a Render onnan deployol.
 - A korábbi integrációs ágak (`claude/serene-ptolemy-3dd850` stb.) már nem a
   deploy-forrás; mindig a `main` a kanonikus ág.
+
+## AI / Gemini (INGYENES szint)
+
+- **Ingyenes Gemini API-t használunk** (Google AI Studio kulcs, `GEMINI_API_KEY`),
+  **mind a dokumentum/számla-, mind a jármű-beolvasásnál** (OCR + extraction).
+- **Csak ingyenes szinten elérhető modelleket** szabad a láncba tenni. Aktuális
+  alaplánc (app-config `gemini.models`): `gemini-2.0-flash`, `gemini-2.0-flash-lite`,
+  `gemini-2.5-flash`, `gemini-2.5-flash-lite`. Mindegyiknek **külön napi ingyenes
+  kerete** van.
+- **NE használj `gemini-1.5-*` modellt** – a Google kivezette a v1beta
+  `generateContent`-ből (404).
+- A providerek `404/429/500/503` esetén a **következő modellre váltanak**
+  (kvóta-kimerülés vagy kivezetett modell ne bukatja el a feldolgozást).
+- A providert a `render.yaml` `value: gemini`-vel kényszeríti (OCR + EXTRACTION) –
+  **ne állítsd vissza `stub`-ra**, mert a Blueprint-sync felülírná a dashboardot.
