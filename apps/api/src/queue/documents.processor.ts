@@ -71,6 +71,11 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       },
     );
 
+    // Kezeletlen 'error' esemény (pl. Redis-kapcsolat hiba) nélkül a Node
+    // leállhat ('Unhandled error event') – ezért külön, nem-fatális listener.
+    this.worker.on('error', (err) => {
+      this.logger.warn(`Documents worker hiba: ${err.message}`);
+    });
     this.worker.on('failed', (job, err) => {
       this.logger.error(
         `Job sikertelen (${job?.id}): ${err.message}`,
