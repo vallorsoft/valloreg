@@ -1,6 +1,7 @@
 'use client';
 
 import { useTranslations } from 'next-intl';
+import { ALL_FLEET_SEGMENTS } from '@valloreg/shared';
 import { Input } from '@/components/ui/Input';
 import type {
   CreateVehiclePayload,
@@ -22,6 +23,8 @@ export interface VehicleExtraState {
   vehicleType: string;
   firstRegistration: string; // YYYY-MM-DD
   category: string;
+  /** Flotta-szegmens kézi felülírás ('' = automatikus, a forgalmiból levezetve). */
+  fleetSegment: string;
   fuelType: string;
   engineCm3: string;
   powerKw: string;
@@ -47,6 +50,7 @@ export function emptyExtraState(): VehicleExtraState {
     vehicleType: '',
     firstRegistration: '',
     category: '',
+    fleetSegment: '',
     fuelType: '',
     engineCm3: '',
     powerKw: '',
@@ -73,6 +77,7 @@ export function extraStateFromVehicle(v: Vehicle): VehicleExtraState {
     vehicleType: str(v.vehicleType),
     firstRegistration: v.firstRegistration ? v.firstRegistration.slice(0, 10) : '',
     category: str(v.category),
+    fleetSegment: str(v.fleetSegment),
     fuelType: str(v.fuelType),
     engineCm3: str(v.engineCm3),
     powerKw: str(v.powerKw),
@@ -97,6 +102,7 @@ export function extraStateFromDraft(d: VehicleRegistrationDraft): VehicleExtraSt
     vehicleType: str(d.vehicleType),
     firstRegistration: d.firstRegistration ? d.firstRegistration.slice(0, 10) : '',
     category: str(d.category),
+    fleetSegment: '', // a forgalmiból nem jön; alapból automatikus levezetés
     fuelType: str(d.fuelType),
     engineCm3: str(d.engineCm3),
     powerKw: str(d.powerKw),
@@ -138,6 +144,7 @@ export function extraStateToPayload(s: VehicleExtraState): Partial<CreateVehicle
     vehicleType: strOrUndef(s.vehicleType),
     firstRegistration: strOrUndef(s.firstRegistration),
     category: strOrUndef(s.category),
+    fleetSegment: strOrUndef(s.fleetSegment),
     fuelType: strOrUndef(s.fuelType),
     engineCm3: numOrUndef(s.engineCm3),
     powerKw: numOrUndef(s.powerKw),
@@ -176,6 +183,7 @@ interface Props {
 /** A bővebb műszaki adatok + tulajdonos + üzembentartó szerkeszthető mezői. */
 export function VehicleDetailsFields({ value, onChange, uncertain }: Props) {
   const t = useTranslations('vehicles.fields');
+  const ts = useTranslations('vehicles.segments');
 
   const set = (patch: Partial<VehicleExtraState>) => onChange({ ...value, ...patch });
   const setParty = (key: 'owner' | 'user', patch: Partial<PartyState>) =>
@@ -194,6 +202,23 @@ export function VehicleDetailsFields({ value, onChange, uncertain }: Props) {
           <Input label={t('vehicleType')} value={value.vehicleType} onChange={(e) => set({ vehicleType: e.target.value })} />
           <Input label={t('firstRegistration')} type="date" value={value.firstRegistration} className={mark('firstRegistration')} onChange={(e) => set({ firstRegistration: e.target.value })} />
           <Input label={t('category')} value={value.category} onChange={(e) => set({ category: e.target.value })} />
+          <div>
+            <label className="mb-1 block text-sm font-medium text-anthracite-700">
+              {t('fleetSegment')}
+            </label>
+            <select
+              className="h-11 w-full rounded-xl border border-anthracite-200 bg-white px-3.5 text-sm text-anthracite-900 focus:border-primary-500 focus:outline-none"
+              value={value.fleetSegment}
+              onChange={(e) => set({ fleetSegment: e.target.value })}
+            >
+              <option value="">{t('fleetSegmentAuto')}</option>
+              {ALL_FLEET_SEGMENTS.map((seg) => (
+                <option key={seg} value={seg}>
+                  {ts(seg)}
+                </option>
+              ))}
+            </select>
+          </div>
           <Input label={t('fuelType')} value={value.fuelType} onChange={(e) => set({ fuelType: e.target.value })} />
           <Input label={t('engineCm3')} type="number" value={value.engineCm3} onChange={(e) => set({ engineCm3: e.target.value })} />
           <Input label={t('powerKw')} type="number" value={value.powerKw} onChange={(e) => set({ powerKw: e.target.value })} />

@@ -394,10 +394,20 @@
       "plate": "Plate",
       "make": "Make",
       "model": "Model",
+      "segment": "Segment",
       "year": "Year",
       "odometer": "Odometer",
       "cost": "Total cost",
       "actions": "Actions"
+    },
+    "segments": {
+      "all": "All",
+      "van": "Van / light",
+      "truck_7_5_18": "Truck 7.5–18 t",
+      "truck_18_plus": "Truck ≥ 18 t",
+      "semi_trailer": "Semi-trailer",
+      "trailer": "Trailer",
+      "other": "Other"
     },
     "empty": {
       "title": "No vehicles yet",
@@ -462,6 +472,8 @@
       "vehicleType": "Type/variant (D.2)",
       "firstRegistration": "First registration",
       "category": "Vehicle category (J)",
+      "fleetSegment": "Fleet segment",
+      "fleetSegmentAuto": "Automatic (from registration)",
       "fuelType": "Fuel type",
       "engineCm3": "Engine displacement (cc)",
       "powerKw": "Power (kW)",

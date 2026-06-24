@@ -1,8 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import {
+  ALL_FLEET_SEGMENTS,
+  fleetSegmentOf,
+  type FleetSegment,
+} from '@valloreg/shared';
 import { vehiclesApi, ApiError, type Vehicle } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -23,6 +28,7 @@ export function VehiclesClient() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [segmentFilter, setSegmentFilter] = useState<FleetSegment | 'all'>('all');
 
   const refresh = useCallback(async () => {
     try {
@@ -76,7 +82,21 @@ export function VehiclesClient() {
     }
   }
 
-  const COLUMNS = ['plate', 'make', 'model', 'year', 'odometer', 'actions'] as const;
+  // Csak azok a szegmensek jelenjenek meg szűrőként, amelyekre van jármű.
+  const presentSegments = useMemo(() => {
+    const set = new Set(vehicles.map((v) => fleetSegmentOf(v)));
+    return ALL_FLEET_SEGMENTS.filter((s) => set.has(s));
+  }, [vehicles]);
+
+  const visibleVehicles = useMemo(
+    () =>
+      segmentFilter === 'all'
+        ? vehicles
+        : vehicles.filter((v) => fleetSegmentOf(v) === segmentFilter),
+    [vehicles, segmentFilter],
+  );
+
+  const COLUMNS = ['plate', 'make', 'model', 'segment', 'year', 'odometer', 'actions'] as const;
 
   return (
     <>
@@ -106,6 +126,28 @@ export function VehiclesClient() {
         }}
       />
 
+      {presentSegments.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(['all', ...presentSegments] as const).map((seg) => {
+            const active = segmentFilter === seg;
+            return (
+              <button
+                key={seg}
+                onClick={() => setSegmentFilter(seg)}
+                className={
+                  'rounded-full border px-3 py-1 text-xs font-medium transition ' +
+                  (active
+                    ? 'border-primary-600 bg-primary-600 text-white'
+                    : 'border-anthracite-200 bg-white text-anthracite-600 hover:bg-anthracite-50')
+                }
+              >
+                {seg === 'all' ? t('segments.all') : t(`segments.${seg}`)}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">
           <table className="w-full text-left text-sm">
@@ -125,7 +167,7 @@ export function VehiclesClient() {
                     {t('loading')}
                   </td>
                 </tr>
-              ) : vehicles.length === 0 ? (
+              ) : visibleVehicles.length === 0 ? (
                 <tr>
                   <td colSpan={COLUMNS.length} className="px-4 py-16">
                     <div className="mx-auto max-w-sm text-center">
@@ -138,7 +180,7 @@ export function VehiclesClient() {
                   </td>
                 </tr>
               ) : (
-                vehicles.map((v) => (
+                visibleVehicles.map((v) => (
                   <tr key={v.id} className="hover:bg-anthracite-50">
                     <td className="px-4 py-3 font-medium">
                       <button
@@ -150,6 +192,7 @@ export function VehiclesClient() {
                     </td>
                     <td className="px-4 py-3 text-anthracite-600">{v.make ?? '-'}</td>
                     <td className="px-4 py-3 text-anthracite-600">{v.model ?? '-'}</td>
+                    <td className="px-4 py-3 text-anthracite-600">{t(`segments.${fleetSegmentOf(v)}`)}</td>
                     <td className="px-4 py-3 text-anthracite-600">{v.year ?? '-'}</td>
                     <td className="px-4 py-3 text-anthracite-600">
                       {v.odometerKm != null ? v.odometerKm.toLocaleString() + ' km' : '-'}
