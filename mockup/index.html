@@ -1,0 +1,1221 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Valloreg — Interaktív bemutató útmutató</title>
+<style>
+  /* ============ Brand téma (az app tailwind.config.ts alapján) ============ */
+  :root{
+    --primary:#F97316; --primary-600:#EA580C; --primary-700:#C2410C; --primary-50:#FFF7ED; --primary-100:#FFEDD5;
+    --secondary:#C19A6B; --secondary-100:#F3E9DB;
+    --ink:#1F2937; --ink-700:#374151; --ink-600:#4B5563; --ink-500:#6B7280; --ink-400:#9CA3AF;
+    --line:#E5E7EB; --line-100:#F3F4F6; --light:#F8FAFC; --surface:#FFFFFF;
+    --success:#059669; --success-bg:#ECFDF5; --warning:#D97706; --warning-bg:#FFFBEB; --danger:#DC2626; --danger-bg:#FEF2F2;
+    --info:#2563EB; --info-bg:#EFF6FF;
+    --radius:14px; --radius-sm:10px;
+    --shadow:0 1px 3px rgba(31,41,55,.08),0 1px 2px -1px rgba(31,41,55,.06);
+    --shadow-lg:0 18px 40px -12px rgba(31,41,55,.22);
+    --font:'Segoe UI',system-ui,-apple-system,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:var(--font);color:var(--ink);background:#EEF1F5;line-height:1.5;-webkit-font-smoothing:antialiased}
+
+  /* ============ Top bar ============ */
+  .topbar{position:sticky;top:0;z-index:40;background:var(--surface);border-bottom:1px solid var(--line);
+    display:flex;align-items:center;gap:18px;padding:10px 22px;box-shadow:var(--shadow)}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;font-size:19px;letter-spacing:-.3px}
+  .brand .mark{width:34px;height:34px;border-radius:9px;background:linear-gradient(135deg,var(--primary),var(--primary-700));
+    display:flex;align-items:center;justify-content:center;color:#fff;font-weight:900;box-shadow:0 4px 12px rgba(249,115,22,.35)}
+  .brand small{display:block;font-size:11px;font-weight:600;color:var(--ink-500);letter-spacing:.2px}
+  .topbar .spacer{flex:1}
+  .langpills{display:flex;gap:4px;background:var(--light);padding:3px;border-radius:9px;border:1px solid var(--line)}
+  .langpills button{border:0;background:transparent;font:inherit;font-size:12px;font-weight:700;color:var(--ink-500);
+    padding:5px 10px;border-radius:7px;cursor:pointer}
+  .langpills button.on{background:var(--surface);color:var(--primary-600);box-shadow:var(--shadow)}
+  .stepbadge{font-size:12px;font-weight:700;color:var(--ink-600);background:var(--light);border:1px solid var(--line);
+    padding:7px 13px;border-radius:999px;white-space:nowrap}
+  .stepbadge b{color:var(--primary-600)}
+
+  /* progress */
+  .progress{height:4px;background:var(--line-100)}
+  .progress .bar{height:100%;width:0;background:linear-gradient(90deg,var(--primary),var(--secondary));transition:width .4s ease}
+
+  /* ============ Layout ============ */
+  .layout{display:grid;grid-template-columns:288px 1fr;gap:0;max-width:1500px;margin:0 auto;min-height:calc(100vh - 59px)}
+  /* TOC */
+  .toc{border-right:1px solid var(--line);background:var(--surface);padding:18px 14px 90px;position:sticky;top:59px;
+    height:calc(100vh - 59px);overflow:auto}
+  .toc h4{font-size:11px;text-transform:uppercase;letter-spacing:.9px;color:var(--ink-400);margin:6px 8px 10px}
+  .toc ol{list-style:none;margin:0;padding:0;counter-reset:s}
+  .toc li{counter-increment:s}
+  .toc a{display:flex;gap:11px;align-items:flex-start;padding:9px 10px;border-radius:10px;cursor:pointer;
+    text-decoration:none;color:var(--ink-700);font-size:13.5px;font-weight:600;transition:.15s}
+  .toc a:hover{background:var(--light)}
+  .toc a .n{flex:none;width:23px;height:23px;border-radius:7px;background:var(--light);border:1px solid var(--line);
+    color:var(--ink-500);font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+  .toc a.active{background:var(--primary-50);color:var(--primary-700)}
+  .toc a.active .n{background:var(--primary);color:#fff;border-color:var(--primary)}
+  .toc a.done .n{background:var(--success-bg);color:var(--success);border-color:#A7F3D0}
+
+  /* main */
+  .main{padding:30px 38px 130px;min-width:0}
+  .step{display:none;animation:fade .45s ease}
+  .step.show{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  .step-head{margin-bottom:20px}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:800;letter-spacing:.6px;
+    text-transform:uppercase;color:var(--primary-600);background:var(--primary-50);border:1px solid var(--primary-100);
+    padding:5px 11px;border-radius:999px}
+  .step-head h1{font-size:27px;margin:13px 0 6px;letter-spacing:-.5px}
+  .step-head p.lead{font-size:15px;color:var(--ink-600);max-width:820px;margin:0}
+
+  /* ============ Explanation window ("kis ablak") ============ */
+  .explain{position:relative;background:linear-gradient(180deg,#fffdf9,#fff);border:1px solid var(--primary-100);
+    border-left:4px solid var(--primary);border-radius:var(--radius);padding:15px 17px 15px 16px;margin:16px 0;box-shadow:var(--shadow)}
+  .explain .tag{display:inline-flex;align-items:center;gap:8px;font-size:11.5px;font-weight:800;letter-spacing:.4px;
+    text-transform:uppercase;color:var(--primary-700);margin-bottom:7px}
+  .explain .tag .ic{width:22px;height:22px;border-radius:7px;background:var(--primary);color:#fff;display:flex;
+    align-items:center;justify-content:center;font-size:13px;box-shadow:0 3px 8px rgba(249,115,22,.35)}
+  .explain p{margin:0 0 6px;font-size:13.5px;color:var(--ink-700)}
+  .explain p:last-child{margin-bottom:0}
+  .explain.calc{border-left-color:var(--info);border-color:#DBEAFE;background:linear-gradient(180deg,#f8fbff,#fff)}
+  .explain.calc .tag{color:var(--info)} .explain.calc .tag .ic{background:var(--info);box-shadow:0 3px 8px rgba(37,99,235,.3)}
+  .explain.sec{border-left-color:var(--success);border-color:#A7F3D0;background:linear-gradient(180deg,#f4fdf9,#fff)}
+  .explain.sec .tag{color:var(--success)} .explain.sec .tag .ic{background:var(--success);box-shadow:0 3px 8px rgba(5,150,105,.3)}
+  .formula{font-family:'SFMono-Regular',Consolas,monospace;font-size:12.5px;background:var(--ink);color:#E5E7EB;
+    padding:11px 13px;border-radius:9px;margin:8px 0;overflow-x:auto;white-space:pre-wrap;line-height:1.6}
+  .formula .hl{color:#FDBA74;font-weight:700}
+  .formula .gr{color:#86EFAC}
+  .explain ul{margin:6px 0 0;padding-left:18px;font-size:13px;color:var(--ink-700)}
+  .explain ul li{margin:3px 0}
+
+  /* ============ Generic cards / app chrome ============ */
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+  .card.pad{padding:18px}
+  .grid{display:grid;gap:16px}
+  .g2{grid-template-columns:repeat(2,1fr)} .g3{grid-template-columns:repeat(3,1fr)} .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:1150px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:1fr}}
+
+  /* mock app shell */
+  .appwin{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow-lg);background:var(--surface)}
+  .appchrome{display:flex;align-items:center;gap:8px;padding:9px 14px;background:#F1F3F6;border-bottom:1px solid var(--line)}
+  .dot{width:11px;height:11px;border-radius:50%}.dot.r{background:#ff5f57}.dot.y{background:#febc2e}.dot.g{background:#28c840}
+  .urlbar{flex:1;margin-left:8px;background:#fff;border:1px solid var(--line);border-radius:7px;padding:4px 12px;
+    font-size:12px;color:var(--ink-500);display:flex;align-items:center;gap:7px}
+  .urlbar .lock{color:var(--success)}
+  .appbody{display:grid;grid-template-columns:200px 1fr}
+  .appside{background:var(--ink);color:#cbd2db;padding:14px 10px;min-height:330px}
+  .appside .l{display:flex;align-items:center;gap:9px;padding:8px 11px;border-radius:8px;font-size:13px;font-weight:600;color:#aeb6c2}
+  .appside .l .em{width:16px;text-align:center}
+  .appside .l.on{background:rgba(249,115,22,.16);color:#fff}
+  .appside .l.on .em{color:var(--primary)}
+  .appside .grp{font-size:10px;text-transform:uppercase;letter-spacing:.8px;color:#5b6573;margin:14px 11px 5px;font-weight:800}
+  .appmain{padding:20px 22px;background:var(--light);min-width:0}
+  .appmain h3{margin:0 0 3px;font-size:18px}
+  .appmain .sub{color:var(--ink-500);font-size:13px;margin:0 0 16px}
+
+  /* badges */
+  .badge{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:999px;border:1px solid transparent;white-space:nowrap}
+  .b-success{background:var(--success-bg);color:#047857;border-color:#A7F3D0}
+  .b-warning{background:var(--warning-bg);color:#B45309;border-color:#FDE68A}
+  .b-danger{background:var(--danger-bg);color:#B91C1C;border-color:#FECACA}
+  .b-info{background:var(--info-bg);color:#1D4ED8;border-color:#BFDBFE}
+  .b-neutral{background:var(--line-100);color:var(--ink-600);border-color:var(--line)}
+  .b-brand{background:var(--primary-50);color:var(--primary-700);border-color:var(--primary-100)}
+
+  /* stat tiles */
+  .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:16px 17px;box-shadow:var(--shadow)}
+  .stat .k{font-size:12px;color:var(--ink-500);font-weight:600;display:flex;align-items:center;justify-content:space-between}
+  .stat .v{font-size:25px;font-weight:800;margin-top:6px;letter-spacing:-.5px}
+  .stat .d{font-size:11.5px;margin-top:4px;font-weight:700}
+  .up{color:var(--danger)} .down{color:var(--success)}
+
+  /* tables */
+  table.tbl{width:100%;border-collapse:collapse;font-size:13px;background:var(--surface)}
+  table.tbl thead th{text-align:left;background:var(--light);color:var(--ink-600);font-weight:700;font-size:12px;
+    padding:10px 12px;border-bottom:1px solid var(--line)}
+  table.tbl td{padding:10px 12px;border-bottom:1px solid var(--line-100);color:var(--ink-700)}
+  table.tbl tr:last-child td{border-bottom:0}
+  table.tbl tbody tr:hover{background:#FCFCFD}
+  .num{text-align:right;font-variant-numeric:tabular-nums}
+  .muted{color:var(--ink-400)}
+
+  /* info chip (popover trigger) */
+  .info{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;
+    background:var(--info-bg);color:var(--info);border:1px solid #BFDBFE;font-size:11px;font-weight:900;cursor:pointer;
+    vertical-align:middle;margin-left:5px;user-select:none;transition:.15s}
+  .info:hover{background:var(--info);color:#fff}
+
+  /* popover */
+  #pop{position:fixed;z-index:90;max-width:320px;background:var(--ink);color:#E5E7EB;border-radius:11px;padding:13px 15px;
+    box-shadow:var(--shadow-lg);font-size:12.5px;line-height:1.55;display:none}
+  #pop b{color:#FDBA74}
+  #pop .arrow{position:absolute;width:12px;height:12px;background:var(--ink);transform:rotate(45deg)}
+  #pop::after{content:""}
+
+  /* pipeline */
+  .pipe{display:flex;gap:0;align-items:stretch;flex-wrap:wrap}
+  .pstep{flex:1;min-width:150px;position:relative;background:var(--surface);border:1px solid var(--line);border-radius:12px;
+    padding:14px;margin:6px;box-shadow:var(--shadow);transition:.4s;opacity:.55}
+  .pstep.act{opacity:1;border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100),var(--shadow)}
+  .pstep.done{opacity:1;border-color:#A7F3D0}
+  .pstep .ph{display:flex;align-items:center;gap:9px;font-weight:800;font-size:13px}
+  .pstep .em{width:30px;height:30px;border-radius:8px;background:var(--light);display:flex;align-items:center;justify-content:center;font-size:15px}
+  .pstep.act .em{background:var(--primary);color:#fff}
+  .pstep.done .em{background:var(--success-bg)}
+  .pstep p{font-size:12px;color:var(--ink-500);margin:8px 0 0}
+  .pstep .st{position:absolute;top:10px;right:10px;font-size:10px;font-weight:800}
+
+  /* mini buttons */
+  .btn{display:inline-flex;align-items:center;gap:8px;border:0;border-radius:10px;font:inherit;font-weight:700;font-size:13px;
+    padding:9px 16px;cursor:pointer;transition:.15s}
+  .btn.primary{background:var(--primary);color:#fff;box-shadow:0 6px 16px -4px rgba(249,115,22,.5)}
+  .btn.primary:hover{background:var(--primary-600)}
+  .btn.ghost{background:var(--surface);color:var(--ink-700);border:1px solid var(--line)}
+  .btn.ghost:hover{background:var(--light)}
+  .btn:disabled{opacity:.4;cursor:not-allowed;box-shadow:none}
+
+  /* upload zone */
+  .drop{border:2px dashed var(--primary-200,#FED7AA);background:var(--primary-50);border-radius:var(--radius);
+    padding:30px;text-align:center;color:var(--ink-600)}
+  .drop .big{font-size:34px}
+  .drop h4{margin:8px 0 3px;color:var(--ink)}
+
+  /* doc preview review split */
+  .review{display:grid;grid-template-columns:1fr 1fr;gap:0}
+  .invoice{background:#fff;border-right:1px solid var(--line);padding:18px;font-size:12px;color:var(--ink-700);position:relative}
+  .invoice .scan{position:absolute;left:0;right:0;height:30px;background:linear-gradient(180deg,rgba(249,115,22,.25),transparent);
+    border-top:2px solid var(--primary);animation:scan 2.6s linear infinite}
+  @keyframes scan{0%{top:0}100%{top:96%}}
+  .invoice .ln{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dotted var(--line)}
+  .hlfield{background:#FEF3C7;border-radius:4px;padding:0 4px;box-shadow:0 0 0 1px #FDE68A}
+  .hluncertain{background:#FEE2E2;border-radius:4px;padding:0 4px;box-shadow:0 0 0 1px #FCA5A5;cursor:help}
+
+  .field{margin-bottom:12px}
+  .field label{display:block;font-size:11px;font-weight:700;color:var(--ink-500);text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+  .field .inp{border:1px solid var(--line);border-radius:9px;padding:8px 11px;font-size:13px;background:#fff;display:flex;
+    align-items:center;justify-content:space-between;gap:8px}
+  .field .inp.warn{border-color:#FCA5A5;background:#FEF2F2}
+  .conf{font-size:10px;font-weight:800;padding:2px 7px;border-radius:999px}
+  .conf.hi{background:var(--success-bg);color:#047857}.conf.lo{background:var(--danger-bg);color:#B91C1C}.conf.mid{background:var(--warning-bg);color:#B45309}
+
+  .legend{display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--ink-600);margin-top:10px}
+  .legend span{display:inline-flex;align-items:center;gap:6px}
+  .sw{width:13px;height:13px;border-radius:4px;display:inline-block}
+
+  /* split allocation rows */
+  .alloc td .pick{display:inline-flex;gap:6px;flex-wrap:wrap}
+  .chip{font-size:11px;font-weight:700;border:1px solid var(--line);border-radius:999px;padding:3px 9px;color:var(--ink-600);cursor:pointer}
+  .chip.on{background:var(--primary);color:#fff;border-color:var(--primary)}
+
+  /* timeline */
+  .tl{position:relative;padding-left:26px}
+  .tl:before{content:"";position:absolute;left:8px;top:4px;bottom:4px;width:2px;background:var(--line)}
+  .tl .ev{position:relative;margin-bottom:16px}
+  .tl .ev:before{content:"";position:absolute;left:-22px;top:3px;width:13px;height:13px;border-radius:50%;
+    background:#fff;border:3px solid var(--primary)}
+  .tl .ev .dt{font-size:11px;color:var(--ink-400);font-weight:700}
+  .tl .ev .ti{font-weight:700;font-size:13.5px;margin:2px 0}
+  .tl .ev .de{font-size:12.5px;color:var(--ink-600)}
+
+  /* callout note */
+  .note{display:flex;gap:11px;background:var(--info-bg);border:1px solid #BFDBFE;border-radius:12px;padding:13px 15px;font-size:13px;color:#1E3A8A}
+  .note.warn{background:var(--warning-bg);border-color:#FDE68A;color:#92400E}
+  .note .em{font-size:18px}
+
+  /* pricing */
+  .plan{position:relative;background:var(--surface);border:1px solid var(--line);border-radius:var(--radius);padding:20px;box-shadow:var(--shadow)}
+  .plan.pop{border-color:var(--primary);box-shadow:0 0 0 3px var(--primary-100),var(--shadow-lg)}
+  .plan .ribbon{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--primary);color:#fff;
+    font-size:10.5px;font-weight:800;letter-spacing:.5px;padding:4px 12px;border-radius:999px;text-transform:uppercase}
+  .plan h4{margin:0;font-size:16px}
+  .plan .price{font-size:27px;font-weight:800;margin:8px 0 2px;letter-spacing:-.5px}
+  .plan .price small{font-size:13px;font-weight:600;color:var(--ink-500)}
+  .plan ul{list-style:none;margin:13px 0 0;padding:0;font-size:13px;color:var(--ink-700)}
+  .plan ul li{padding:5px 0;display:flex;gap:8px}
+  .plan ul li .ck{color:var(--success);font-weight:900}
+
+  /* footer nav */
+  .footnav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:var(--surface);border-top:1px solid var(--line);
+    box-shadow:0 -6px 20px -10px rgba(31,41,55,.18);display:flex;align-items:center;gap:14px;padding:12px 22px}
+  .footnav .dots{flex:1;display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+  .footnav .dots i{width:9px;height:9px;border-radius:50%;background:var(--line);cursor:pointer;transition:.2s}
+  .footnav .dots i.on{background:var(--primary);transform:scale(1.25)}
+  .footnav .hint{font-size:12px;color:var(--ink-400);font-weight:600}
+  @media(max-width:980px){.layout{grid-template-columns:1fr}.toc{display:none}.footnav .hint{display:none}}
+
+  .kbd{font-family:monospace;font-size:11px;background:var(--light);border:1px solid var(--line);border-bottom-width:2px;
+    border-radius:5px;padding:1px 6px;color:var(--ink-600)}
+  .twocol{display:grid;grid-template-columns:1fr 1fr;gap:18px;align-items:start}
+  @media(max-width:1050px){.twocol,.review{grid-template-columns:1fr}}
+  h2.sec{font-size:15px;margin:24px 0 10px;display:flex;align-items:center;gap:9px}
+  h2.sec:before{content:"";width:5px;height:18px;border-radius:3px;background:var(--primary)}
+  .small{font-size:12px;color:var(--ink-500)}
+</style>
+</head>
+<body>
+
+<!-- ===================== TOP BAR ===================== -->
+<header class="topbar">
+  <div class="brand">
+    <span class="mark">V</span>
+    <div>Valloreg <small>Interaktív bemutató · ügyfél útmutató</small></div>
+  </div>
+  <div class="spacer"></div>
+  <div class="langpills" title="A platform 3 nyelven jelenik meg – ez a bemutató magyarul">
+    <button class="on">HU</button><button>RO</button><button>EN</button>
+  </div>
+  <div class="stepbadge"><b id="curN">1</b> / <span id="totN">16</span> lépés</div>
+</header>
+<div class="progress"><div class="bar" id="bar"></div></div>
+
+<div class="layout">
+  <!-- ===================== TOC ===================== -->
+  <nav class="toc">
+    <h4>Bemutató lépései</h4>
+    <ol id="toc"></ol>
+  </nav>
+
+  <!-- ===================== MAIN ===================== -->
+  <main class="main" id="main">
+
+    <!-- ============ 1 · INTRO ============ -->
+    <section class="step show" data-title="Áttekintés">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Bemutató · 01</span>
+        <h1>Valloreg — a flotta szerviztörténete, automatán</h1>
+        <p class="lead">A Valloreg egy fuvarozói / flottakezelő <b>SaaS platform</b>. A felhasználó feltölt egy
+        szervizszámlát (PDF / JPG / PNG), a rendszer <b>OCR + AI</b> segítségével kiolvassa, tételenként kategorizálja,
+        járműhöz rendeli, és felépíti a teljes digitális szerviztörténetet — minimális emberi ellenőrzéssel.</p>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Hogyan használd ezt az útmutatót?</span>
+        <p>Ez egy <b>lépésről lépésre</b> végigvezethető bemutató. Lépkedj a lenti <b>Tovább / Vissza</b> gombokkal,
+        a bal oldali listával, vagy a <span class="kbd">←</span> <span class="kbd">→</span> billentyűkkel. Minden képernyőn
+        kis <b>magyarázó ablakokat</b> találsz, amelyek elmondják, <b>mit csinál</b> az adott funkció. A kék
+        <span class="info">i</span> jelekre kattintva pedig megtudod, <b>mi alapján számol</b> a rendszer.</p>
+      </div>
+
+      <div class="grid g3" style="margin-top:20px">
+        <div class="card pad">
+          <div style="font-size:26px">📤</div>
+          <h3 style="margin:8px 0 4px;font-size:16px">1 · Feltöltés</h3>
+          <p class="small">A felhasználó csak feltölt egy számlát. Drag &amp; drop, mobil kamera vagy tömeges import.</p>
+        </div>
+        <div class="card pad">
+          <div style="font-size:26px">🤖</div>
+          <h3 style="margin:8px 0 4px;font-size:16px">2 · AI feldolgozás</h3>
+          <p class="small">OCR kiolvassa a szöveget, az AI strukturált adattá alakítja, kategorizál és járműhöz rendel.</p>
+        </div>
+        <div class="card pad">
+          <div style="font-size:26px">📈</div>
+          <h3 style="margin:8px 0 4px;font-size:16px">3 · Döntéstámogatás</h3>
+          <p class="small">Szervizkönyv, költség-anomáliák, prediktív karbantartás, piaci összevetés és emlékeztetők.</p>
+        </div>
+      </div>
+
+      <div class="explain sec" style="margin-top:18px">
+        <span class="tag"><span class="ic">✓</span>Mire jó ez az ügyfélnek? — üzleti érték</span>
+        <ul>
+          <li><b>Időmegtakarítás:</b> nincs többé kézi adatbevitel — a számla magától szerviztörténetté válik.</li>
+          <li><b>Pénzmegtakarítás:</b> a rendszer jelzi a túlárazott tételeket, a duplikált számlákat és a kiugró költségeket.</li>
+          <li><b>Megelőzés:</b> időben szól a közelgő karbantartásról, műszakiról és kötelező biztosításról.</li>
+          <li><b>Áttekintés:</b> költség/jármű, költség/km, legdrágább járművek — egy helyen, valós időben.</li>
+        </ul>
+      </div>
+
+      <div class="note" style="margin-top:18px"><span class="em">🔒</span>
+        <div><b>Adatbiztonság az első sortól.</b> Minden adat cégenként (multi-tenant) izolált. Az üzemeltető alapból
+        <b>nem látja</b> a számlák tartalmát — csak rendszeradatot, statisztikát és audit logot. Erről a 15. lépésben lesz szó.</div>
+      </div>
+    </section>
+
+    <!-- ============ 2 · REGISZTRÁCIÓ + CSOMAGOK ============ -->
+    <section class="step" data-title="Regisztráció &amp; csomagok">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Belépés · 02</span>
+        <h1>Regisztráció, próbaidőszak és csomagok</h1>
+        <p class="lead">A cég regisztrál, választ egy csomagot, és <b>14 nap ingyenes próbát</b> kap. A csomag határozza meg
+        a limiteket (jármű, felhasználó, tárhely, havi dokumentum) és az elérhető funkciókat.</p>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:8px">
+        <div class="plan">
+          <h4>Starter</h4>
+          <div class="price">9 900 <small>Ft / hó</small></div>
+          <span class="badge b-neutral">Egyéni / induló</span>
+          <ul>
+            <li><span class="ck">✓</span> 2 jármű · 3 felhasználó</li>
+            <li><span class="ck">✓</span> 50 dokumentum / hó</li>
+            <li><span class="ck">✓</span> 2 GB tárhely</li>
+            <li><span class="ck">✓</span> OCR + AI, Vezérlőpult, Dokumentumtár</li>
+          </ul>
+        </div>
+        <div class="plan">
+          <h4>Standard</h4>
+          <div class="price">19 900 <small>Ft / hó</small></div>
+          <span class="badge b-neutral">Kis flotta</span>
+          <ul>
+            <li><span class="ck">✓</span> 5 jármű · 5 felhasználó</li>
+            <li><span class="ck">✓</span> 200 dokumentum / hó</li>
+            <li><span class="ck">✓</span> 10 GB tárhely</li>
+            <li><span class="ck">✓</span> + Riportok, Export, Emlékeztetők</li>
+          </ul>
+        </div>
+        <div class="plan pop">
+          <span class="ribbon">Legnépszerűbb</span>
+          <h4>Professional</h4>
+          <div class="price">39 900 <small>Ft / hó</small></div>
+          <span class="badge b-brand">Növekvő flotta</span>
+          <ul>
+            <li><span class="ck">✓</span> 20 jármű · 20 felhasználó</li>
+            <li><span class="ck">✓</span> 1 000 dokumentum / hó</li>
+            <li><span class="ck">✓</span> 50 GB tárhely</li>
+            <li><span class="ck">✓</span> <b>Minden funkció</b> (API, Insights is)</li>
+          </ul>
+        </div>
+        <div class="plan">
+          <h4>Business</h4>
+          <div class="price">79 900 <small>Ft / hó</small></div>
+          <span class="badge b-neutral">Nagy flotta</span>
+          <ul>
+            <li><span class="ck">✓</span> <b>Korlátlan</b> jármű &amp; felhasználó</li>
+            <li><span class="ck">✓</span> Korlátlan dokumentum / hó</li>
+            <li><span class="ck">✓</span> 500 GB tárhely</li>
+            <li><span class="ck">✓</span> Minden funkció + prioritás</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Mi alapján érvényesül a csomag-limit?</span>
+        <p>Minden művelet előtt a rendszer ellenőrzi az aktuális használatot a csomag limitjéhez képest. A
+        <b>−1</b> érték korlátlant jelent:</p>
+        <div class="formula">engedélyezett = (limit == <span class="hl">KORLÁTLAN</span>)  VAGY  (aktuális &lt; limit)
+
+<span class="gr"># példa – Standard csomag, 5 jármű a limit</span>
+új jármű felvétele, ha  meglévő_járművek (4) &lt; 5   →  <span class="gr">engedélyezve</span>
+6. jármű felvétele       meglévő_járművek (5) &lt; 5   →  elutasítva (limit elérve)</div>
+        <p>Ugyanez vonatkozik a felhasználókra, a tárhelyre (byte) és a <b>havi</b> dokumentumszámra (a hónap fordulóján nullázódik).</p>
+      </div>
+
+      <div class="note"><span class="em">🎁</span><div><b>14 napos ingyenes próba</b> minden új cégnek, bankkártya nélkül.
+        A próba alatt minden Professional-funkció él, hogy a teljes értéket ki lehessen próbálni.</div></div>
+    </section>
+
+    <!-- ============ 3 · FELTÖLTÉS ============ -->
+    <section class="step" data-title="Számla feltöltése">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Munkafolyamat · 03</span>
+        <h1>Számla feltöltése — itt kezdődik minden</h1>
+        <p class="lead">A felhasználó egyetlen dolgot csinál: feltölt egy számlát. A többit a rendszer végzi. Háromféleképp tölthet fel.</p>
+      </div>
+
+      <div class="grid g3">
+        <div class="card pad" style="text-align:center">
+          <div style="font-size:28px">🖱️</div><h3 style="font-size:15px;margin:8px 0 4px">Drag &amp; drop</h3>
+          <p class="small">Egy vagy több fájl behúzása a böngészőbe. PDF, JPG, PNG.</p>
+        </div>
+        <div class="card pad" style="text-align:center">
+          <div style="font-size:28px">📱</div><h3 style="font-size:15px;margin:8px 0 4px">Mobil kamera</h3>
+          <p class="small">A szervizben azonnal lefotózható a számla — a PWA telepíthető appként.</p>
+        </div>
+        <div class="card pad" style="text-align:center">
+          <div style="font-size:28px">📑</div><h3 style="font-size:15px;margin:8px 0 4px">Tömeges import</h3>
+          <p class="small">Sok számla egyszerre, vagy járművek CSV-ből (előnézettel).</p>
+        </div>
+      </div>
+
+      <div class="appwin" style="margin-top:18px">
+        <div class="appchrome"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="urlbar"><span class="lock">🔒</span> app.valloreg.hu/hu/documents</span></div>
+        <div class="appbody">
+          <aside class="appside">
+            <div class="l on"><span class="em">📤</span> Feltöltés</div>
+            <div class="l"><span class="em">📄</span> Dokumentumok</div>
+            <div class="l"><span class="em">🚚</span> Járművek</div>
+            <div class="grp">Insight</div>
+            <div class="l"><span class="em">📊</span> Vezérlőpult</div>
+          </aside>
+          <div class="appmain">
+            <h3>Dokumentum feltöltése</h3>
+            <p class="sub">Húzzon ide egy számlát – a rendszer feldolgozza.</p>
+            <div class="drop">
+              <div class="big">📥</div>
+              <h4>Húzd ide a fájlokat, vagy tallózz</h4>
+              <p class="small">PDF · JPG · PNG &nbsp;|&nbsp; max. 20 MB / fájl</p>
+              <button class="btn primary" style="margin-top:10px">Fájl kiválasztása</button>
+            </div>
+            <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+              <span class="badge b-success">✓ szamla_bosch_2024.pdf — feltöltve</span>
+              <span class="badge b-info">⬆ continental_gumi.jpg — 64%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Mi történik a feltöltés pillanatában?</span>
+        <ul>
+          <li>A böngésző <b>presigned URL</b>-t kér, és a fájlt <b>közvetlenül a tárolóba (S3)</b> tölti — a szerver nem köztes pont, ez gyors és skálázható.</li>
+          <li>Létrejön egy <code>Document</code> rekord <b>UPLOADED</b> státusszal, cég-azonosítóval (<code>tenant_id</code>) megjelölve.</li>
+          <li>A fájl bekerül egy <b>feldolgozó sorba</b> — innen veszi át az AI motor (következő lépés).</li>
+        </ul>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Mi alapján kerüli el a kétszeres feldolgozást? — idempotencia</span>
+        <p>A rendszer minden fájlból <b>hash-t (ujjlenyomatot)</b> számol. Ez lesz a job kulcsa:</p>
+        <div class="formula">job_kulcs = <span class="hl">SHA-256</span>( fájl tartalma )
+ha ez a hash már létezik  →  nem dolgozza fel újra (ugyanaz a számla nem kerül be kétszer)</div>
+      </div>
+    </section>
+
+    <!-- ============ 4 · AI PIPELINE ============ -->
+    <section class="step" data-title="OCR + AI feldolgozás">
+      <div class="step-head">
+        <span class="eyebrow">⬡ A motor · 04</span>
+        <h1>OCR + AI feldolgozás — a platform „agya”</h1>
+        <p class="lead">A háttérben aszinkron, sorba szervezett pipeline fut. Indítsd el az animációt, hogy lásd a lépéseket.</p>
+      </div>
+
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:6px">
+        <button class="btn primary" id="playPipe">▶ Feldolgozás lejátszása</button>
+        <span class="small" id="pipeStatus">Kattints a lejátszásra</span>
+      </div>
+
+      <div class="pipe" id="pipe">
+        <div class="pstep" data-i="0"><div class="ph"><span class="em">📥</span>1 · Feltöltés</div>
+          <span class="st"></span><p>Fájl a tárolóba, sorba állítás.</p></div>
+        <div class="pstep" data-i="1"><div class="ph"><span class="em">🔍</span>2 · OCR</div>
+          <span class="st"></span><p>Szöveg + elrendezés kiolvasása (HU/RO/EN, szkennelt és digitális PDF).</p></div>
+        <div class="pstep" data-i="2"><div class="ph"><span class="em">🧠</span>3 · Extraction (AI)</div>
+          <span class="st"></span><p>Strukturált mezők: beszállító, dátum, tételek, árak, rendszám.</p></div>
+        <div class="pstep" data-i="3"><div class="ph"><span class="em">🏷️</span>4 · Kategorizálás</div>
+          <span class="st"></span><p>Tételek besorolása: jármű / szerszám / általános + alkatrésztípus.</p></div>
+        <div class="pstep" data-i="4"><div class="ph"><span class="em">🚚</span>5 · Jármű-matching</div>
+          <span class="st"></span><p>Rendszám / VIN / minta alapján a megfelelő járműhöz rendelés.</p></div>
+        <div class="pstep" data-i="5"><div class="ph"><span class="em">✅</span>6 · Státusz</div>
+          <span class="st"></span><p>AUTO_OK vagy NEEDS_REVIEW a megbízhatóság alapján.</p></div>
+      </div>
+
+      <div class="twocol" style="margin-top:18px">
+        <div class="explain calc">
+          <span class="tag"><span class="ic">ƒ</span>Mi alapján dönt: AUTO_OK vagy ellenőrzés kell?</span>
+          <p>Az AI minden kinyert mezőhöz <b>megbízhatósági pontszámot (confidence, 0–1)</b> rendel. A bizonytalan mezők
+          a <code>uncertainFields</code> listába kerülnek. A számla státusza ezek alapján dől el:</p>
+          <div class="formula">ha minden kulcsmező confidence ≥ <span class="hl">küszöb</span>  és nincs uncertainField
+        →  <span class="gr">AUTO_OK</span>   (mehet automatán a szervizkönyvbe)
+egyébként
+        →  NEEDS_REVIEW (emberi megerősítést kér)</div>
+        </div>
+        <div class="explain">
+          <span class="tag"><span class="ic">i</span>Miért „pluggable” (cserélhető) a motor?</span>
+          <p>Az OCR és az AI külön <b>providerként</b> van bekötve (pl. Mistral OCR / Google Document AI; Claude az
+          extractionhöz). Új motor = csak az interfész implementálása, a pipeline többi része változatlan marad.</p>
+          <p>Átmeneti hibánál a rendszer <b>újrapróbál (retry)</b>, tartós hibánál külön <b>„dead-letter” sorba</b> teszi —
+          így egyetlen rossz fájl sem akasztja meg a többit.</p>
+        </div>
+      </div>
+
+      <div class="explain sec">
+        <span class="tag"><span class="ic">✓</span>Mit naplóz a rendszer? — auditálhatóság</span>
+        <p>Minden OCR/AI döntés <b>audit logba</b> kerül; a nyers OCR-szöveg és az AI prompt/válasz megőrződik (cég-izoláltan),
+        hogy bármikor visszakövethető legyen, miből mit olvasott ki a rendszer.</p>
+      </div>
+    </section>
+
+    <!-- ============ 5 · REVIEW ============ -->
+    <section class="step" data-title="Ellenőrzés (review)">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Munkafolyamat · 05</span>
+        <h1>Ellenőrzés — „human-in-the-loop”</h1>
+        <p class="lead">A NEEDS_REVIEW számláknál a felhasználó egy képernyőn látja a számla képét és az AI kinyert adatait egymás mellett.
+        A bizonytalan mezők ki vannak emelve. Csak a minimumot kell megerősíteni.</p>
+      </div>
+
+      <div class="appwin">
+        <div class="appchrome"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+          <span class="urlbar"><span class="lock">🔒</span> app.valloreg.hu/hu/documents/INV-2024-0837</span></div>
+        <div class="review">
+          <!-- invoice scan side -->
+          <div class="invoice">
+            <div class="scan"></div>
+            <div style="font-weight:800;font-size:14px">BOSCH Car Service Kft.</div>
+            <div class="muted">Adószám: 12345678-2-42 · Budapest</div>
+            <hr style="border:0;border-top:1px solid var(--line);margin:8px 0">
+            <div class="ln"><span>Számlaszám</span><span class="hlfield">INV-2024-0837</span></div>
+            <div class="ln"><span>Kelt</span><span class="hlfield">2024-11-18</span></div>
+            <div class="ln"><span>Rendszám</span><span class="hluncertain" title="Alacsony megbízhatóság – emberi megerősítés kell">ABC-123 (?)</span></div>
+            <div class="ln"><span>Km-óra</span><span class="hlfield">184 920 km</span></div>
+            <hr style="border:0;border-top:1px solid var(--line);margin:8px 0">
+            <div class="ln"><span>Féktárcsa első (pár)</span><span class="hlfield">42 000 Ft</span></div>
+            <div class="ln"><span>Fékbetét készlet</span><span class="hlfield">18 500 Ft</span></div>
+            <div class="ln"><span>Olajcsere + szűrő</span><span class="hlfield">22 400 Ft</span></div>
+            <div class="ln"><span>Munkadíj 3 óra</span><span class="hluncertain" title="Bizonytalan érték">28 500 Ft (?)</span></div>
+            <div class="ln" style="font-weight:800"><span>Bruttó összesen</span><span>111 400 Ft</span></div>
+          </div>
+          <!-- extracted form side -->
+          <div style="padding:18px;background:var(--light)">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+              <strong>AI által kiolvasott adatok</strong><span class="badge b-warning">⚠ Ellenőrzésre vár</span>
+            </div>
+            <div class="field"><label>Beszállító</label>
+              <div class="inp">BOSCH Car Service Kft. <span class="conf hi">98%</span></div></div>
+            <div class="field"><label>Számlaszám</label>
+              <div class="inp">INV-2024-0837 <span class="conf hi">99%</span></div></div>
+            <div class="field"><label>Dátum</label>
+              <div class="inp">2024-11-18 <span class="conf hi">97%</span></div></div>
+            <div class="field"><label>Rendszám (jelölt)</label>
+              <div class="inp warn">ABC-123 <span class="conf lo">61%</span></div></div>
+            <div class="field"><label>Munkadíj</label>
+              <div class="inp warn">28 500 Ft <span class="conf mid">74%</span></div></div>
+            <div style="display:flex;gap:9px;margin-top:6px">
+              <button class="btn primary">Jóváhagyás</button><button class="btn ghost">Módosítás</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <span><i class="sw" style="background:#FEF3C7;box-shadow:0 0 0 1px #FDE68A"></i> Magabiztosan kiolvasva (zöld %)</span>
+        <span><i class="sw" style="background:#FEE2E2;box-shadow:0 0 0 1px #FCA5A5"></i> Bizonytalan mező — megerősítést kér</span>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Mit csinál ez a képernyő?</span>
+        <p>Bal oldalon a számla eredeti képe, jobb oldalon az AI kinyert, <b>előtöltött</b> adatai. A piros, alacsony
+        megbízhatóságú mezőkre fókuszál a felhasználó — a magas confidence mezőket általában elég átfutni. Egy kattintás:
+        jóváhagyás → a státusz <b>CONFIRMED</b> lesz, és a szervizkönyv frissül.</p>
+      </div>
+
+      <h2 class="sec">Egy számla — több jármű: tételszintű szétosztás</h2>
+      <p class="small">Gyakori, hogy egy számlán több jármű tételei keverednek. A felhasználó tételenként rendeli hozzá a célt.
+      Csak a járműhöz rendelt tétel számít be az adott jármű költségébe.</p>
+
+      <div class="card" style="margin-top:10px;overflow:hidden">
+        <table class="tbl alloc">
+          <thead><tr><th>Tétel</th><th>Kategória</th><th class="num">Összeg</th><th>Hozzárendelés</th></tr></thead>
+          <tbody>
+            <tr><td>Féktárcsa első (pár)</td><td><span class="badge b-neutral">Alkatrész · Fék</span></td><td class="num">42 000 Ft</td>
+              <td><span class="pick"><span class="chip on">🚚 MAN TGX · KFR-204</span><span class="chip">Iveco · ABC-123</span><span class="chip">Általános</span></span></td></tr>
+            <tr><td>Fékbetét készlet</td><td><span class="badge b-neutral">Alkatrész · Fék</span></td><td class="num">18 500 Ft</td>
+              <td><span class="pick"><span class="chip on">🚚 MAN TGX · KFR-204</span><span class="chip">Iveco · ABC-123</span></span></td></tr>
+            <tr><td>Olajcsere + szűrő</td><td><span class="badge b-neutral">Szolgáltatás · Motor</span></td><td class="num">22 400 Ft</td>
+              <td><span class="pick"><span class="chip">MAN TGX · KFR-204</span><span class="chip on">🚚 Iveco · ABC-123</span></span></td></tr>
+            <tr><td>Műhely söprűkészlet</td><td><span class="badge b-neutral">Szerszám</span></td><td class="num">6 900 Ft</td>
+              <td><span class="pick"><span class="chip">Jármű</span><span class="chip on">🧰 Szerszám (nem jármű)</span></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Mi alapján rendel tételt járműhöz a rendszer?</span>
+        <p>A jármű-matching motor jelölteket állít sorrendbe több jel alapján:</p>
+        <ul>
+          <li><b>Rendszám / VIN</b> a számlán (legerősebb jel)</li>
+          <li><b>Beszállítói minta</b> — ez a szerviz korábban melyik járművet szervizelte</li>
+          <li><b>Korábbi adatok</b> — tanult <code>beszállító → jármű</code> párosítások</li>
+        </ul>
+        <p>Ha biztos, automatán hozzárendel; ha nem, a felhasználó választ — és ez a választás <b>tanulásként</b> rögzül.</p>
+      </div>
+    </section>
+
+    <!-- ============ 6 · SZERVIZKÖNYV ============ -->
+    <section class="step" data-title="Jármű szervizkönyv">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Eredmény · 06</span>
+        <h1>Digitális szervizkönyv járművenként</h1>
+        <p class="lead">A jóváhagyott számlákból automatán épül a jármű teljes története: javítások, alkatrészek, munkadíjak,
+        km-állások és a dokumentum-archívum — egy idővonalon.</p>
+      </div>
+
+      <div class="grid g4" style="margin-bottom:14px">
+        <div class="stat"><div class="k">Jármű</div><div class="v" style="font-size:18px">MAN TGX 18.500</div><div class="d muted">KFR-204 · 2019</div></div>
+        <div class="stat"><div class="k">Összköltség <span class="info" data-t="A járműhöz rendelt összes tétel bruttó összege, a teljes történetre.">i</span></div><div class="v">3,84 M Ft</div></div>
+        <div class="stat"><div class="k">Költség / km <span class="info" data-t="A jármű összköltsége osztva a megtett kilométerrel (utolsó − első ismert km-óra).">i</span></div><div class="v">38 <span class="small">Ft/km</span></div></div>
+        <div class="stat"><div class="k">Aktuális km</div><div class="v">184 920</div><div class="d muted">utolsó számláról</div></div>
+      </div>
+
+      <div class="twocol">
+        <div class="card pad">
+          <h2 class="sec" style="margin-top:0">Idővonal</h2>
+          <div class="tl">
+            <div class="ev"><div class="dt">2024-11-18 · BOSCH Car Service</div><div class="ti">Fékfelújítás + olajcsere</div>
+              <div class="de">Féktárcsa, fékbetét, olaj + szűrő, munkadíj — 111 400 Ft · 184 920 km</div></div>
+            <div class="ev"><div class="dt">2024-08-02 · Continental Gumi</div><div class="ti">4 db nyári gumi + szerelés</div>
+              <div class="de">Abroncscsere — 168 000 Ft · 171 340 km</div></div>
+            <div class="ev"><div class="dt">2024-05-14 · MAN Truck Service</div><div class="ti">Nagyszerviz (D)</div>
+              <div class="de">Vezérlés, szíjak, folyadékok — 412 500 Ft · 159 980 km</div></div>
+            <div class="ev"><div class="dt">2024-02-09 · Helyi szerviz</div><div class="ti">Akkumulátor csere</div>
+              <div class="de">2 db indító akku — 96 000 Ft · 148 220 km</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="card pad" style="margin-bottom:16px">
+            <h2 class="sec" style="margin-top:0">Költség kategóriánként</h2>
+            <div style="font-size:13px">
+              <div style="display:flex;justify-content:space-between;margin:6px 0"><span>🛞 Gumi / futómű</span><b>34%</b></div>
+              <div style="height:7px;background:var(--line-100);border-radius:9px"><div style="width:34%;height:100%;background:var(--primary);border-radius:9px"></div></div>
+              <div style="display:flex;justify-content:space-between;margin:10px 0 6px"><span>⚙️ Motor / vezérlés</span><b>41%</b></div>
+              <div style="height:7px;background:var(--line-100);border-radius:9px"><div style="width:41%;height:100%;background:var(--secondary);border-radius:9px"></div></div>
+              <div style="display:flex;justify-content:space-between;margin:10px 0 6px"><span>🛑 Fék</span><b>16%</b></div>
+              <div style="height:7px;background:var(--line-100);border-radius:9px"><div style="width:16%;height:100%;background:var(--ink-400);border-radius:9px"></div></div>
+              <div style="display:flex;justify-content:space-between;margin:10px 0 6px"><span>🔋 Egyéb</span><b>9%</b></div>
+              <div style="height:7px;background:var(--line-100);border-radius:9px"><div style="width:9%;height:100%;background:var(--ink-300,#D1D5DB);border-radius:9px"></div></div>
+            </div>
+          </div>
+          <div class="card pad">
+            <h2 class="sec" style="margin-top:0">Dokumentum-archívum</h2>
+            <div style="display:flex;gap:9px;flex-wrap:wrap">
+              <span class="badge b-info">📄 Forgalmi engedély</span>
+              <span class="badge b-info">📄 INV-2024-0837.pdf</span>
+              <span class="badge b-info">📄 ITP igazolás</span>
+              <span class="badge b-info">📄 RCA kötvény</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Mit ad ez a felhasználónak?</span>
+        <p>Egy jármű teljes, kereshető élettörténete egy helyen — eladáskor bizonyíték, üzemeltetéskor döntéstámasz.
+        Minden esemény visszavezet az eredeti számlára és a hozzá tartozó dokumentumra.</p>
+      </div>
+    </section>
+
+    <!-- ============ 7 · DASHBOARD ============ -->
+    <section class="step" data-title="Vezérlőpult">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Áttekintés · 07</span>
+        <h1>Vezérlőpult — a flotta egy képernyőn</h1>
+        <p class="lead">A nyitóoldal a teljes flotta állapotát mutatja valós időben. Minden mutatóhoz tartozik egy
+        <span class="info" data-t="Kattints a számokra → megtudod, mi alapján számol.">i</span> magyarázat.</p>
+      </div>
+
+      <div class="grid g4">
+        <div class="stat"><div class="k">Járművek</div><div class="v">12</div><div class="d muted">aktív a flottában</div></div>
+        <div class="stat"><div class="k">Feldolgozott számla <span class="info" data-t="A CONFIRMED állapotú számlák száma az adott időszakban.">i</span></div><div class="v">348</div><div class="d down">▲ 24 ez a hónap</div></div>
+        <div class="stat"><div class="k">Számlázott összeg <span class="info" data-t="A jóváhagyott számlák bruttó összegének összege, pénznemenként.">i</span></div><div class="v">18,4 M <span class="small">Ft</span></div></div>
+        <div class="stat"><div class="k">Ellenőrzésre vár <span class="info" data-t="NEEDS_REVIEW státuszú dokumentumok – ezeket kell még megerősíteni.">i</span></div><div class="v" style="color:var(--warning)">5</div></div>
+      </div>
+
+      <div class="grid g3" style="margin-top:16px">
+        <div class="stat"><div class="k">Automatizáltság <span class="info" data-t="AUTO_OK / (AUTO_OK + NEEDS_REVIEW). Megmutatja, a számlák mekkora hányada ment át emberi beavatkozás nélkül.">i</span></div>
+          <div class="v" style="color:var(--success)">87%</div><div class="d muted">emberi beavatkozás nélkül</div></div>
+        <div class="stat"><div class="k">Feldolgozás alatt</div><div class="v">2</div><div class="d muted">a sorban</div></div>
+        <div class="stat"><div class="k">Tárhely</div><div class="v">8,1 / 50 GB</div>
+          <div style="height:6px;background:var(--line-100);border-radius:9px;margin-top:8px"><div style="width:16%;height:100%;background:var(--primary);border-radius:9px"></div></div></div>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Hogyan számol az „Automatizáltság” mutató?</span>
+        <p>Ez a termék egyik kulcsmetrikája — azt mutatja, mennyire dolgozik magától a rendszer:</p>
+        <div class="formula">automatizáltság = <span class="hl">AUTO_OK</span> / ( AUTO_OK + NEEDS_REVIEW )
+
+<span class="gr"># példa</span>  302 / (302 + 46) = <span class="gr">0,868 → 87%</span></div>
+        <p>Minél több számlát hagy jóvá az AI önállóan, annál magasabb — és a tanuló rendszer idővel <b>növeli</b> ezt az arányt.</p>
+      </div>
+
+      <div class="note"><span class="em">⚡</span><div>A vezérlőpulton van egy <b>gyors feltöltés</b> doboz is, hogy a leggyakoribb művelet
+        (számla feltöltése) bárhonnan egy mozdulat legyen.</div></div>
+    </section>
+
+    <!-- ============ 8 · KÖLTSÉG-ANOMÁLIÁK ============ -->
+    <section class="step" data-title="Költség-anomáliák">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Insight · 08</span>
+        <h1>Költség-anomáliák — a rendszer pénzt spórol</h1>
+        <p class="lead">A platform olvasásidőben átvizsgálja a szerviztörténetet, és jelzi a túlárazott tételeket, a lehetséges
+        duplikált számlákat és a kiugró összegeket. Több példa, három anomália-típus.</p>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Észlelés</th><th>Jármű / beszállító</th><th>Típus</th><th>Súlyosság</th></tr></thead>
+          <tbody>
+            <tr><td>📈 <b>Féktárcsa első:</b> 38%-kal drágább a szokásosnál</td><td>MAN TGX · BOSCH</td>
+              <td><span class="badge b-info">Túlárazás</span></td><td><span class="badge b-danger">Magas</span></td></tr>
+            <tr><td>📑 <b>Lehetséges duplikált számla (2×):</b> INV-2024-0651</td><td>Iveco · Continental</td>
+              <td><span class="badge b-info">Duplikátum</span></td><td><span class="badge b-warning">Közepes</span></td></tr>
+            <tr><td>⚠️ <b>Kiugró számlaösszeg:</b> 64%-kal a szokásos felett</td><td>Renault · MAN Service</td>
+              <td><span class="badge b-info">Kiugró összeg</span></td><td><span class="badge b-warning">Közepes</span></td></tr>
+            <tr><td>📈 <b>Olajszűrő:</b> 27%-kal drágább a kategória-mediánnál</td><td>Scania · Helyi szerviz</td>
+              <td><span class="badge b-info">Túlárazás</span></td><td><span class="badge b-neutral">Alacsony</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="grid g3" style="margin-top:18px">
+        <div class="explain calc" style="margin:0">
+          <span class="tag"><span class="ic">ƒ</span>📈 Túlárazás</span>
+          <p>A tétel egységárát a <b>saját kategóriájának mediánjához</b> hasonlítja:</p>
+          <div class="formula">eltérés% = ( ár − <span class="hl">medián</span> ) / medián × 100
+ha eltérés% &gt; küszöb  →  túlárazás</div>
+        </div>
+        <div class="explain calc" style="margin:0">
+          <span class="tag"><span class="ic">ƒ</span>📑 Duplikátum</span>
+          <p>Két számla, <b>azonos beszállító + azonos számlaszám</b> → valószínű kétszeres rögzítés / fizetés.</p>
+          <div class="formula">kulcs = beszállító + számlaszám
+ha count(kulcs) &gt; 1  →  duplikátum</div>
+        </div>
+        <div class="explain calc" style="margin:0">
+          <span class="tag"><span class="ic">ƒ</span>⚠️ Kiugró összeg</span>
+          <p>A számla végösszege jóval a beszállító/jármű <b>szokásos szintje felett</b> van.</p>
+          <div class="formula">ha összeg &gt; szokásos × <span class="hl">faktor</span>
+        →  kiugró összeg</div>
+        </div>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Miért „olvasásidőben” számol?</span>
+        <p>Nincs előre kiszámolt, elavuló riport — az anomáliák <b>a kérés pillanatában</b>, a friss adatból állnak elő.
+        Minden észlelés <b>visszavezet az eredeti dokumentumra</b>, hogy egy kattintással ellenőrizhető legyen. (REPORTS funkció mögött.)</p>
+      </div>
+    </section>
+
+    <!-- ============ 9 · PREDIKTÍV TCO ============ -->
+    <section class="step" data-title="Prediktív TCO">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Insight · 09</span>
+        <h1>Prediktív TCO &amp; csere-javaslat</h1>
+        <p class="lead">Járművenként összköltség, költségtrend és csere-javaslat. „Megéri még tartani, vagy cserélni?”</p>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Jármű</th><th class="num">Összköltség</th><th class="num">Utolsó 12 hó</th>
+            <th class="num">Trend <span class="info" data-t="Az utolsó 12 hó költsége az azt megelőző 12 hóhoz képest. Pozitív = dráguló.">i</span></th>
+            <th class="num">Költség/km</th><th>Javaslat</th></tr></thead>
+          <tbody>
+            <tr><td><b>MAN TGX</b> · KFR-204</td><td class="num">3 840 000</td><td class="num">1 980 000</td>
+              <td class="num up">+34%</td><td class="num">38 Ft</td><td><span class="badge b-danger">Csere megfontolandó</span></td></tr>
+            <tr><td><b>Iveco Stralis</b> · ABC-123</td><td class="num">2 410 000</td><td class="num">1 120 000</td>
+              <td class="num up">+12%</td><td class="num">29 Ft</td><td><span class="badge b-warning">Figyelendő</span></td></tr>
+            <tr><td><b>Scania R450</b> · XYZ-880</td><td class="num">1 760 000</td><td class="num">740 000</td>
+              <td class="num down">−8%</td><td class="num">21 Ft</td><td><span class="badge b-success">Rendben</span></td></tr>
+            <tr><td><b>Renault T</b> · DEF-455</td><td class="num">2 050 000</td><td class="num">900 000</td>
+              <td class="num down">−3%</td><td class="num">24 Ft</td><td><span class="badge b-success">Rendben</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Mi alapján születik a csere-javaslat?</span>
+        <p>A rendszer a jármű <b>saját költségtörténetéből</b> számol — két 12 hónapos ablakot vet össze, és nézi a költség/km szintet:</p>
+        <div class="formula">trend% = ( <span class="hl">utolsó_12_hó</span> − előző_12_hó ) / előző_12_hó × 100
+
+javaslat:
+  trend% magas  ÉS  költség/km magas   →  <span class="hl">Csere megfontolandó</span>
+  trend% emelkedő                       →  Figyelendő
+  egyébként                             →  <span class="gr">Rendben</span></div>
+      </div>
+
+      <h2 class="sec">Prediktív karbantartás — a jármű saját ritmusából tanulva</h2>
+      <div class="explain calc" style="margin-top:8px">
+        <span class="tag"><span class="ic">ƒ</span>Mikor lesz esedékes a következő szerviz?</span>
+        <p>A rendszer nem fix gyári intervallumot használ, hanem a jármű <b>tényleges előzményéből tanul</b> (2+ adatpontból):</p>
+        <div class="formula"><span class="gr"># pl. olajcsere ciklus a történetből</span>
+tanult_km_táv = átlag( egymást követő olajcserék közti km-különbségek )
+napi_futás    = átlag( km / nap )           <span class="gr"># mennyit megy naponta</span>
+következő_esedékes ≈ utolsó_csere_km + tanult_km_táv
+
+ha kevés az adat  →  gyári alap-intervallum (fallback)</div>
+        <p>A javaslat jelzi, hogy <b>tanult</b> értékből vagy alap-intervallumból származik (<code>source</code>, <code>dataPoints</code>).</p>
+      </div>
+    </section>
+
+    <!-- ============ 10 · BENCHMARK ============ -->
+    <section class="step" data-title="Piaci összevetés">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Differenciátor · 10</span>
+        <h1>Piaci összevetés — „Európai trendek”</h1>
+        <p class="lead">A fő versenyelőny: a platform anonimizáltan látja sok cég valós szervizköltségét, és megmutatja,
+        hol állsz a hasonló flottákhoz képest. Ezt versenytárs adat nélkül nem tudja lemásolni.</p>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Szegmens</th><th class="num">Te</th><th class="num">Piaci medián</th>
+            <th class="num">Eltérés</th><th>Pozíció</th></tr></thead>
+          <tbody>
+            <tr><td><b>Mercedes Sprinter 2.1 CDI</b><div class="small">Fékjavítás · 150–200 e km · 137 jármű minta</div></td>
+              <td class="num">52 000</td><td class="num">42 200</td><td class="num up">+23%</td><td><span class="badge b-danger">Piac felett</span></td></tr>
+            <tr><td><b>MAN TGX 18.500</b><div class="small">Olaj + szűrő · 100–150 e km · 89 jármű minta</div></td>
+              <td class="num">21 400</td><td class="num">22 800</td><td class="num down">−6%</td><td><span class="badge b-success">Piac alatt</span></td></tr>
+            <tr><td><b>Iveco Stralis</b><div class="small">Gumi · 50–100 e km · 64 jármű minta</div></td>
+              <td class="num">39 500</td><td class="num">40 100</td><td class="num muted">−1%</td><td><span class="badge b-neutral">Piacon</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="explain sec">
+        <span class="tag"><span class="ic">✓</span>Mi alapján számol — és hogyan marad adatvédelmi szempontból tiszta?</span>
+        <p>A rendszer dimenziónként (márka/modell · motor · km-sáv · tételkategória · régió) <b>mediánt</b> számol sok cég
+        anonimizált adatából, majd a te mediánodhoz hasonlít. <b>K-anonimitási kapu</b> védi az adatot:</p>
+        <div class="formula">egy szegmens csak akkor jelenik meg, ha:
+   minta_cégek ≥ <span class="hl">5</span>   ÉS   minta_járművek ≥ <span class="hl">20</span>
+(különben „nincs elég adat” – senki adata nem azonosítható)
+
+eltérés% = ( a_te_mediánod − piaci_medián ) / piaci_medián × 100</div>
+        <p>Az aggregátumban <b>nincs</b> rendszám, VIN, számlaszám vagy cégnév — csak számok. Opt-in alapú, és még az
+        üzemeltető (Super Admin) sem lát cég-szintű adatot, csak az aggregátumot.</p>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Hogyan kap az ELSŐ ügyfél is azonnal értéket? — „blended” logika</span>
+        <div class="formula">ha a belső cella eléri a k-anonimitást  →  belső medián (a moat)
+egyébként                                →  külső, ingyenes baseline (azonnali érték)
+mindkettő hiányában                      →  „nincs adat”</div>
+        <p>Ahogy nő az ügyfélszám, a belső adat fokozatosan átveszi a külső baseline helyét — a termék magától „okosodik”.</p>
+      </div>
+    </section>
+
+    <!-- ============ 11 · VISSZAHÍVÁSOK ============ -->
+    <section class="step" data-title="Visszahívások">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Insight · 11</span>
+        <h1>Visszahívások &amp; ismert hibák</h1>
+        <p class="lead">A flotta járműveire vonatkozó nyilvános visszahívási értesítések — ingyenes, hivatalos EU-s forrásból (heti frissülés).</p>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <div style="padding:14px 16px;border-bottom:1px solid var(--line-100)">
+          <div style="display:flex;justify-content:space-between"><b>Mercedes Sprinter <span class="muted">(2018–2021)</span></b><span class="badge b-warning">RAPEX A12/0345</span></div>
+          <p style="margin:6px 0 0;font-size:13px">Kockázat: az első fékcső átdörzsölődhet, ami fékhatás-csökkenést okozhat.</p>
+          <p class="small" style="margin:4px 0 0">Teendő: márkaszerviz ellenőrzi és szükség esetén cseréli a fékcsövet (díjmentes).</p>
+        </div>
+        <div style="padding:14px 16px">
+          <div style="display:flex;justify-content:space-between"><b>Iveco Daily <span class="muted">(2019–2020)</span></b><span class="badge b-warning">KBA 011872</span></div>
+          <p style="margin:6px 0 0;font-size:13px">Kockázat: a kuplungkar rögzítése meglazulhat.</p>
+          <p class="small" style="margin:4px 0 0">Teendő: szoftver- és mechanikai ellenőrzés a hivatalos szervizben.</p>
+        </div>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Honnan jön ez az adat?</span>
+        <p>Hivatalos, <b>ingyenes</b> EU-s forrásokból (pl. EU Safety Gate / RAPEX, KBA), <b>provider-portként</b> bekötve.
+        A rendszer a flotta márka/modell/évjárat adatait illeszti a visszahívási listára — így már <b>nap 1-en</b>, belső
+        adat nélkül is értéket ad. A találat „javaslat” címkével jelenik meg, nem hatósági állásfoglalás.</p>
+      </div>
+    </section>
+
+    <!-- ============ 12 · EMLÉKEZTETŐK ============ -->
+    <section class="step" data-title="Emlékeztetők">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Proaktív · 12</span>
+        <h1>Emlékeztetők — a rendszer szól időben</h1>
+        <p class="lead">Idő- és km-alapú esedékesség karbantartásra és megfelelőségre. A háttér naponta végigfut a flottán,
+        és értesít (web push + e-mail a tulajdonosnak).</p>
+      </div>
+
+      <div class="card" style="overflow:hidden">
+        <table class="tbl">
+          <thead><tr><th>Emlékeztető</th><th>Jármű</th><th>Esedékesség</th><th>Sürgősség <span class="info" data-t="A rendszer számolja a hátralévő napokból/km-ből: ok / hamarosan / lejárt.">i</span></th></tr></thead>
+          <tbody>
+            <tr><td>🛢️ Olajcsere (15 000 km)</td><td>MAN TGX · KFR-204</td><td>~1 200 km múlva</td><td><span class="badge b-warning">Hamarosan</span></td></tr>
+            <tr><td>🛂 Műszaki vizsga (ITP)</td><td>Iveco · ABC-123</td><td>2026-07-09 (15 nap)</td><td><span class="badge b-warning">Hamarosan</span></td></tr>
+            <tr><td>🛡️ Kötelező biztosítás (RCA)</td><td>Scania · XYZ-880</td><td>2026-06-12 (lejárt)</td><td><span class="badge b-danger">Lejárt</span></td></tr>
+            <tr><td>🛞 Gumi szezoncsere</td><td>Renault · DEF-455</td><td>2026-10-01</td><td><span class="badge b-success">Rendben</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Mi alapján számol sürgősséget?</span>
+        <p>Az esedékesség lehet <b>dátum-</b> vagy <b>km-alapú</b> (vagy mindkettő — a közelebbi számít). A státusz:</p>
+        <div class="formula">hátralévő = esedékes − jelenlegi   <span class="gr"># nap VAGY km</span>
+
+  hátralévő ≤ 0               →  <span class="hl">Lejárt</span> (overdue)
+  hátralévő ≤ figyelmeztetési sáv  →  Hamarosan (due_soon)
+  egyébként                   →  <span class="gr">Rendben</span> (ok)
+
+ismétlődő emlékeztetőnél „kész” → a határidő automatikusan előregördül.</div>
+      </div>
+
+      <div class="explain sec">
+        <span class="tag"><span class="ic">✓</span>Honnan jönnek a javaslatok?</span>
+        <p>A rendszer a szerviztételekből <b>automatikus karbantartási javaslatokat</b> generál (pl. ha rendszeres az olajcsere,
+        felajánlja emlékeztetőként). Az értesítés <b>throttle-olt</b> — nem spammel, csak a tényleg esedékes tételekről szól.</p>
+      </div>
+    </section>
+
+    <!-- ============ 13 · JÁRMŰ FELVÉTELE FORGALMIBÓL ============ -->
+    <section class="step" data-title="Jármű forgalmiból">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Automatizálás · 13</span>
+        <h1>Jármű felvétele forgalmi engedélyből</h1>
+        <p class="lead">Ne kelljen kézzel begépelni: a forgalmi engedélyt (1–2 kép vagy PDF) is OCR + AI olvassa ki, és előtölti az űrlapot.</p>
+      </div>
+
+      <div class="twocol">
+        <div class="card pad" style="text-align:center">
+          <div style="font-size:30px">🪪 → 🚚</div>
+          <h3 style="font-size:15px;margin:10px 0 4px">Forgalmi beolvasása</h3>
+          <p class="small">Fotózd le vagy töltsd fel a forgalmit. Mobilon a kamera azonnal indul.</p>
+          <div class="drop" style="margin-top:12px;padding:20px"><div class="big">📷</div><p class="small" style="margin:6px 0 0">Forgalmi engedély — elöl / hátul</p></div>
+        </div>
+        <div class="card pad">
+          <h3 style="font-size:15px;margin:0 0 10px">Előtöltött ellenőrző űrlap</h3>
+          <div class="field"><label>Rendszám</label><div class="inp">KFR-204 <span class="conf hi">99%</span></div></div>
+          <div class="field"><label>Márka / Modell</label><div class="inp">MAN / TGX 18.500 <span class="conf hi">96%</span></div></div>
+          <div class="field"><label>VIN</label><div class="inp warn">WMAH06ZZ8KM••••• <span class="conf mid">78%</span></div></div>
+          <div class="field"><label>Első forgalomba helyezés</label><div class="inp">2019-03 <span class="conf hi">94%</span></div></div>
+          <button class="btn primary" style="margin-top:4px">Jármű mentése</button>
+        </div>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Mit csinál okosan a rendszer?</span>
+        <ul>
+          <li><b>Alacsony-confidence mezők kiemelve</b> (pl. a VIN), hogy csak azokat kelljen ellenőrizni.</li>
+          <li><b>Duplikátum-felismerés:</b> ha a rendszám/VIN már létezik, a meglévő járművet frissíti, nem hoz létre újat.</li>
+          <li>A beolvasott kép a jármű <b>dokumentum-archívumába</b> kerül; jármű törlésekor a tárolt fájl is takarítódik.</li>
+          <li><b>Adatvédelem:</b> a tulajdonos neve (személyes adat) csak ellenőrzésre jelenik meg, <b>nem</b> tárolódik el.</li>
+        </ul>
+      </div>
+
+      <div class="note"><span class="em">📥</span><div>Sok jármű egyszerre? <b>Tömeges CSV-import</b> is van: soronkénti validáció és előnézet
+        (létrehoz / frissít / hiba besorolással), HU/RO/EN oszlopnevekkel, duplikátum-kezeléssel.</div></div>
+    </section>
+
+    <!-- ============ 14 · RO MEGFELELŐSÉG ============ -->
+    <section class="step" data-title="RO megfelelőség">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Megfelelőség · 14</span>
+        <h1>RO megfelelőség — ITP / RCA / rovinietă</h1>
+        <p class="lead">Román járműveknél a kötelező műszaki (ITP), biztosítás (RCA) és úthasználati díj (rovinietă) lejáratai
+        automatán figyelhetők — és emlékeztetővé válnak.</p>
+      </div>
+
+      <div class="card pad">
+        <h3 style="margin:0 0 10px;font-size:15px">Megfelelőség-panel · B-101-VAL (Dacia)</h3>
+        <div class="grid g3">
+          <div class="stat"><div class="k">ITP (műszaki)</div><div class="v" style="font-size:18px">2027-03-14</div><div class="d down">▲ Érvényes</div></div>
+          <div class="stat"><div class="k">RCA (biztosítás)</div><div class="v" style="font-size:18px">2026-07-02</div><div class="d up">▲ 8 nap múlva</div></div>
+          <div class="stat"><div class="k">Rovinietă</div><div class="v" style="font-size:18px">2026-06-20</div><div class="d up">▲ Lejárt</div></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:9px"><button class="btn ghost">🔄 Ellenőrzés most</button><span class="badge b-info" style="align-self:center">Forrás: dokumentum-beolvasás</span></div>
+      </div>
+
+      <div class="explain">
+        <span class="tag"><span class="ic">i</span>Két út, mindkettő legális</span>
+        <ul>
+          <li><b>Dokumentum-alapú (API nélkül):</b> az ITP/RCA/rovinietă igazolást OCR + AI beolvassa, kiolvassa a lejáratot,
+          és megerősítés után emlékeztetőt + archív dokumentumot készít. Ez a fő, mindig elérhető megoldás.</li>
+          <li><b>API-alapú (opcionális):</b> ahol elérhető hivatalos/kereskedelmi adat-API, a heti ütemező automatán frissít.</li>
+        </ul>
+      </div>
+
+      <div class="explain calc">
+        <span class="tag"><span class="ic">ƒ</span>Hogyan kapcsolódik az emlékeztetőkhöz?</span>
+        <p>Az ellenőrzés eredménye <b>automatikusan tölti</b> a megfelelőségi emlékeztetők lejáratát
+        (<code>source = "verification"</code>) — de a <b>kézi</b> emlékeztetőket sosem írja felül. Innen a napi szkenner
+        már a megszokott <b>ok / hamarosan / lejárt</b> logikával értesít (lásd 12. lépés).</p>
+      </div>
+    </section>
+
+    <!-- ============ 15 · ADMIN + BIZTONSÁG ============ -->
+    <section class="step" data-title="Admin &amp; adatvédelem">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Üzemeltetés · 15</span>
+        <h1>Szerepkörök, feature flag-ek és adatvédelem</h1>
+        <p class="lead">A platform SaaS-ként üzemeltethető: cégenkénti funkció-engedélyezés, szerepkörök, és szigorú adatvédelem —
+        az üzemeltető sem lát üzleti tartalmat.</p>
+      </div>
+
+      <div class="twocol">
+        <div class="card pad">
+          <h2 class="sec" style="margin-top:0">Szerepkörök (RBAC)</h2>
+          <table class="tbl" style="border:0">
+            <tbody>
+              <tr><td><span class="badge b-brand">OWNER</span></td><td class="small">Teljes hozzáférés, billing, felhasználók</td></tr>
+              <tr><td><span class="badge b-neutral">FLEET_MANAGER</span></td><td class="small">Járművek, számlák, szervizkönyv</td></tr>
+              <tr><td><span class="badge b-neutral">ADMIN</span></td><td class="small">Felhasználók, beállítások, support access</td></tr>
+              <tr><td><span class="badge b-neutral">ACCOUNTANT</span></td><td class="small">Költségek, riportok, export (pénzügyi nézet)</td></tr>
+              <tr><td><span class="badge b-neutral">VIEWER</span></td><td class="small">Csak olvasás</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="card pad">
+          <h2 class="sec" style="margin-top:0">Feature flag-ek (cégenként)</h2>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <span class="badge b-success">✓ OCR</span><span class="badge b-success">✓ AI feldolgozás</span>
+            <span class="badge b-success">✓ Vezérlőpult</span><span class="badge b-success">✓ Riportok</span>
+            <span class="badge b-success">✓ Export</span><span class="badge b-success">✓ Emlékeztetők</span>
+            <span class="badge b-success">✓ Dokumentumtár</span><span class="badge b-neutral">○ API</span>
+          </div>
+          <p class="small" style="margin-top:12px">A Super Admin cégenként engedélyezi a funkciókat; a csomag adja az alapértelmezést.
+          A kikapcsolt funkció felülete meg sem jelenik.</p>
+        </div>
+      </div>
+
+      <div class="explain sec">
+        <span class="tag"><span class="ic">✓</span>Adatvédelem &amp; multi-tenant — a tervezés alapja</span>
+        <ul>
+          <li><b>Tenant-izoláció:</b> minden üzleti rekord <code>tenant_id</code>-vel szűrt; tenant nélküli lekérdezés <b>hibát dob</b>.</li>
+          <li><b>Az üzemeltető (Super Admin) alapból NEM látja</b> a számlák/dokumentumok/költségek tartalmát — csak rendszeradatot,
+          statisztikát, hibát és audit logot.</li>
+          <li><b>Support access:</b> ideiglenes betekintés (1 óra / 24 óra / 7 nap), <b>teljesen naplózva</b>.</li>
+          <li><b>Audit log:</b> minden érzékeny művelet rögzítve, visszakövethetően.</li>
+        </ul>
+      </div>
+
+      <div class="note warn"><span class="em">🔐</span><div>Auth: JWT (access + refresh), jelszó-reset, opcionális 2FA és Google login,
+        e-mailes meghívás a csapattagoknak.</div></div>
+    </section>
+
+    <!-- ============ 16 · ÖSSZEFOGLALÓ ============ -->
+    <section class="step" data-title="Összefoglaló">
+      <div class="step-head">
+        <span class="eyebrow">⬡ Zárás · 16</span>
+        <h1>Összefoglaló — miért a Valloreg?</h1>
+        <p class="lead">Egyetlen mondatban: a felhasználó csak feltölt, a rendszer értelmez, kategorizál, járműhöz rendel,
+        és proaktívan cselekszik helyette.</p>
+      </div>
+
+      <div class="grid g3">
+        <div class="card pad"><div style="font-size:24px">🤖</div><h3 style="font-size:15px;margin:8px 0 4px">Automata adatbevitel</h3>
+          <p class="small">OCR + AI: számlából strukturált, kategorizált szerviztörténet, ~87% emberi beavatkozás nélkül.</p></div>
+        <div class="card pad"><div style="font-size:24px">💸</div><h3 style="font-size:15px;margin:8px 0 4px">Pénzügyi védelem</h3>
+          <p class="small">Túlárazás, duplikátum, kiugró költség, beszállító-összevetés — automatán jelezve.</p></div>
+        <div class="card pad"><div style="font-size:24px">🔮</div><h3 style="font-size:15px;margin:8px 0 4px">Proaktivitás</h3>
+          <p class="small">Prediktív karbantartás, emlékeztetők, megfelelőség (ITP/RCA), visszahívások.</p></div>
+        <div class="card pad"><div style="font-size:24px">📊</div><h3 style="font-size:15px;margin:8px 0 4px">Piaci moat</h3>
+          <p class="small">Anonimizált flotta-benchmark — versenytárs adat nélkül nem másolható.</p></div>
+        <div class="card pad"><div style="font-size:24px">🔒</div><h3 style="font-size:15px;margin:8px 0 4px">Adatbiztonság</h3>
+          <p class="small">Multi-tenant izoláció, audit log, az üzemeltető nem lát üzleti tartalmat.</p></div>
+        <div class="card pad"><div style="font-size:24px">🌍</div><h3 style="font-size:15px;margin:8px 0 4px">Háromnyelvű PWA</h3>
+          <p class="small">HU / RO / EN, telepíthető mobilra, offline app-shell.</p></div>
+      </div>
+
+      <div class="explain" style="margin-top:20px">
+        <span class="tag"><span class="ic">i</span>Hogyan tovább?</span>
+        <p>Ez a bemutató a teljes terméklogikát végigvezeti. A következő lépés egy <b>élő demó</b> valós teszt-számlákkal,
+        a cég saját flottájára szabva. Kérdés esetén bármelyik lépésre visszaléphetünk.</p>
+      </div>
+
+      <div style="text-align:center;margin-top:24px">
+        <button class="btn primary" onclick="go(0)">↺ Vissza az elejére</button>
+      </div>
+      <div style="text-align:center;margin-top:26px;color:var(--ink-400);font-size:12px">
+        Valloreg · Fuvarozói / flottakezelő SaaS · OCR + AI szerviztörténet · bemutató mockup
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- popover -->
+<div id="pop"><div class="arrow"></div><span id="popText"></span></div>
+
+<!-- ===================== FOOTER NAV ===================== -->
+<div class="footnav">
+  <button class="btn ghost" id="prev">← Vissza</button>
+  <div class="dots" id="dots"></div>
+  <span class="hint">Tipp: <span class="kbd">←</span> <span class="kbd">→</span> billentyűk</span>
+  <button class="btn primary" id="next">Tovább →</button>
+</div>
+
+<script>
+  const steps = Array.from(document.querySelectorAll('.step'));
+  const total = steps.length;
+  let cur = 0;
+  document.getElementById('totN').textContent = total;
+
+  // build TOC + dots
+  const toc = document.getElementById('toc');
+  const dots = document.getElementById('dots');
+  steps.forEach((s,i)=>{
+    const li=document.createElement('li');
+    const a=document.createElement('a');
+    a.innerHTML=`<span class="n">${i+1}</span><span>${s.dataset.title}</span>`;
+    a.onclick=()=>go(i);
+    li.appendChild(a); toc.appendChild(li);
+    const d=document.createElement('i'); d.onclick=()=>go(i); dots.appendChild(d);
+  });
+  const tocLinks=Array.from(toc.querySelectorAll('a'));
+  const dotEls=Array.from(dots.querySelectorAll('i'));
+
+  function go(i){
+    if(i<0||i>=total) return;
+    steps[cur].classList.remove('show');
+    cur=i;
+    steps[cur].classList.add('show');
+    document.getElementById('curN').textContent=cur+1;
+    document.getElementById('bar').style.width=((cur+1)/total*100)+'%';
+    tocLinks.forEach((a,j)=>{a.classList.toggle('active',j===cur);a.classList.toggle('done',j<cur);});
+    dotEls.forEach((d,j)=>d.classList.toggle('on',j===cur));
+    document.getElementById('prev').disabled=cur===0;
+    document.getElementById('next').disabled=cur===total-1;
+    document.getElementById('main').scrollIntoView({behavior:'smooth',block:'start'});
+    window.scrollTo({top:0,behavior:'smooth'});
+    hidePop();
+  }
+  document.getElementById('prev').onclick=()=>go(cur-1);
+  document.getElementById('next').onclick=()=>go(cur+1);
+  document.addEventListener('keydown',e=>{
+    if(e.key==='ArrowRight') go(cur+1);
+    if(e.key==='ArrowLeft') go(cur-1);
+  });
+
+  // ===== popover (info chips) =====
+  const pop=document.getElementById('pop'), popText=document.getElementById('popText');
+  function showPop(el){
+    const txt=el.dataset.t||el.dataset.info||'';
+    popText.innerHTML=txt;
+    pop.style.display='block';
+    const r=el.getBoundingClientRect();
+    const pw=pop.offsetWidth, ph=pop.offsetHeight;
+    let left=r.left+r.width/2-pw/2;
+    left=Math.max(12,Math.min(left,window.innerWidth-pw-12));
+    let top=r.top-ph-12;
+    let arrowUp=false;
+    if(top<8){top=r.bottom+12;arrowUp=true;}
+    pop.style.left=left+'px'; pop.style.top=top+'px';
+    const arrow=pop.querySelector('.arrow');
+    const ax=r.left+r.width/2-left-6;
+    arrow.style.left=Math.max(10,Math.min(ax,pw-22))+'px';
+    arrow.style.top=arrowUp?'-6px':(ph-6)+'px';
+  }
+  function hidePop(){pop.style.display='none';}
+  document.addEventListener('click',e=>{
+    const chip=e.target.closest('.info');
+    if(chip){e.stopPropagation();
+      if(pop.style.display==='block'&&pop._for===chip){hidePop();pop._for=null;}
+      else{showPop(chip);pop._for=chip;}
+      return;}
+    if(!e.target.closest('#pop')) hidePop();
+  });
+  window.addEventListener('scroll',hidePop,true);
+
+  // ===== pipeline animation =====
+  const pipeSteps=Array.from(document.querySelectorAll('#pipe .pstep'));
+  const pipeStatus=document.getElementById('pipeStatus');
+  const labels=['Sorba állítva…','OCR fut – szöveg kiolvasása…','AI – mezők kinyerése…','Tételek kategorizálása…','Jármű keresése…','Kész – AUTO_OK ✅'];
+  let pipeTimer=null;
+  document.getElementById('playPipe').onclick=()=>{
+    if(pipeTimer) clearInterval(pipeTimer);
+    pipeSteps.forEach(p=>{p.classList.remove('act','done');p.querySelector('.st').textContent='';});
+    let i=0;
+    const tick=()=>{
+      pipeSteps.forEach((p,j)=>{
+        if(j<i){p.classList.add('done');p.classList.remove('act');p.querySelector('.st').textContent='✓';}
+        else if(j===i){p.classList.add('act');p.querySelector('.st').textContent='●';}
+      });
+      pipeStatus.textContent=labels[i]||'';
+      i++;
+      if(i>pipeSteps.length){clearInterval(pipeTimer);pipeTimer=null;
+        pipeSteps[pipeSteps.length-1].querySelector('.st').textContent='✓';}
+    };
+    tick(); pipeTimer=setInterval(tick,900);
+  };
+
+  go(0);
+</script>
+</body>
+</html>
