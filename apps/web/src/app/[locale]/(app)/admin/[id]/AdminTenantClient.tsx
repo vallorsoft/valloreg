@@ -18,7 +18,13 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 
-const PLAN_OPTIONS = Object.values(PlanTier);
+// A jelenleg árusított csomagok (Start / Pro / Fleet). A BUSINESS már nem
+// választható újként, de ha egy cég még azon van, a select megtartja.
+const ACTIVE_PLAN_TIERS: PlanTier[] = [
+  PlanTier.STARTER,
+  PlanTier.STANDARD,
+  PlanTier.PROFESSIONAL,
+];
 const STATUS_OPTIONS = ['TRIALING', 'ACTIVE', 'PAST_DUE', 'CANCELED'] as const;
 
 export function AdminTenantClient({ id }: { id: string }) {
@@ -145,6 +151,10 @@ export function AdminTenantClient({ id }: { id: string }) {
   }
 
   const planFeatures = PLAN_LIMITS[planTier as PlanTier]?.features ?? [];
+  // A select a 3 aktív csomagot kínálja; ha a cég BUSINESS-en van, azt is.
+  const planOptions = ACTIVE_PLAN_TIERS.includes(planTier as PlanTier)
+    ? ACTIVE_PLAN_TIERS
+    : [...ACTIVE_PLAN_TIERS, planTier as PlanTier];
   const planDefault = (key: string) => planFeatures.includes(key as FeatureKey);
 
   return (
@@ -193,7 +203,7 @@ export function AdminTenantClient({ id }: { id: string }) {
               onChange={(e) => setPlanTier(e.target.value)}
               className="rounded-lg border border-anthracite-200 bg-white px-3 py-2 text-sm text-anthracite-900"
             >
-              {PLAN_OPTIONS.map((p) => (
+              {planOptions.map((p) => (
                 <option key={p} value={p}>
                   {t(`plans.${p}` as Parameters<typeof t>[0])}
                 </option>

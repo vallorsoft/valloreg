@@ -1134,9 +1134,9 @@
       "invoices": "Számlák"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -1209,9 +1209,9 @@
       "referenceHint": "Kérjük, a közleménybe írd be: {reference}"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {

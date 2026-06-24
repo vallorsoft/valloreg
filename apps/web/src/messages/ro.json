@@ -1134,9 +1134,9 @@
       "invoices": "Facturi"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -1209,9 +1209,9 @@
       "referenceHint": "Vă rugăm includeți acest cod: {reference}"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
