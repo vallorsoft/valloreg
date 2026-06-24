@@ -1145,6 +1145,25 @@
       "PAST_DUE": "Lejárt fizetés",
       "CANCELED": "Lemondva"
     },
+    "billing": {
+      "title": "Számla-/utalási adatok",
+      "subtitle": "Ezeket az adatokat küldi a rendszer az előfizetés-igénylő e-mailbe. Üres mezőnél a szerver-beállítás (env) a tartalék.",
+      "loading": "Betöltés…",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "saved": "Mentve.",
+      "error": "A mentés sikertelen.",
+      "fields": {
+        "companyName": "Számlakibocsátó (cégnév)",
+        "taxNumber": "Adószám",
+        "address": "Cím",
+        "beneficiary": "Kedvezményezett",
+        "iban": "IBAN / Számlaszám",
+        "bankName": "Bank",
+        "swift": "SWIFT",
+        "notifyEmail": "Értesítő e-mail (új igénylésről)"
+      }
+    },
     "subscription": {
       "title": "Előfizetés",
       "plan": "Csomag",
