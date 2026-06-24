@@ -599,7 +599,7 @@ export interface VehicleComponentForecast {
   lastEventKm: number | null;
   kmSince: number | null;
   expectedKm: number;
-  source: 'empirical' | 'seed';
+  source: 'manual' | 'empirical' | 'seed';
   status: 'ok' | 'watch' | 'due' | 'overdue';
   estimatedNextDueKm: number | null;
   estimatedCost: string | null;

@@ -788,7 +788,8 @@
     },
     "source": {
       "empirical": "learned",
-      "seed": "baseline"
+      "seed": "baseline",
+      "manual": "manual"
     },
     "add": "Add",
     "cancel": "Cancel",

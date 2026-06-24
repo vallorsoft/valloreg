@@ -788,7 +788,8 @@
     },
     "source": {
       "empirical": "tanult",
-      "seed": "alap"
+      "seed": "alap",
+      "manual": "kézi"
     },
     "add": "Hozzáadás",
     "cancel": "Mégse",

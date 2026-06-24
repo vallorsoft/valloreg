@@ -132,7 +132,7 @@ export interface VehicleComponentForecast {
   /** A legutóbbi csere óta megtett km (vagy null, ha nincs elég adat). */
   kmSince: number | null;
   expectedKm: number;
-  source: 'empirical' | 'seed';
+  source: 'manual' | 'empirical' | 'seed';
   status: DurabilityStatus;
   /** Becsült következő esedékesség odométer-állása (vagy null). */
   estimatedNextDueKm: number | null;
