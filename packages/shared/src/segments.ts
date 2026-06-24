@@ -9,13 +9,15 @@
  * felülírható (a `fleetSegmentOf` az override-ot tiszteletben tartja).
  */
 
-/** Egy flotta-szegmens. A `truck_*` sávok megengedett legnagyobb tömeg szerint. */
+/** Egy flotta-szegmens. A teher-sávok megengedett legnagyobb tömeg szerint. */
 export const FleetSegment = {
-  /** Kishaszonjármű / furgon (≤ 7,5 t, jellemzően N1). */
+  /** Furgon / kishaszonjármű (< 3,5 t, jellemzően N1). */
   VAN: 'van',
+  /** Kisteher (3,5–7,5 t). */
+  LIGHT_TRUCK: 'light_truck',
   /** Közepes tehergépjármű (7,5–18 t, N2). */
   TRUCK_7_5_18: 'truck_7_5_18',
-  /** Nehéz tehergépjármű / nyergesvontató (≥ 18 t, N3). */
+  /** Nyergesvontató / nehéz teher (≥ 18 t, N3). */
   TRUCK_18_PLUS: 'truck_18_plus',
   /** Félpótkocsi (nyerges, O3/O4) – első tengely nélkül, a vontatóra támaszkodik. */
   SEMI_TRAILER: 'semi_trailer',
@@ -30,6 +32,7 @@ export type FleetSegment = (typeof FleetSegment)[keyof typeof FleetSegment];
 /** Stabil sorrend a megjelenítéshez (UI listák, ranglista-fülek). */
 export const ALL_FLEET_SEGMENTS: readonly FleetSegment[] = [
   FleetSegment.VAN,
+  FleetSegment.LIGHT_TRUCK,
   FleetSegment.TRUCK_7_5_18,
   FleetSegment.TRUCK_18_PLUS,
   FleetSegment.SEMI_TRAILER,
@@ -38,8 +41,9 @@ export const ALL_FLEET_SEGMENTS: readonly FleetSegment[] = [
 ] as const;
 
 /** Tömeg-sávhatárok (kg) a teher-szegmensekhez. */
-export const VAN_MAX_KG = 7_500;
-export const HEAVY_TRUCK_MIN_KG = 18_000;
+export const VAN_MAX_KG = 3_500;
+export const LIGHT_TRUCK_MAX_KG = 7_500;
+export const MEDIUM_TRUCK_MAX_KG = 18_000;
 
 /** A `fleetSegmentOf`-hoz szükséges forgalmi mezők (a Vehicle részhalmaza). */
 export interface FleetSegmentInput {
@@ -100,7 +104,8 @@ export function fleetSegmentOf(vehicle: FleetSegmentInput): FleetSegment {
   // (3) Teher-sávok a megengedett legnagyobb tömeg szerint.
   if (mass != null && Number.isFinite(mass) && mass > 0) {
     if (mass < VAN_MAX_KG) return FleetSegment.VAN;
-    if (mass < HEAVY_TRUCK_MIN_KG) return FleetSegment.TRUCK_7_5_18;
+    if (mass < LIGHT_TRUCK_MAX_KG) return FleetSegment.LIGHT_TRUCK;
+    if (mass < MEDIUM_TRUCK_MAX_KG) return FleetSegment.TRUCK_7_5_18;
     return FleetSegment.TRUCK_18_PLUS;
   }
 

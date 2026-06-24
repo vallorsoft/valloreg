@@ -402,9 +402,10 @@
     },
     "segments": {
       "all": "Összes",
-      "van": "Furgon / kishaszon",
-      "truck_7_5_18": "Teher 7,5–18 t",
-      "truck_18_plus": "Teher ≥ 18 t",
+      "van": "Furgon (< 3,5 t)",
+      "light_truck": "Kisteher (3,5–7,5 t)",
+      "truck_7_5_18": "Középes teher (7,5–18 t)",
+      "truck_18_plus": "Nyerges (18 t+)",
       "semi_trailer": "Félpótkocsi",
       "trailer": "Pótkocsi",
       "other": "Egyéb"
