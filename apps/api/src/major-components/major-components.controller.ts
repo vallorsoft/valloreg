@@ -20,6 +20,7 @@ import type { ActiveTenant, AuthUser } from '../common/types/request-context';
 import { MajorComponentsService } from './major-components.service';
 import { DurabilityService } from './durability.service';
 import { CreateMajorComponentEventDto } from './dto/create-major-component-event.dto';
+import { SetDurabilityBaselineDto } from './dto/set-durability-baseline.dto';
 
 const WRITE_ROLES = [
   TenantRole.OWNER,
@@ -57,11 +58,38 @@ export class MajorComponentsController {
     return this.durability.forecastForVehicle(vehicleId);
   }
 
-  /** Flotta-szintű tartósság-felmérés (tanult/seed élettartam) – ANALYTICS. */
+  /** Flotta-szintű tartósság-felmérés szegmensenként (tanult/seed/kézi) – ANALYTICS. */
   @Get('durability/survey')
   @RequireFeature(FeatureKey.ANALYTICS)
   survey() {
     return this.durability.survey();
+  }
+
+  /** Kézi tartósság-felülírás mentése (szegmens + fődarab → várható km). */
+  @Post('durability/baselines')
+  @RequireFeature(FeatureKey.ANALYTICS)
+  @Roles(...WRITE_ROLES)
+  setBaseline(
+    @CurrentTenant() tenant: ActiveTenant,
+    @Body() dto: SetDurabilityBaselineDto,
+  ) {
+    return this.durability.setBaseline(
+      tenant.tenantId,
+      dto.segment,
+      dto.component,
+      dto.expectedKm,
+    );
+  }
+
+  /** Kézi felülírás törlése (visszaáll a tanult/seed értékre). */
+  @Delete('durability/baselines/:segment/:component')
+  @RequireFeature(FeatureKey.ANALYTICS)
+  @Roles(...WRITE_ROLES)
+  clearBaseline(
+    @Param('segment') segment: string,
+    @Param('component') component: string,
+  ) {
+    return this.durability.clearBaseline(segment, component);
   }
 
   /** Nagy alkatrész esemény rögzítése (kézzel vagy tételekből összerakva). */

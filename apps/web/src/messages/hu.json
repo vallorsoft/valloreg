@@ -788,7 +788,8 @@
     },
     "source": {
       "empirical": "tanult",
-      "seed": "alap"
+      "seed": "alap",
+      "manual": "kézi"
     },
     "add": "Hozzáadás",
     "cancel": "Mégse",
@@ -1065,12 +1066,19 @@
       "remedy": "Teendő"
     },
     "durability": {
-      "title": "Tartósság-felmérés",
-      "subtitle": "A flotta valós cseréiből tanult (vagy seed-alapú) várható élettartam komplex szerviz-elemenként.",
+      "title": "Tartósság-felmérés (szegmensenként)",
+      "subtitle": "Kategóriánként más a kifutási idő (furgon vs. nyerges vs. pótkocsi). A várható élettartam kézzel is beállítható az alapértelmezett (tanult/seed) mellett.",
+      "segment": "Szegmens",
       "component": "Alkatrész",
       "expectedKm": "Várható élettartam",
       "source": "Forrás",
-      "samples": "Minták"
+      "samples": "Minták",
+      "override": "Kézi felülírás (km)",
+      "save": "Mentés",
+      "clear": "Töröl",
+      "loading": "Betöltés…",
+      "saveError": "A mentés sikertelen.",
+      "sources": { "manual": "kézi", "empirical": "tanult", "seed": "alap" }
     }
   },
   "rankings": {

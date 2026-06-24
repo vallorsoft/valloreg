@@ -13,8 +13,9 @@
  */
 
 import { MajorComponent } from './major-components';
+import { FleetSegment } from './segments';
 
-/** Seed (kurált) várható élettartam km-ben, fődarabonként. */
+/** Seed (kurált) BÁZIS várható élettartam km-ben, fődarabonként (nehéz-teher). */
 export const MAJOR_COMPONENT_LIFETIME_KM: Record<MajorComponent, number> = {
   [MajorComponent.TURBO]: 400_000,
   [MajorComponent.ENGINE_OVERHAUL]: 900_000,
@@ -29,6 +30,32 @@ export const MAJOR_COMPONENT_LIFETIME_KM: Record<MajorComponent, number> = {
   [MajorComponent.COOLING]: 300_000,
   [MajorComponent.OTHER]: 400_000,
 };
+
+/**
+ * Szegmens-szorzó a seed élettartamhoz: a kifutási idő NEM egyforma egy furgon
+ * és egy nyerges esetében. A bázis (fent) nehéz-teherre kalibrált; a könnyebb
+ * kategóriák rövidebb, a vontatott egységek hosszabb élettartamúak.
+ */
+export const SEGMENT_LIFETIME_FACTOR: Record<FleetSegment, number> = {
+  [FleetSegment.VAN]: 0.5,
+  [FleetSegment.LIGHT_TRUCK]: 0.7,
+  [FleetSegment.TRUCK_7_5_18]: 0.85,
+  [FleetSegment.TRUCK_18_PLUS]: 1.0,
+  [FleetSegment.SEMI_TRAILER]: 1.1,
+  [FleetSegment.TRAILER]: 1.1,
+  [FleetSegment.OTHER]: 1.0,
+};
+
+/** Seed várható élettartam (km) fődarab × szegmens szerint (bázis × szorzó). */
+export function seedLifetimeKm(
+  component: MajorComponent,
+  segment: string,
+): number {
+  const base = MAJOR_COMPONENT_LIFETIME_KM[component];
+  const factor =
+    (SEGMENT_LIFETIME_FACTOR as Record<string, number>)[segment] ?? 1;
+  return Math.round(base * factor);
+}
 
 /**
  * Empirikus felméréshez ennyi VALÓS minta (csere-intervallum) kell, hogy a
@@ -80,17 +107,21 @@ export function median(values: number[]): number | null {
     : sorted[mid]!;
 }
 
-/** Egy fődarab tartósság-felmérése a flottából (per komponens). */
+/** Egy fődarab tartósság-felmérése SZEGMENSENKÉNT (per szegmens × komponens). */
 export interface DurabilitySurveyRow {
+  /** A flotta-szegmens (furgon / kisteher / … / pótkocsi). */
+  segment: string;
   component: MajorComponent;
-  /** A használt várható élettartam km-ben (empirikus vagy seed). */
+  /** A ténylegesen használt várható élettartam km-ben. */
   expectedKm: number;
-  /** A forrás: tanult (empirikus) vagy kurált (seed). */
-  source: 'empirical' | 'seed';
-  /** Hány valós csere-intervallumból tanult (0 = csak seed). */
+  /** A forrás: kézi felülírás, tanult (empirikus), vagy seed. */
+  source: 'manual' | 'empirical' | 'seed';
+  /** Hány valós csere-intervallumból tanult (0 = nincs adat). */
   sampleCount: number;
-  /** A seed alapérték (összevetéshez). */
+  /** A seed alapérték erre a szegmensre (összevetéshez). */
   seedKm: number;
+  /** A kézi felülírás km-ben, ha be van állítva (különben null). */
+  overrideKm: number | null;
 }
 
 /** Egy jármű egy fődarabjának előrejelzése (csere-esedékesség + becsült költség). */
@@ -101,7 +132,7 @@ export interface VehicleComponentForecast {
   /** A legutóbbi csere óta megtett km (vagy null, ha nincs elég adat). */
   kmSince: number | null;
   expectedKm: number;
-  source: 'empirical' | 'seed';
+  source: 'manual' | 'empirical' | 'seed';
   status: DurabilityStatus;
   /** Becsült következő esedékesség odométer-állása (vagy null). */
   estimatedNextDueKm: number | null;
