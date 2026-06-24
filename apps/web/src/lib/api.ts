@@ -541,6 +541,8 @@ export interface Vehicle {
   odometerKm: number | null;
   firstRegistration: string | null;
   category: string | null;
+  /** Flotta-szegmens KÉZI felülírása; ha null, a forgalmiból vezetjük le. */
+  fleetSegment: string | null;
   fuelType: string | null;
   engineCm3: number | null;
   powerKw: number | null;
@@ -565,6 +567,7 @@ export interface CreateVehiclePayload {
   odometerKm?: number;
   firstRegistration?: string;
   category?: string;
+  fleetSegment?: string;
   fuelType?: string;
   engineCm3?: number;
   powerKw?: number;

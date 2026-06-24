@@ -394,10 +394,20 @@
       "plate": "Rendszám",
       "make": "Gyártmány",
       "model": "Modell",
+      "segment": "Szegmens",
       "year": "Évjárat",
       "odometer": "Km-óra",
       "cost": "Összköltség",
       "actions": "Műveletek"
+    },
+    "segments": {
+      "all": "Összes",
+      "van": "Furgon / kishaszon",
+      "truck_7_5_18": "Teher 7,5–18 t",
+      "truck_18_plus": "Teher ≥ 18 t",
+      "semi_trailer": "Félpótkocsi",
+      "trailer": "Pótkocsi",
+      "other": "Egyéb"
     },
     "empty": {
       "title": "Még nincs jármű",
@@ -462,6 +472,8 @@
       "vehicleType": "Típus/variáns (D.2)",
       "firstRegistration": "Első forgalomba helyezés",
       "category": "Jármű-kategória (J)",
+      "fleetSegment": "Flotta-szegmens",
+      "fleetSegmentAuto": "Automatikus (forgalmiból)",
       "fuelType": "Üzemanyag",
       "engineCm3": "Hengerűrtartalom (cm³)",
       "powerKw": "Teljesítmény (kW)",
