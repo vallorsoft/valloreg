@@ -31,6 +31,11 @@ const SAME_ORIGIN_AUTH =
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
+  // Csökkenti a webpack csúcs-memóriahasználatát build közben (kicsit lassabb
+  // build, de elkerüli az OOM-ot a korlátozott erőforrású Render-free buildnél).
+  experimental: {
+    webpackMemoryOptimizations: true,
+  },
   // The shared workspace package ships TypeScript-compiled CJS; transpile it so
   // Next can bundle it consistently across server and client.
   transpilePackages: ['@valloreg/shared'],
