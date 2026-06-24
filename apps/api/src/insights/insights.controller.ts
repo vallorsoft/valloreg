@@ -7,13 +7,13 @@ import { RequireFeature } from '../common/decorators/require-feature.decorator';
 import { InsightsService } from './insights.service';
 
 /**
- * Insight végpontok: költség-anomáliák. A REPORTS feature mögött (ugyanaz a
+ * Insight végpontok: költség-anomáliák. A ANALYTICS feature mögött (ugyanaz a
  * csomag-szint, mint a riportok). Olvasás minden cégtagnak; tenant-scope a
  * scoped kliensben.
  */
 @Controller('insights')
 @UseGuards(JwtAuthGuard, TenantGuard, FeatureGuard)
-@RequireFeature(FeatureKey.REPORTS)
+@RequireFeature(FeatureKey.ANALYTICS)
 export class InsightsController {
   constructor(private readonly insights: InsightsService) {}
 
