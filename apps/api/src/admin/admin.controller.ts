@@ -17,6 +17,7 @@ import { AdminService } from './admin.service';
 import { SetSubscriptionDto } from './dto/set-subscription.dto';
 import { SetFeatureOverrideDto } from './dto/set-feature-override.dto';
 import { SetExtraStorageDto } from './dto/set-extra-storage.dto';
+import { SetBillingSettingsDto } from './dto/set-billing-settings.dto';
 
 /**
  * Super Admin (platform) végpontok. Minden végpont `isPlatformAdmin` jogot
@@ -30,6 +31,20 @@ export class AdminController {
   @Get('tenants')
   listTenants() {
     return this.adminService.listTenants();
+  }
+
+  /** Platform-szintű számla-/utalási adatok (csak Super Admin). */
+  @Get('billing-settings')
+  getBillingSettings() {
+    return this.adminService.getBillingSettings();
+  }
+
+  @Put('billing-settings')
+  setBillingSettings(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: SetBillingSettingsDto,
+  ) {
+    return this.adminService.setBillingSettings(user.userId, dto);
   }
 
   @Get('tenants/:id')

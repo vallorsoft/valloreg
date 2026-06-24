@@ -8,6 +8,7 @@ import {
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { TenantContextService } from '../prisma/tenant-context.service';
+import { BillingSettingsService } from './billing-settings.service';
 import { AppConfigService } from '../config/app-config.service';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { MailerService } from '../storage/mailer.service';
@@ -34,6 +35,7 @@ export class BillingService {
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
     private readonly tenantContext: TenantContextService,
+    private readonly billingSettings: BillingSettingsService,
   ) {}
 
   async getOverview() {
@@ -120,7 +122,8 @@ export class BillingService {
     const planTier = dto.planTier;
     const amount = PLAN_PRICES[planTier];
     const currency = PLAN_CURRENCY;
-    const bank = this.config.bankTransfer;
+    // Effektív számla-/utalási adatok: a Super Admin DB-beállítása, üresnél env.
+    const bank = await this.billingSettings.getEffective();
     const reference = `VLR-${tenantId.slice(0, 8).toUpperCase()}-${planTier}`;
 
     const [tenant, user] = await Promise.all([
@@ -150,9 +153,12 @@ export class BillingService {
           `Összeg:      ${amountLabel} / hó`,
           `Kedvezményezett: ${bank.beneficiary || '(beállítás alatt)'}`,
           `IBAN/Számla: ${bank.iban || '(beállítás alatt)'}`,
-          `Bank:        ${bank.bank || '-'}`,
+          `Bank:        ${bank.bankName || '-'}`,
           bank.swift ? `SWIFT:       ${bank.swift}` : ``,
           `Közlemény:   ${reference}`,
+          bank.companyName ? `Számlakibocsátó: ${bank.companyName}` : ``,
+          bank.taxNumber ? `Adószám: ${bank.taxNumber}` : ``,
+          bank.address ? `Cím: ${bank.address}` : ``,
           ``,
           `Kérjük, a közleménybe MINDENKÉPP írd be a fenti azonosítót (${reference}),`,
           `hogy a befizetést a céghez tudjuk rendelni.`,
@@ -220,7 +226,7 @@ export class BillingService {
       bank: {
         beneficiary: bank.beneficiary,
         iban: bank.iban,
-        bank: bank.bank,
+        bank: bank.bankName,
         swift: bank.swift,
       },
       emailedTo: clientEmail,

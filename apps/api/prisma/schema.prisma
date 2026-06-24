@@ -714,3 +714,26 @@ model MajorComponentEvent {
   @@index([tenantId, component])
   @@map("major_component_events")
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Platform-szintű SZÁMLA-/UTALÁSI adatok (egyetlen sor, id = "default"). CSAK a
+// Super Admin (developer) szerkeszti; a rendszer ezt teszi az előfizetés-igénylő
+// e-mailbe. Üres mezőnél a billing az env-tartalékra esik vissza.
+// ──────────────────────────────────────────────────────────────────────────
+model BillingSettings {
+  id          String   @id @default("default")
+  // Eladó / számlakibocsátó adatai (a számlaadatokhoz).
+  companyName String   @default("")
+  taxNumber   String   @default("")
+  address     String   @default("")
+  // Utalási adatok (az e-mailbe).
+  beneficiary String   @default("")
+  iban        String   @default("")
+  bankName    String   @default("")
+  swift       String   @default("")
+  // Fejlesztői értesítő e-mail (új igénylésről).
+  notifyEmail String   @default("")
+  updatedAt   DateTime @updatedAt
+
+  @@map("billing_settings")
+}

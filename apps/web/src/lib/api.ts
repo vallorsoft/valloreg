@@ -1364,6 +1364,18 @@ export interface AdminTenantDetail {
   counts: { members: number; vehicles: number; documents: number; invoices: number };
 }
 
+/** Platform-szintű számla-/utalási adatok (csak Super Admin szerkeszti). */
+export interface BillingSettings {
+  companyName: string;
+  taxNumber: string;
+  address: string;
+  beneficiary: string;
+  iban: string;
+  bankName: string;
+  swift: string;
+  notifyEmail: string;
+}
+
 export const adminApi = {
   listTenants() {
     return apiRequest<AdminTenantListItem[]>('/admin/tenants');
@@ -1382,6 +1394,15 @@ export const adminApi = {
       `/admin/tenants/${id}/extra-storage`,
       { method: 'PUT', json: { gb } },
     );
+  },
+  getBillingSettings() {
+    return apiRequest<BillingSettings>('/admin/billing-settings');
+  },
+  setBillingSettings(payload: BillingSettings) {
+    return apiRequest<BillingSettings>('/admin/billing-settings', {
+      method: 'PUT',
+      json: payload,
+    });
   },
   setFeature(id: string, key: string, enabled: boolean) {
     return apiRequest<{ key: string; enabled: boolean }>(

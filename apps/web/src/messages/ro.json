@@ -1145,6 +1145,25 @@
       "PAST_DUE": "Plată restantă",
       "CANCELED": "Anulat"
     },
+    "billing": {
+      "title": "Date de facturare / plată",
+      "subtitle": "Aceste date sunt trimise de sistem în e-mailul de solicitare a abonamentului. Câmpurile goale folosesc setarea serverului (env) ca rezervă.",
+      "loading": "Se încarcă…",
+      "save": "Salvează",
+      "saving": "Se salvează…",
+      "saved": "Salvat.",
+      "error": "Salvarea a eșuat.",
+      "fields": {
+        "companyName": "Emitent (nume firmă)",
+        "taxNumber": "Cod fiscal",
+        "address": "Adresă",
+        "beneficiary": "Beneficiar",
+        "iban": "IBAN / Cont",
+        "bankName": "Bancă",
+        "swift": "SWIFT",
+        "notifyEmail": "E-mail de notificare (solicitare nouă)"
+      }
+    },
     "subscription": {
       "title": "Abonament",
       "plan": "Plan",

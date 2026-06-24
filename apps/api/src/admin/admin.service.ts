@@ -2,9 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { PlanTier as DbPlanTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { BillingSettingsService } from '../billing/billing-settings.service';
 import { AppException } from '../common/exceptions/app.exception';
 import type { SetSubscriptionDto } from './dto/set-subscription.dto';
 import type { SetFeatureOverrideDto } from './dto/set-feature-override.dto';
+import type { SetBillingSettingsDto } from './dto/set-billing-settings.dto';
 
 /**
  * Super Admin (platform) műveletek a cégek (tenantek) felett.
@@ -19,6 +21,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly billingSettings: BillingSettingsService,
   ) {}
 
   /** Cégek listája aggregátumokkal és előfizetéssel. */
@@ -129,6 +132,23 @@ export class AdminService {
     });
 
     return subscription;
+  }
+
+  /** Számla-/utalási adatok lekérése (effektív: DB ∪ env-tartalék). */
+  getBillingSettings() {
+    return this.billingSettings.getEffective();
+  }
+
+  /** Számla-/utalási adatok mentése (csak Super Admin). */
+  async setBillingSettings(actorUserId: string, dto: SetBillingSettingsDto) {
+    const result = await this.billingSettings.update(dto);
+    await this.audit.log({
+      userId: actorUserId,
+      action: 'admin.billing_settings_set',
+      resourceType: 'BillingSettings',
+      resourceId: 'default',
+    });
+    return result;
   }
 
   /** Vásárolt extra tárhely (GB) beállítása egy cégre (utalás után). */
