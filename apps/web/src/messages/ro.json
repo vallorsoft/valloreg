@@ -402,9 +402,10 @@
     },
     "segments": {
       "all": "Toate",
-      "van": "Furgonetă / utilitară",
-      "truck_7_5_18": "Camion 7,5–18 t",
-      "truck_18_plus": "Camion ≥ 18 t",
+      "van": "Furgonetă (< 3,5 t)",
+      "light_truck": "Camion ușor (3,5–7,5 t)",
+      "truck_7_5_18": "Camion mediu (7,5–18 t)",
+      "truck_18_plus": "Cap tractor (18 t+)",
       "semi_trailer": "Semiremorcă",
       "trailer": "Remorcă",
       "other": "Altele"

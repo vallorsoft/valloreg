@@ -402,9 +402,10 @@
     },
     "segments": {
       "all": "All",
-      "van": "Van / light",
-      "truck_7_5_18": "Truck 7.5–18 t",
-      "truck_18_plus": "Truck ≥ 18 t",
+      "van": "Van (< 3.5 t)",
+      "light_truck": "Light truck (3.5–7.5 t)",
+      "truck_7_5_18": "Medium truck (7.5–18 t)",
+      "truck_18_plus": "Tractor unit (18 t+)",
       "semi_trailer": "Semi-trailer",
       "trailer": "Trailer",
       "other": "Other"
