@@ -103,6 +103,7 @@ model Tenant {
   supplierVehicleMappings SupplierVehicleMapping[]
   itemCategoryMappings ItemCategoryMapping[]
   reminders            Reminder[]
+  majorComponentEvents MajorComponentEvent[]
   vehicleDocuments     VehicleDocument[]
   vehicleVerifications VehicleVerification[]
   vehicleScans         VehicleScan[]
@@ -308,6 +309,7 @@ model Vehicle {
   invoiceItems InvoiceItem[]
   supplierVehicleMappings SupplierVehicleMapping[]
   reminders    Reminder[]
+  majorComponentEvents MajorComponentEvent[]
   documents    VehicleDocument[]
   verification VehicleVerification?
   parties      VehicleParty[]
@@ -666,4 +668,43 @@ model FleetBenchmark {
 
   @@unique([makeModel, itemCategory, kmBucket, currency])
   @@map("fleet_benchmarks")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Nagy alkatrész esemény: egy fődarab cseréje vagy felújítása (turbó, motor,
+// kuplung, sebességváltó stb.). Több apró számlatételből „összerakható" egy
+// felújítás (itemIds). Ebből épül a jármű nagy-alkatrész idővonala és (Fázis D)
+// a tanuló tartósság-felmérés. A `component`/`kind` String (a @valloreg/shared
+// MajorComponent/MajorEventKind string-union értékeivel azonosan).
+// ──────────────────────────────────────────────────────────────────────────
+model MajorComponentEvent {
+  id              String   @id @default(uuid())
+  tenantId        String
+  vehicleId       String
+  component       String // MajorComponent: turbo | clutch | gearbox_overhaul | …
+  kind            String   @default("replacement") // replacement | refurbishment
+  title           String?
+  // Cserekori odométer-állás (a tartósság-számítás alapja) és a munka dátuma.
+  odometerKm      Int?
+  date            DateTime?
+  // Költségbontás: alkatrész + munkadíj = összes.
+  partsCost       Decimal?
+  laborCost       Decimal?
+  totalCost       Decimal?
+  currency        String?
+  // Forrás-számla (ha egy számlából jött) és az „összerakott" tételek azonosítói.
+  invoiceId       String?
+  itemIds         Json? // string[] – mely számlatételekből állt össze
+  notes           String?
+  createdById     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@index([tenantId, component])
+  @@map("major_component_events")
 }

@@ -24,6 +24,7 @@ import { RemindersModule } from './reminders/reminders.module';
 import { InsightsModule } from './insights/insights.module';
 import { VerificationModule } from './verification/verification.module';
 import { BenchmarkModule } from './benchmark/benchmark.module';
+import { MajorComponentsModule } from './major-components/major-components.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -60,6 +61,7 @@ import { BenchmarkModule } from './benchmark/benchmark.module';
     InsightsModule,
     VerificationModule,
     BenchmarkModule,
+    MajorComponentsModule,
   ],
 })
 export class AppModule implements NestModule {

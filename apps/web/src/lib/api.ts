@@ -529,6 +529,59 @@ export const invoicesApi = {
   },
 };
 
+// ── Nagy alkatrész események ──────────────────────────────────────────────────
+
+export interface MajorComponentEvent {
+  id: string;
+  vehicleId: string;
+  component: string;
+  kind: string;
+  title: string | null;
+  odometerKm: number | null;
+  date: string | null;
+  partsCost: string | null;
+  laborCost: string | null;
+  totalCost: string | null;
+  currency: string | null;
+  invoiceId: string | null;
+  itemIds: string[] | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface CreateMajorComponentEventPayload {
+  component: string;
+  kind?: string;
+  title?: string;
+  odometerKm?: number;
+  date?: string;
+  partsCost?: number;
+  laborCost?: number;
+  currency?: string;
+  invoiceId?: string;
+  itemIds?: string[];
+  notes?: string;
+}
+
+export const majorComponentsApi = {
+  listForVehicle(vehicleId: string) {
+    return apiRequest<MajorComponentEvent[]>(
+      `/vehicles/${vehicleId}/major-components`,
+    );
+  },
+  create(vehicleId: string, payload: CreateMajorComponentEventPayload) {
+    return apiRequest<MajorComponentEvent>(
+      `/vehicles/${vehicleId}/major-components`,
+      { method: 'POST', json: payload },
+    );
+  },
+  remove(id: string) {
+    return apiRequest<{ id: string }>(`/major-components/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
 // ── Vehicles ──────────────────────────────────────────────────────────────────
 
 /** Egy jármű-fél szerepe és típusa. */
