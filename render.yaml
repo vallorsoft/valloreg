@@ -84,6 +84,11 @@ services:
       # (Ha üres, a CORS_ORIGINS első elemére esik vissza.)
       - key: WEB_APP_URL
         value: https://valloreg-web.onrender.com
+      # KAPCSOLÓ (auth cookie): same-origin auth proxy. Ha "true", a refresh
+      # cookie SameSite=Lax (first-party). EGYÜTT kell bekapcsolni a web
+      # NEXT_PUBLIC_SAME_ORIGIN_AUTH-tal. Alap: false (cross-site, SameSite=None).
+      - key: SAME_ORIGIN_FRONTEND
+        value: "false"
       # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
       - key: S3_ENDPOINT
         sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
@@ -160,6 +165,14 @@ services:
       # A build-időben beépül a bundle-be; igazítsd, ha más az API URL:
       - key: NEXT_PUBLIC_API_URL
         value: https://valloreg-api.onrender.com/api
+      # KAPCSOLÓ (auth cookie): same-origin auth proxy. Ha "true", a Next a
+      # /api/auth/* hívásokat a saját originjáról proxyzza az API-ra → a refresh
+      # cookie first-party (SameSite=Lax), nincs harmadik-fél-cookie gond.
+      # EGYÜTT kell bekapcsolni az API SAME_ORIGIN_FRONTEND-jével (mindkettő
+      # "true"). Build-időben épül be, ezért váltás után újra kell deployolni a
+      # webet. Alap: false (a mostani cross-site működés marad).
+      - key: NEXT_PUBLIC_SAME_ORIGIN_AUTH
+        value: "false"
       - key: NEXT_PUBLIC_APP_NAME
         value: Valloreg
       - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY

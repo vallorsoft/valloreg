@@ -31,6 +31,12 @@ export const envSchema = z.object({
   // A webes frontend nyilvános URL-je (a jelszó-visszaállító e-mail linkjéhez).
   // Ha üres, a CORS_ORIGINS első eleme a fallback.
   WEB_APP_URL: z.string().optional().default(''),
+  // KAPCSOLÓ: ha a frontend SAME-ORIGIN proxyn éri el az auth-végpontokat (a web
+  // a /api/auth-ot a saját originjáról proxyzza az apinak), akkor a refresh cookie
+  // first-party, ezért SameSite=Lax mehet (a cross-site SameSite=None helyett).
+  // Alap: false (a jelenlegi cross-site működés marad). Lásd a web oldali
+  // NEXT_PUBLIC_SAME_ORIGIN_AUTH kapcsolót – a kettőt EGYÜTT kell bekapcsolni.
+  SAME_ORIGIN_FRONTEND: booleanString(false),
 
   // PostgreSQL – a DIRECT_URL opcionális (Neon-nál külön); ha nincs, a
   // PrismaService a DATABASE_URL-t használja a migrációkhoz is.
