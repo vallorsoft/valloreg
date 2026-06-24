@@ -68,6 +68,27 @@ export interface RankingsResult {
 }
 
 /**
+ * Beszállító-minőség egy fődarabra: melyik beszállítónál mennyibe kerül és
+ * MEDDIG tart az adott nagy alkatrész. A „meddig tart" a csere-intervallumból
+ * jön: az intervallumot a KORÁBBI csere beszállítójának tudjuk be (az ő
+ * alkatrésze bírta ki azt a km-t).
+ */
+export interface SupplierQualityRow {
+  supplierId: string;
+  supplierName: string;
+  component: string;
+  /** Hány nagy alkatrész esemény tartozik a beszállítóhoz erre a fődarabra. */
+  eventCount: number;
+  /** A fődarab medián költsége ennél a beszállítónál (vagy null). */
+  medianCost: string | null;
+  currency: string | null;
+  /** Medián élettartam km-ben (ha van legalább egy lezárt intervallum). */
+  medianIntervalKm: number | null;
+  /** Hány lezárt intervallumból (csere→csere) számolt az élettartam. */
+  intervalSamples: number;
+}
+
+/**
  * Min–max normalizálás [0,1]-re, ahol az ALACSONYABB érték a jobb (0 = legjobb).
  * Egyforma vagy egyelemű halmaznál 0 (mindenki „legjobb").
  */

@@ -1054,7 +1054,15 @@
     "exportCsv": "Export CSV",
     "exportPdf": "PDF / Tipărire",
     "replaceAdvice": "De înlocuit",
-    "tabs": { "segment": "După segment", "model": "După marcă/model" },
+    "tabs": { "segment": "După segment", "model": "După marcă/model", "suppliers": "Furnizori" },
+    "suppliers": {
+      "empty": "Încă nu există date de componente majore legate de furnizori.",
+      "supplier": "Furnizor",
+      "component": "Componentă",
+      "medianCost": "Cost median",
+      "medianLife": "Durată mediană",
+      "events": "Evenimente"
+    },
     "table": {
       "vehicle": "Vehicul",
       "score": "Scor",
