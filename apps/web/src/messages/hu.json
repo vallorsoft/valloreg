@@ -931,6 +931,29 @@
         "watch": "Figyelendő",
         "consider_replacement": "Csere megfontolandó"
       }
+    },
+    "benchmark": {
+      "title": "Piaci összevetés (Európai trendek)",
+      "subtitle": "A költségeid anonimizált, hasonló flották mediánjához viszonyítva. Egy szegmens csak elég sok cég és jármű felett jelenik meg.",
+      "segment": "Szegmens",
+      "yourCost": "Te",
+      "marketCost": "Piaci medián",
+      "delta": "Eltérés",
+      "position": "Pozíció",
+      "sample": "{n} jármű",
+      "kmRange": "{from}–{to} e km",
+      "kmOver": "{km} e km felett",
+      "kmUnknown": "ismeretlen km",
+      "positions": {
+        "below": "Piac alatt",
+        "within": "Piacon",
+        "above": "Piac felett"
+      }
+    },
+    "recalls": {
+      "title": "Visszahívások",
+      "subtitle": "A flottád járműveire vonatkozó, nyilvános visszahívási értesítések (ingyenes forrásból).",
+      "remedy": "Teendő"
     }
   },
   "admin": {
