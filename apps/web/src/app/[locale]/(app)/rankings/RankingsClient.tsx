@@ -2,25 +2,29 @@
 
 import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
+import { isMajorComponent } from '@valloreg/shared';
 import {
   rankingsApi,
   ApiError,
   type RankingsResult,
   type RankingGroup,
   type VehicleRanking,
+  type SupplierQualityRow,
 } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeading } from '@/components/app/PageHeading';
 
-type Tab = 'segment' | 'model';
+type Tab = 'segment' | 'model' | 'suppliers';
 
 export function RankingsClient() {
   const t = useTranslations('rankings');
   const tseg = useTranslations('vehicles.segments');
+  const tmc = useTranslations('majorComponents');
   const locale = useLocale();
   const [data, setData] = useState<RankingsResult | null>(null);
+  const [suppliers, setSuppliers] = useState<SupplierQualityRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
   const [tab, setTab] = useState<Tab>('segment');
@@ -33,7 +37,16 @@ export function RankingsClient() {
         if (err instanceof ApiError && err.status === 403) setAvailable(false);
       })
       .finally(() => setLoading(false));
+    rankingsApi
+      .suppliers()
+      .then(setSuppliers)
+      .catch(() => setSuppliers([]));
   }, []);
+
+  const compLabel = (c: string) =>
+    isMajorComponent(c)
+      ? (tmc as unknown as (k: string) => string)(`components.${c}`)
+      : (tmc as unknown as (k: string) => string)('components.other');
 
   const groups: RankingGroup[] =
     (tab === 'segment' ? data?.bySegment : data?.byModel) ?? [];
@@ -106,14 +119,10 @@ export function RankingsClient() {
         <Card className="py-16">
           <p className="text-center text-sm text-anthracite-500">{t('unavailable')}</p>
         </Card>
-      ) : groups.length === 0 ? (
-        <Card className="py-16">
-          <p className="text-center text-sm text-anthracite-500">{t('empty')}</p>
-        </Card>
       ) : (
         <>
           <div className="mb-4 flex gap-2 print:hidden">
-            {(['segment', 'model'] as const).map((tb) => (
+            {(['segment', 'model', 'suppliers'] as const).map((tb) => (
               <button
                 key={tb}
                 onClick={() => setTab(tb)}
@@ -129,6 +138,50 @@ export function RankingsClient() {
             ))}
           </div>
 
+          {tab === 'suppliers' ? (
+            suppliers.length === 0 ? (
+              <Card className="py-16">
+                <p className="text-center text-sm text-anthracite-500">{t('suppliers.empty')}</p>
+              </Card>
+            ) : (
+              <Card className="overflow-hidden p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-anthracite-100 bg-anthracite-50 text-anthracite-600">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">{t('suppliers.supplier')}</th>
+                        <th className="px-4 py-3 font-semibold">{t('suppliers.component')}</th>
+                        <th className="px-4 py-3 text-right font-semibold">{t('suppliers.medianCost')}</th>
+                        <th className="px-4 py-3 text-right font-semibold">{t('suppliers.medianLife')}</th>
+                        <th className="px-4 py-3 text-center font-semibold">{t('suppliers.events')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-anthracite-100">
+                      {suppliers.map((s) => (
+                        <tr key={`${s.supplierId}-${s.component}`}>
+                          <td className="px-4 py-3 font-medium text-anthracite-900">{s.supplierName}</td>
+                          <td className="px-4 py-3 text-anthracite-700">{compLabel(s.component)}</td>
+                          <td className="px-4 py-3 text-right text-anthracite-700">
+                            {s.medianCost != null ? `${num(s.medianCost, locale)} ${s.currency ?? ''}` : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-right text-anthracite-700">
+                            {s.medianIntervalKm != null
+                              ? `${s.medianIntervalKm.toLocaleString(locale)} km`
+                              : '-'}
+                          </td>
+                          <td className="px-4 py-3 text-center text-anthracite-500">{s.eventCount}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            )
+          ) : groups.length === 0 ? (
+            <Card className="py-16">
+              <p className="text-center text-sm text-anthracite-500">{t('empty')}</p>
+            </Card>
+          ) : (
           <div className="space-y-6">
             {groups.map((g) => (
               <section key={g.key}>
@@ -163,6 +216,7 @@ export function RankingsClient() {
               </section>
             ))}
           </div>
+          )}
         </>
       )}
     </>
