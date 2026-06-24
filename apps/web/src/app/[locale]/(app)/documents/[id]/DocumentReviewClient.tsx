@@ -60,6 +60,12 @@ export function DocumentReviewClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [itemError, setItemError] = useState<string | null>(null);
+  // Kézi munkadíj-hozzáadás állapota.
+  const [laborName, setLaborName] = useState('');
+  const [laborAmount, setLaborAmount] = useState('');
+  const [laborVehicleId, setLaborVehicleId] = useState('');
+  const [addingLabor, setAddingLabor] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   useEffect(() => {
     documentsApi
@@ -152,6 +158,62 @@ export function DocumentReviewClient({ id }: { id: string }) {
       setItemError(err instanceof ApiError ? err.message : t('review.items.assignError'));
     } finally {
       setSavingItemId(null);
+    }
+  }
+
+  async function handleAddLabor(invoiceId: string) {
+    const amount = Number(laborAmount.replace(',', '.').replace(/\s/g, ''));
+    if (!laborName.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setItemError(t('review.items.laborInvalid'));
+      return;
+    }
+    setAddingLabor(true);
+    setItemError(null);
+    try {
+      const created = await invoicesApi.addItem(invoiceId, {
+        name: laborName.trim(),
+        price: amount,
+        category: 'labor',
+        type: 'vehicle',
+        vehicleId: laborVehicleId || null,
+      });
+      setDoc((prev) => {
+        if (!prev?.invoice) return prev;
+        return {
+          ...prev,
+          invoice: { ...prev.invoice, items: [...prev.invoice.items, created] },
+        };
+      });
+      setLaborName('');
+      setLaborAmount('');
+      setLaborVehicleId('');
+    } catch (err) {
+      setItemError(err instanceof ApiError ? err.message : t('review.items.laborError'));
+    } finally {
+      setAddingLabor(false);
+    }
+  }
+
+  async function handleDeleteItem(itemId: string) {
+    if (!window.confirm(t('review.items.confirmDelete'))) return;
+    setDeletingItemId(itemId);
+    setItemError(null);
+    try {
+      await invoicesApi.deleteItem(itemId);
+      setDoc((prev) => {
+        if (!prev?.invoice) return prev;
+        return {
+          ...prev,
+          invoice: {
+            ...prev.invoice,
+            items: prev.invoice.items.filter((it) => it.id !== itemId),
+          },
+        };
+      });
+    } catch (err) {
+      setItemError(err instanceof ApiError ? err.message : t('review.items.deleteError'));
+    } finally {
+      setDeletingItemId(null);
     }
   }
 
@@ -363,6 +425,7 @@ export function DocumentReviewClient({ id }: { id: string }) {
                       <th className="px-4 py-3 font-semibold">{t('review.items.vehicle')}</th>
                       <th className="px-4 py-3 font-semibold">{t('review.items.quantity')}</th>
                       <th className="px-4 py-3 font-semibold text-right">{t('review.items.price')}</th>
+                      <th className="px-4 py-3" />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-anthracite-100">
@@ -399,12 +462,67 @@ export function DocumentReviewClient({ id }: { id: string }) {
                           {fmt(item.price, locale)}
                           {invoice.currency ? ` ${invoice.currency}` : ''}
                         </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            className="text-sm text-red-500 hover:underline disabled:opacity-50"
+                            disabled={deletingItemId === item.id}
+                            onClick={() => void handleDeleteItem(item.id)}
+                          >
+                            {deletingItemId === item.id
+                              ? t('review.items.deleting')
+                              : t('review.items.delete')}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+
+            {/* Kézi munkadíj hozzáadása (összeggel, járműhöz köthetően). */}
+            <div className="border-t border-anthracite-100 bg-anthracite-50/50 px-4 py-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-anthracite-500">
+                {t('review.items.addLaborTitle')}
+              </p>
+              <div className="flex flex-wrap items-end gap-2">
+                <input
+                  type="text"
+                  value={laborName}
+                  onChange={(e) => setLaborName(e.target.value)}
+                  placeholder={t('review.items.laborNamePlaceholder')}
+                  className="min-w-[160px] flex-1 rounded-lg border border-anthracite-200 bg-white px-3 py-1.5 text-sm text-anthracite-900"
+                />
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={laborAmount}
+                  onChange={(e) => setLaborAmount(e.target.value)}
+                  placeholder={t('review.items.laborAmountPlaceholder')}
+                  className="w-32 rounded-lg border border-anthracite-200 bg-white px-3 py-1.5 text-sm text-anthracite-900"
+                />
+                <select
+                  value={laborVehicleId}
+                  onChange={(e) => setLaborVehicleId(e.target.value)}
+                  className="max-w-[180px] rounded-lg border border-anthracite-200 bg-white px-2 py-1.5 text-sm text-anthracite-900"
+                >
+                  <option value="">{t('review.items.unassigned')}</option>
+                  {vehicles.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {vehicleLabel(v)}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={addingLabor}
+                  onClick={() => void handleAddLabor(invoice.id)}
+                >
+                  {addingLabor ? t('review.items.adding') : t('review.items.addLabor')}
+                </Button>
+              </div>
+            </div>
           </Card>
         </>
       )}

@@ -1,9 +1,11 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   Patch,
+  Post,
   Query,
   UseGuards,
 } from '@nestjs/common';
@@ -20,7 +22,15 @@ import type {
 } from '../common/types/request-context';
 import { InvoicesService } from './invoices.service';
 import { UpdateInvoiceItemDto } from './dto/update-invoice-item.dto';
+import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 import { AppException } from '../common/exceptions/app.exception';
+
+const ITEM_EDIT_ROLES = [
+  TenantRole.OWNER,
+  TenantRole.FLEET_MANAGER,
+  TenantRole.ADMIN,
+  TenantRole.ACCOUNTANT,
+] as const;
 
 @Controller('invoices')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard)
@@ -46,12 +56,7 @@ export class InvoicesController {
 
   /** Tétel felülbírálása (jármű-hozzárendelés, kategória, típus). */
   @Patch('items/:itemId')
-  @Roles(
-    TenantRole.OWNER,
-    TenantRole.FLEET_MANAGER,
-    TenantRole.ADMIN,
-    TenantRole.ACCOUNTANT,
-  )
+  @Roles(...ITEM_EDIT_ROLES)
   updateItem(
     @Param('itemId') itemId: string,
     @CurrentTenant() tenant: ActiveTenant,
@@ -63,6 +68,38 @@ export class InvoicesController {
       user.userId,
       itemId,
       dto,
+    );
+  }
+
+  /** Kézi tétel (tipikusan munkadíj) hozzáadása egy számlához. */
+  @Post(':invoiceId/items')
+  @Roles(...ITEM_EDIT_ROLES)
+  addItem(
+    @Param('invoiceId') invoiceId: string,
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: AddInvoiceItemDto,
+  ) {
+    return this.invoicesService.addItem(
+      tenant.tenantId,
+      user.userId,
+      invoiceId,
+      dto,
+    );
+  }
+
+  /** Számlatétel törlése (kézi korrekció). */
+  @Delete('items/:itemId')
+  @Roles(...ITEM_EDIT_ROLES)
+  deleteItem(
+    @Param('itemId') itemId: string,
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.invoicesService.deleteItem(
+      tenant.tenantId,
+      user.userId,
+      itemId,
     );
   }
 }

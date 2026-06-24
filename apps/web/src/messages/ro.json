@@ -701,7 +701,18 @@
         "price": "Preț",
         "empty": "Niciun articol.",
         "unassigned": "Neatribuit",
-        "assignError": "Atribuirea a eșuat."
+        "assignError": "Atribuirea a eșuat.",
+        "addLaborTitle": "Adăugare manoperă",
+        "laborNamePlaceholder": "Denumire (ex. Manoperă)",
+        "laborAmountPlaceholder": "Sumă",
+        "addLabor": "Adaugă",
+        "adding": "Se adaugă…",
+        "laborInvalid": "Introdu o denumire și o sumă pozitivă.",
+        "laborError": "Adăugarea liniei a eșuat.",
+        "delete": "Șterge",
+        "deleting": "Se șterge…",
+        "deleteError": "Ștergerea liniei a eșuat.",
+        "confirmDelete": "Sigur ștergi această linie?"
       }
     },
     "actions": {
