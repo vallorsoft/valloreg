@@ -582,6 +582,39 @@ export const majorComponentsApi = {
   },
 };
 
+// ── Tartósság (élettartam-felmérés + előrejelzés) ────────────────────────────
+
+export interface DurabilitySurveyRow {
+  component: string;
+  expectedKm: number;
+  source: 'empirical' | 'seed';
+  sampleCount: number;
+  seedKm: number;
+}
+
+export interface VehicleComponentForecast {
+  component: string;
+  lastEventKm: number | null;
+  kmSince: number | null;
+  expectedKm: number;
+  source: 'empirical' | 'seed';
+  status: 'ok' | 'watch' | 'due' | 'overdue';
+  estimatedNextDueKm: number | null;
+  estimatedCost: string | null;
+  currency: string | null;
+}
+
+export const durabilityApi = {
+  forecastForVehicle(vehicleId: string) {
+    return apiRequest<VehicleComponentForecast[]>(
+      `/vehicles/${vehicleId}/durability`,
+    );
+  },
+  survey() {
+    return apiRequest<DurabilitySurveyRow[]>(`/durability/survey`);
+  },
+};
+
 // ── Vehicles ──────────────────────────────────────────────────────────────────
 
 /** Egy jármű-fél szerepe és típusa. */

@@ -746,6 +746,20 @@
   "majorComponents": {
     "title": "Componente majore",
     "subtitle": "Cronologia înlocuirilor și reviziilor de ansambluri mari.",
+    "forecastTitle": "Prognoză durabilitate",
+    "nextDue": "Scadență estimată",
+    "estCost": "Cost estimat",
+    "expected": "estimat",
+    "status": {
+      "ok": "În regulă",
+      "watch": "De urmărit",
+      "due": "Scadent",
+      "overdue": "Depășit"
+    },
+    "source": {
+      "empirical": "învățat",
+      "seed": "bază"
+    },
     "add": "Adaugă",
     "cancel": "Anulează",
     "save": "Salvează",
@@ -1019,6 +1033,14 @@
       "title": "Rechemări",
       "subtitle": "Notificări publice de rechemare pentru vehiculele flotei tale (din sursă gratuită).",
       "remedy": "De făcut"
+    },
+    "durability": {
+      "title": "Studiu de durabilitate",
+      "subtitle": "Durata de viață estimată per ansamblu major, învățată din înlocuirile reale (sau valoare de bază).",
+      "component": "Componentă",
+      "expectedKm": "Durată estimată",
+      "source": "Sursă",
+      "samples": "Mostre"
     }
   },
   "admin": {

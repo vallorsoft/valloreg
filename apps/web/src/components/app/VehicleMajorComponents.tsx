@@ -5,8 +5,10 @@ import { useTranslations, useLocale } from 'next-intl';
 import { ALL_MAJOR_COMPONENTS, isMajorComponent } from '@valloreg/shared';
 import {
   majorComponentsApi,
+  durabilityApi,
   ApiError,
   type MajorComponentEvent,
+  type VehicleComponentForecast,
 } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -24,6 +26,14 @@ function emptyForm() {
     notes: '',
   };
 }
+
+/** Státusz → színosztály a tartósság-jelvényhez. */
+const STATUS_COLOR: Record<string, string> = {
+  ok: 'bg-green-50 text-green-700',
+  watch: 'bg-amber-50 text-amber-700',
+  due: 'bg-orange-50 text-orange-700',
+  overdue: 'bg-red-50 text-red-700',
+};
 
 function fmt(value: string | null, locale: string): string {
   if (value == null || value === '') return '-';
@@ -48,6 +58,7 @@ export function VehicleMajorComponents({
   const compLabel = (c: string) =>
     isMajorComponent(c) ? t(`components.${c}`) : t('components.other');
   const [events, setEvents] = useState<MajorComponentEvent[]>([]);
+  const [forecasts, setForecasts] = useState<VehicleComponentForecast[]>([]);
   const [available, setAvailable] = useState(true);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
@@ -58,7 +69,12 @@ export function VehicleMajorComponents({
 
   const refresh = useCallback(async () => {
     try {
-      setEvents(await majorComponentsApi.listForVehicle(vehicleId));
+      const [evts, fc] = await Promise.all([
+        majorComponentsApi.listForVehicle(vehicleId),
+        durabilityApi.forecastForVehicle(vehicleId).catch(() => []),
+      ]);
+      setEvents(evts);
+      setForecasts(fc);
     } catch (err) {
       if (err instanceof ApiError && err.status === 403) setAvailable(false);
     } finally {
@@ -96,6 +112,7 @@ export function VehicleMajorComponents({
       setEvents((prev) => [created, ...prev]);
       setForm(emptyForm());
       setOpen(false);
+      void refresh(); // az előrejelzés újraszámolása az új eseménnyel
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('addError'));
     } finally {
@@ -109,6 +126,7 @@ export function VehicleMajorComponents({
     try {
       await majorComponentsApi.remove(id);
       setEvents((prev) => prev.filter((e) => e.id !== id));
+      void refresh(); // az előrejelzés újraszámolása
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('deleteError'));
     } finally {
@@ -215,6 +233,37 @@ export function VehicleMajorComponents({
               {saving ? t('saving') : t('save')}
             </Button>
           </div>
+        </div>
+      )}
+
+      {forecasts.length > 0 && (
+        <div className="border-b border-anthracite-100 px-4 py-3">
+          <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-anthracite-500">
+            {t('forecastTitle')}
+          </p>
+          <ul className="space-y-1.5">
+            {forecasts.map((f) => (
+              <li key={f.component} className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <span className={'inline-flex rounded-full px-2 py-0.5 text-xs font-medium ' + STATUS_COLOR[f.status]}>
+                  {t(`status.${f.status}`)}
+                </span>
+                <span className="font-medium text-anthracite-900">{compLabel(f.component)}</span>
+                {f.estimatedNextDueKm != null && (
+                  <span className="text-anthracite-500">
+                    {t('nextDue')}: {f.estimatedNextDueKm.toLocaleString(locale)} km
+                  </span>
+                )}
+                {f.estimatedCost != null && (
+                  <span className="text-anthracite-500">
+                    · {t('estCost')}: {fmt(f.estimatedCost, locale)} {f.currency ?? ''}
+                  </span>
+                )}
+                <span className="text-anthracite-400">
+                  ({t(`source.${f.source}`)}, {t('expected')} {f.expectedKm.toLocaleString(locale)} km)
+                </span>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
 
