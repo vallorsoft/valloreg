@@ -1154,6 +1154,13 @@
       "saved": "Abonamentul a fost salvat.",
       "error": "Salvarea a eșuat."
     },
+    "storage": {
+      "label": "Stocare extra (GB)",
+      "save": "Salvează stocarea",
+      "saving": "Se salvează…",
+      "saved": "Stocarea extra a fost salvată.",
+      "error": "Salvarea a eșuat."
+    },
     "features": {
       "title": "Funcții (feature flags)",
       "feature": "Funcție",
@@ -1217,7 +1224,10 @@
       "title": "Utilizare",
       "vehicles": "Vehicule",
       "users": "Utilizatori",
-      "documents": "Documente (luna aceasta)"
+      "documents": "Documente (luna aceasta)",
+      "storage": "Stocare",
+      "includesExtra": "include {gb} GB extra",
+      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar). Se poate cumpăra stocare suplimentară – scrie-ne."
     },
     "features": {
       "title": "Funcții disponibile",

@@ -1154,6 +1154,13 @@
       "saved": "Az előfizetés mentve.",
       "error": "A mentés sikertelen."
     },
+    "storage": {
+      "label": "Extra tárhely (GB)",
+      "save": "Tárhely mentése",
+      "saving": "Mentés…",
+      "saved": "Az extra tárhely mentve.",
+      "error": "A mentés sikertelen."
+    },
     "features": {
       "title": "Funkciók (feature flag-ek)",
       "feature": "Funkció",
@@ -1217,7 +1224,10 @@
       "title": "Használat",
       "vehicles": "Járművek",
       "users": "Felhasználók",
-      "documents": "Dokumentumok (ez a hónap)"
+      "documents": "Dokumentumok (ez a hónap)",
+      "storage": "Tárhely",
+      "includesExtra": "tartalmaz {gb} GB extrát",
+      "storageNote": "A tárhely teljes kapacitás (nem nullázódik havonta). Extra tárhely vásárolható – írj nekünk."
     },
     "features": {
       "title": "Elérhető funkciók",

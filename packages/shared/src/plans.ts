@@ -107,5 +107,20 @@ export const STORAGE_PACKS: readonly StoragePack[] = [
   { bytes: 25 * GB, price: 59 },
 ] as const;
 
+/** 1 GB byte-ban (a tárhely-számításokhoz). */
+export const BYTES_PER_GB = GB;
+
+/**
+ * Effektív tárhely-keret: a csomag-tárhely + a vásárolt extra (GB). Korlátlan
+ * csomag-tárhelynél korlátlan marad.
+ */
+export function effectiveStorageBytes(
+  baseBytes: number,
+  extraGb: number,
+): number {
+  if (baseBytes === UNLIMITED) return UNLIMITED;
+  return baseBytes + Math.max(0, extraGb) * GB;
+}
+
 /** A próbaidőszak hossza napokban (a regisztráció ennyit ad ingyen). */
 export const TRIAL_DAYS = 14;

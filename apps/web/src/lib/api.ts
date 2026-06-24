@@ -1353,6 +1353,7 @@ export interface AdminTenantDetail {
   email: string | null;
   phone: string | null;
   createdAt: string;
+  extraStorageGb: number;
   subscription: AdminSubscription | null;
   members: {
     membershipId: string;
@@ -1375,6 +1376,12 @@ export const adminApi = {
       method: 'PUT',
       json: payload,
     });
+  },
+  setExtraStorage(id: string, gb: number) {
+    return apiRequest<{ id: string; extraStorageGb: number }>(
+      `/admin/tenants/${id}/extra-storage`,
+      { method: 'PUT', json: { gb } },
+    );
   },
   setFeature(id: string, key: string, enabled: boolean) {
     return apiRequest<{ key: string; enabled: boolean }>(
@@ -1402,7 +1409,14 @@ export interface BillingOverview {
     maxDocumentsPerMonth: number;
     maxStorageBytes: number;
   };
-  usage: { vehicles: number; users: number; documentsThisMonth: number };
+  usage: {
+    vehicles: number;
+    users: number;
+    documentsThisMonth: number;
+    storageBytes: number;
+  };
+  /** Vásárolt extra tárhely GB-ban (a csomag-tárhely fölött). */
+  extraStorageGb: number;
   features: string[];
 }
 
