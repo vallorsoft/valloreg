@@ -5,13 +5,24 @@ import { useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { InstallButton } from '@/components/app/InstallButton';
 import { Button } from '@/components/ui/Button';
-import { clearTokens } from '@/lib/auth';
+import { authApi } from '@/lib/api';
+import { clearTokens, getRefreshToken } from '@/lib/auth';
 
 export function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
   const t = useTranslations('app');
   const router = useRouter();
 
-  function onLogout() {
+  async function onLogout() {
+    // A refresh token szerveroldali visszavonása (best-effort: hálózati hiba ne
+    // akadályozza a kijelentkezést), majd a helyi tokenek törlése.
+    const refreshToken = getRefreshToken();
+    if (refreshToken) {
+      try {
+        await authApi.logout(refreshToken);
+      } catch {
+        /* a kijelentkezés helyileg akkor is megtörténik */
+      }
+    }
     clearTokens();
     router.push('/login');
   }
