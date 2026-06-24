@@ -3,7 +3,9 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { AppException } from '../common/exceptions/app.exception';
+import { ItemCategory, ItemType } from '@valloreg/shared';
 import type { UpdateInvoiceItemDto } from './dto/update-invoice-item.dto';
+import type { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
 
 /**
  * Számla olvasás és tételszintű felülbírálás. Az Invoice/InvoiceItem
@@ -124,6 +126,100 @@ export class InvoicesService {
     });
 
     return updated;
+  }
+
+  /**
+   * Kézi számlatétel hozzáadása (tipikusan MUNKADÍJ). A `price` a tétel teljes
+   * összege; alapból `labor` kategória és `vehicle` típus. A confidence 1
+   * (kézi rögzítés). A riportok a tételek `price`-át összegzik, így a munkadíj
+   * automatikusan megjelenik a költségekben.
+   */
+  async addItem(
+    tenantId: string,
+    userId: string,
+    invoiceId: string,
+    dto: AddInvoiceItemDto,
+  ) {
+    const invoice = await this.prisma.scoped.invoice.findFirst({
+      where: { id: invoiceId },
+      select: { id: true },
+    });
+    if (!invoice) {
+      throw AppException.notFound('A számla nem található.');
+    }
+
+    if (dto.vehicleId) {
+      const vehicle = await this.prisma.scoped.vehicle.findFirst({
+        where: { id: dto.vehicleId },
+        select: { id: true },
+      });
+      if (!vehicle) {
+        throw AppException.notFound('A jármű nem található.');
+      }
+    }
+
+    const quantity = dto.quantity ?? 1;
+    const price = new Prisma.Decimal(dto.price);
+    const unitPrice =
+      dto.unitPrice != null
+        ? new Prisma.Decimal(dto.unitPrice)
+        : quantity > 0
+          ? price.div(quantity)
+          : price;
+
+    const created = await this.prisma.scoped.invoiceItem.create({
+      data: {
+        tenantId,
+        invoiceId,
+        name: dto.name,
+        category: dto.category ?? ItemCategory.LABOR,
+        type: dto.type ?? ItemType.VEHICLE,
+        partType: dto.partType ?? null,
+        vehicleId: dto.vehicleId ?? null,
+        quantity,
+        unitPrice,
+        price,
+        confidence: 1,
+      },
+    });
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'invoice_item.added',
+      resourceType: 'InvoiceItem',
+      resourceId: created.id,
+      metadata: {
+        invoiceId,
+        category: created.category,
+        vehicleId: dto.vehicleId ?? null,
+      },
+    });
+
+    return created;
+  }
+
+  /** Egy számlatétel törlése (kézi korrekció). Tenant-scope-olt. */
+  async deleteItem(tenantId: string, userId: string, itemId: string) {
+    const item = await this.prisma.scoped.invoiceItem.findFirst({
+      where: { id: itemId },
+      select: { id: true },
+    });
+    if (!item) {
+      throw AppException.notFound('A számlatétel nem található.');
+    }
+
+    await this.prisma.scoped.invoiceItem.delete({ where: { id: itemId } });
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'invoice_item.deleted',
+      resourceType: 'InvoiceItem',
+      resourceId: itemId,
+    });
+
+    return { id: itemId };
   }
 
   /**

@@ -701,7 +701,18 @@
         "price": "Ár",
         "empty": "Nincsenek tételek.",
         "unassigned": "Nincs hozzárendelve",
-        "assignError": "A hozzárendelés sikertelen."
+        "assignError": "A hozzárendelés sikertelen.",
+        "addLaborTitle": "Munkadíj hozzáadása",
+        "laborNamePlaceholder": "Megnevezés (pl. Munkadíj)",
+        "laborAmountPlaceholder": "Összeg",
+        "addLabor": "Hozzáadás",
+        "adding": "Hozzáadás…",
+        "laborInvalid": "Adj meg megnevezést és pozitív összeget.",
+        "laborError": "A tétel hozzáadása sikertelen.",
+        "delete": "Törlés",
+        "deleting": "Törlés…",
+        "deleteError": "A tétel törlése sikertelen.",
+        "confirmDelete": "Biztosan törlöd ezt a tételt?"
       }
     },
     "actions": {

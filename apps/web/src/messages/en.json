@@ -701,7 +701,18 @@
         "price": "Price",
         "empty": "No items.",
         "unassigned": "Unassigned",
-        "assignError": "Assignment failed."
+        "assignError": "Assignment failed.",
+        "addLaborTitle": "Add labor cost",
+        "laborNamePlaceholder": "Name (e.g. Labor)",
+        "laborAmountPlaceholder": "Amount",
+        "addLabor": "Add",
+        "adding": "Adding…",
+        "laborInvalid": "Enter a name and a positive amount.",
+        "laborError": "Failed to add the line.",
+        "delete": "Delete",
+        "deleting": "Deleting…",
+        "deleteError": "Failed to delete the line.",
+        "confirmDelete": "Delete this line?"
       }
     },
     "actions": {
