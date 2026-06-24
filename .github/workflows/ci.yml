@@ -22,10 +22,10 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # A pnpm verziót a package.json "packageManager" mezőjéből veszi (nem adunk
+      # meg külön `version`-t, különben ütközés: ERR_PNPM_BAD_PM_VERSION).
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
-        with:
-          version: 10
 
       - name: Setup Node
         uses: actions/setup-node@v4
