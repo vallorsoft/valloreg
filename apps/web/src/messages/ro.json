@@ -1065,12 +1065,19 @@
       "remedy": "De făcut"
     },
     "durability": {
-      "title": "Studiu de durabilitate",
-      "subtitle": "Durata de viață estimată per element de service complex, învățată din înlocuirile reale (sau valoare de bază).",
+      "title": "Studiu de durabilitate (pe segment)",
+      "subtitle": "Durata de viață diferă pe categorie (furgonetă vs. cap tractor vs. remorcă). Valoarea estimată poate fi setată și manual, pe lângă cea implicită (învățată/de bază).",
+      "segment": "Segment",
       "component": "Componentă",
       "expectedKm": "Durată estimată",
       "source": "Sursă",
-      "samples": "Mostre"
+      "samples": "Mostre",
+      "override": "Suprascriere manuală (km)",
+      "save": "Salvează",
+      "clear": "Șterge",
+      "loading": "Se încarcă…",
+      "saveError": "Salvarea a eșuat.",
+      "sources": { "manual": "manual", "empirical": "învățat", "seed": "bază" }
     }
   },
   "rankings": {

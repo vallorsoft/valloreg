@@ -585,11 +585,13 @@ export const majorComponentsApi = {
 // ── Tartósság (élettartam-felmérés + előrejelzés) ────────────────────────────
 
 export interface DurabilitySurveyRow {
+  segment: string;
   component: string;
   expectedKm: number;
-  source: 'empirical' | 'seed';
+  source: 'manual' | 'empirical' | 'seed';
   sampleCount: number;
   seedKm: number;
+  overrideKm: number | null;
 }
 
 export interface VehicleComponentForecast {
@@ -612,6 +614,18 @@ export const durabilityApi = {
   },
   survey() {
     return apiRequest<DurabilitySurveyRow[]>(`/durability/survey`);
+  },
+  setBaseline(segment: string, component: string, expectedKm: number) {
+    return apiRequest<unknown>(`/durability/baselines`, {
+      method: 'POST',
+      json: { segment, component, expectedKm },
+    });
+  },
+  clearBaseline(segment: string, component: string) {
+    return apiRequest<unknown>(
+      `/durability/baselines/${segment}/${component}`,
+      { method: 'DELETE' },
+    );
   },
 };
 

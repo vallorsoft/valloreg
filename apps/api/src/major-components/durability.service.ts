@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import { Prisma } from '@prisma/client';
 import {
+  ALL_FLEET_SEGMENTS,
   ALL_MAJOR_COMPONENTS,
   DURABILITY_MIN_SAMPLES,
   DurabilityStatus,
   durabilityStatusOf,
+  fleetSegmentOf,
   isMajorComponent,
-  MAJOR_COMPONENT_LIFETIME_KM,
   median,
+  seedLifetimeKm,
   type DurabilitySurveyRow,
   type MajorComponent,
   type VehicleComponentForecast,
@@ -26,26 +28,60 @@ interface EventLite {
   currency: string | null;
 }
 
+/** A várható élettartam feloldva (forrással). */
+interface Expected {
+  expectedKm: number;
+  source: 'manual' | 'empirical' | 'seed';
+}
+
+const key = (segment: string, component: string) => `${segment}::${component}`;
+
 /**
- * Nagy alkatrész TARTÓSSÁG – olvasásidejű felmérés és előrejelzés.
+ * Nagy alkatrész TARTÓSSÁG – olvasásidejű felmérés és előrejelzés, SZEGMENSENKÉNT.
  *
- * A rendszer a tenant valós cseréiből MEGTANULJA a fődarabok élettartamát:
- * járművenként a fődarab egymást követő cseréi közti km-távolság egy-egy minta;
- * ezek mediánja az empirikus élettartam. Elég minta felett (>= küszöb) ezt
- * használjuk a seed helyett. Az eredmény olvasásidőben számított – nincs külön
- * tábla, nincs elavuló állapot.
+ * A kifutási idő nem egyforma kategóriánként (furgon vs. nyerges vs. pótkocsi),
+ * ezért minden számítás szegmens × fődarab bontásban megy. A várható élettartam
+ * három forrásból, ebben a prioritásban:
+ *   1) KÉZI felülírás (DurabilityBaseline) – a felhasználó beállítása,
+ *   2) tanult empirikus medián (elég valós minta felett az adott szegmensben),
+ *   3) seed (bázis × szegmens-szorzó) – alapértelmezett.
  */
 @Injectable()
 export class DurabilityService {
   constructor(private readonly prisma: PrismaService) {}
 
-  /** Flotta-szintű tartósság-felmérés: per fődarab tanult/seed élettartam. */
+  /** Flotta-szintű felmérés: minden szegmens × fődarab (effektív + felülírás). */
   async survey(): Promise<DurabilitySurveyRow[]> {
-    const events = await this.loadEvents();
-    const intervals = this.intervalsByComponent(events);
-    return ALL_MAJOR_COMPONENTS.map((component) =>
-      this.surveyRow(component, intervals.get(component) ?? []),
-    );
+    const [events, segmentByVehicle, overrides] = await Promise.all([
+      this.loadEvents(),
+      this.segmentByVehicle(),
+      this.loadOverrides(),
+    ]);
+    const intervals = this.intervalsBySegmentComponent(events, segmentByVehicle);
+
+    const rows: DurabilitySurveyRow[] = [];
+    for (const segment of ALL_FLEET_SEGMENTS) {
+      for (const component of ALL_MAJOR_COMPONENTS) {
+        const samples = intervals.get(key(segment, component)) ?? [];
+        const override = overrides.get(key(segment, component));
+        const { expectedKm, source } = this.resolveExpected(
+          component,
+          segment,
+          samples,
+          override,
+        );
+        rows.push({
+          segment,
+          component,
+          expectedKm,
+          source,
+          sampleCount: samples.length,
+          seedKm: seedLifetimeKm(component, segment),
+          overrideKm: override ?? null,
+        });
+      }
+    }
+    return rows;
   }
 
   /** Egy jármű fődarabjainak előrejelzése (esedékesség + becsült költség). */
@@ -54,18 +90,29 @@ export class DurabilityService {
   ): Promise<VehicleComponentForecast[]> {
     const vehicle = await this.prisma.scoped.vehicle.findFirst({
       where: { id: vehicleId },
-      select: { id: true, odometerKm: true },
+      select: {
+        id: true,
+        odometerKm: true,
+        category: true,
+        vehicleType: true,
+        maxMassKg: true,
+        fleetSegment: true,
+      },
     });
     if (!vehicle) {
       throw AppException.notFound('A jármű nem található.');
     }
+    const segment = fleetSegmentOf(vehicle);
 
-    // Tenant-szintű empirikus élettartam + költségbecslés (tanuló alap).
-    const allEvents = await this.loadEvents();
-    const intervals = this.intervalsByComponent(allEvents);
+    const [allEvents, overrides] = await Promise.all([
+      this.loadEvents(),
+      this.loadOverrides(),
+    ]);
+    const segmentByVehicle = await this.segmentByVehicle();
+    const intervals = this.intervalsBySegmentComponent(allEvents, segmentByVehicle);
     const costByComponent = this.costByComponent(allEvents);
 
-    // A jármű eseményei fődarabonként, odométer szerint rendezve.
+    // A jármű eseményei fődarabonként.
     const own = allEvents.filter((e) => e.vehicleId === vehicleId);
     const byComponent = new Map<string, EventLite[]>();
     for (const e of own) {
@@ -84,9 +131,11 @@ export class DurabilityService {
         .filter((v): v is number => v != null)
         .reduce<number | null>((max, v) => (max == null || v > max ? v : max), null);
 
-      const { expectedKm, source } = this.expectedFor(
+      const { expectedKm, source } = this.resolveExpected(
         component,
-        intervals.get(component) ?? [],
+        segment,
+        intervals.get(key(segment, component)) ?? [],
+        overrides.get(key(segment, component)),
       );
 
       const kmSince =
@@ -115,7 +164,6 @@ export class DurabilityService {
       });
     }
 
-    // Stabil sorrend: a globális fődarab-sorrend szerint.
     result.sort(
       (a, b) =>
         ALL_MAJOR_COMPONENTS.indexOf(a.component) -
@@ -125,36 +173,55 @@ export class DurabilityService {
   }
 
   /**
-   * Esedékes/lejárt nagy alkatrészek száma járművenként (bulk, egy lekérdezésből).
-   * A `odometerByVehicle` a járművek aktuális km-állása; a tartósság az empirikus
-   * (vagy seed) élettartamból dől el. A ranglista és a csere-tanácsadó használja.
+   * Esedékes/lejárt fődarabok száma járművenként (bulk). A ranglista és a
+   * csere-tanácsadó használja. Szegmens-tudatos.
    */
-  async dueCountsByVehicle(
-    odometerByVehicle: Map<string, number | null>,
-  ): Promise<Map<string, number>> {
-    const events = await this.loadEvents();
-    const intervals = this.intervalsByComponent(events);
+  async dueCountsByVehicle(): Promise<Map<string, number>> {
+    const [events, overrides] = await Promise.all([
+      this.loadEvents(),
+      this.loadOverrides(),
+    ]);
+    const vehicles = await this.prisma.scoped.vehicle.findMany({
+      select: {
+        id: true,
+        odometerKm: true,
+        category: true,
+        vehicleType: true,
+        maxMassKg: true,
+        fleetSegment: true,
+      },
+    });
+    const segmentByVehicle = new Map<string, string>(
+      vehicles.map((v) => [v.id, fleetSegmentOf(v)]),
+    );
+    const odometerByVehicle = new Map<string, number | null>(
+      vehicles.map((v) => [v.id, v.odometerKm]),
+    );
+    const intervals = this.intervalsBySegmentComponent(events, segmentByVehicle);
 
     // Járművenként a fődarab legutóbbi cserekori km-állása.
     const lastByVehicleComponent = new Map<string, number>();
     for (const e of events) {
       if (e.odometerKm == null) continue;
-      const key = `${e.vehicleId}::${e.component}`;
-      const prev = lastByVehicleComponent.get(key);
+      const k = `${e.vehicleId}::${e.component}`;
+      const prev = lastByVehicleComponent.get(k);
       if (prev == null || e.odometerKm > prev) {
-        lastByVehicleComponent.set(key, e.odometerKm);
+        lastByVehicleComponent.set(k, e.odometerKm);
       }
     }
 
     const due = new Map<string, number>();
-    for (const [key, lastKm] of lastByVehicleComponent) {
-      const [vehicleId, component] = key.split('::') as [string, string];
+    for (const [k, lastKm] of lastByVehicleComponent) {
+      const [vehicleId, component] = k.split('::') as [string, string];
       const odo = odometerByVehicle.get(vehicleId);
       if (odo == null) continue;
       if (!isMajorComponent(component)) continue;
-      const { expectedKm } = this.expectedFor(
+      const segment = segmentByVehicle.get(vehicleId) ?? 'other';
+      const { expectedKm } = this.resolveExpected(
         component,
-        intervals.get(component) ?? [],
+        segment,
+        intervals.get(key(segment, component)) ?? [],
+        overrides.get(key(segment, component)),
       );
       const status = durabilityStatusOf(Math.max(0, odo - lastKm), expectedKm);
       if (status === DurabilityStatus.DUE || status === DurabilityStatus.OVERDUE) {
@@ -162,6 +229,44 @@ export class DurabilityService {
       }
     }
     return due;
+  }
+
+  /** Kézi felülírás mentése (szegmens + fődarab → várható km). */
+  async setBaseline(
+    tenantId: string,
+    segment: string,
+    component: string,
+    expectedKm: number,
+  ) {
+    if (
+      !(ALL_FLEET_SEGMENTS as readonly string[]).includes(segment) ||
+      !isMajorComponent(component)
+    ) {
+      throw AppException.validation('Érvénytelen szegmens vagy fődarab.');
+    }
+    // findFirst(scoped) + update/create – a bevált tenant-scope minta (mint a
+    // tanuló mappingeknél), hogy a tenant-szűrés biztosan érvényesüljön.
+    const existing = await this.prisma.scoped.durabilityBaseline.findFirst({
+      where: { segment, component },
+      select: { id: true },
+    });
+    if (existing) {
+      return this.prisma.scoped.durabilityBaseline.update({
+        where: { id: existing.id },
+        data: { expectedKm },
+      });
+    }
+    return this.prisma.scoped.durabilityBaseline.create({
+      data: { tenantId, segment, component, expectedKm },
+    });
+  }
+
+  /** Kézi felülírás törlése (visszaáll a tanult/seed értékre). */
+  async clearBaseline(segment: string, component: string) {
+    await this.prisma.scoped.durabilityBaseline.deleteMany({
+      where: { segment, component },
+    });
+    return { segment, component };
   }
 
   // ── segédek ────────────────────────────────────────────────────────────────
@@ -180,62 +285,80 @@ export class DurabilityService {
     });
   }
 
+  /** Jármű → szegmens leképezés (a forgalmi adatokból levezetve). */
+  private async segmentByVehicle(): Promise<Map<string, string>> {
+    const vehicles = await this.prisma.scoped.vehicle.findMany({
+      select: {
+        id: true,
+        category: true,
+        vehicleType: true,
+        maxMassKg: true,
+        fleetSegment: true,
+      },
+    });
+    return new Map(vehicles.map((v) => [v.id, fleetSegmentOf(v)]));
+  }
+
+  /** Kézi felülírások: `${segment}::${component}` → km. */
+  private async loadOverrides(): Promise<Map<string, number>> {
+    const rows = await this.prisma.scoped.durabilityBaseline.findMany({
+      select: { segment: true, component: true, expectedKm: true },
+    });
+    return new Map(rows.map((r) => [key(r.segment, r.component), r.expectedKm]));
+  }
+
   /**
-   * Csere-intervallumok (km) fődarabonként: járművenként az egymást követő
-   * cserék odométer-különbsége egy-egy minta.
+   * Csere-intervallumok (km) `${segment}::${component}` szerint: járművenként az
+   * egymást követő cserék odométer-különbsége egy-egy minta, a jármű szegmensébe.
    */
-  private intervalsByComponent(events: EventLite[]): Map<string, number[]> {
-    // Csoportosítás jármű + komponens szerint, odométerrel.
+  private intervalsBySegmentComponent(
+    events: EventLite[],
+    segmentByVehicle: Map<string, string>,
+  ): Map<string, number[]> {
     const groups = new Map<string, number[]>();
     for (const e of events) {
       if (e.odometerKm == null) continue;
-      const key = `${e.vehicleId}::${e.component}`;
-      const list = groups.get(key) ?? [];
+      const k = `${e.vehicleId}::${e.component}`;
+      const list = groups.get(k) ?? [];
       list.push(e.odometerKm);
-      groups.set(key, list);
+      groups.set(k, list);
     }
 
     const intervals = new Map<string, number[]>();
-    for (const [key, odos] of groups) {
-      const component = key.split('::')[1]!;
+    for (const [k, odos] of groups) {
+      const [vehicleId, component] = k.split('::') as [string, string];
+      const segment = segmentByVehicle.get(vehicleId) ?? 'other';
       odos.sort((a, b) => a - b);
       for (let i = 1; i < odos.length; i++) {
         const diff = odos[i]! - odos[i - 1]!;
         if (diff > 0) {
-          const list = intervals.get(component) ?? [];
+          const sk = key(segment, component);
+          const list = intervals.get(sk) ?? [];
           list.push(diff);
-          intervals.set(component, list);
+          intervals.set(sk, list);
         }
       }
     }
     return intervals;
   }
 
-  /** Várható élettartam: empirikus medián, ha elég minta; különben seed. */
-  private expectedFor(
+  /** Várható élettartam: kézi felülírás > empirikus medián > seed (szegmensre). */
+  private resolveExpected(
     component: MajorComponent,
+    segment: string,
     samples: number[],
-  ): { expectedKm: number; source: 'empirical' | 'seed' } {
-    const seedKm = MAJOR_COMPONENT_LIFETIME_KM[component];
+    override: number | undefined,
+  ): Expected {
+    if (override != null && override > 0) {
+      return { expectedKm: override, source: 'manual' };
+    }
     if (samples.length >= DURABILITY_MIN_SAMPLES) {
       const m = median(samples);
-      if (m != null && m > 0) return { expectedKm: Math.round(m), source: 'empirical' };
+      if (m != null && m > 0) {
+        return { expectedKm: Math.round(m), source: 'empirical' };
+      }
     }
-    return { expectedKm: seedKm, source: 'seed' };
-  }
-
-  private surveyRow(
-    component: MajorComponent,
-    samples: number[],
-  ): DurabilitySurveyRow {
-    const { expectedKm, source } = this.expectedFor(component, samples);
-    return {
-      component,
-      expectedKm,
-      source,
-      sampleCount: samples.length,
-      seedKm: MAJOR_COMPONENT_LIFETIME_KM[component],
-    };
+    return { expectedKm: seedLifetimeKm(component, segment), source: 'seed' };
   }
 
   /** Fődarabonkénti becsült költség (totalCost medián) + jellemző pénznem. */
