@@ -746,6 +746,20 @@
   "majorComponents": {
     "title": "Major components",
     "subtitle": "Timeline of major component replacements and overhauls.",
+    "forecastTitle": "Durability forecast",
+    "nextDue": "Est. due",
+    "estCost": "Est. cost",
+    "expected": "expected",
+    "status": {
+      "ok": "OK",
+      "watch": "Watch",
+      "due": "Due",
+      "overdue": "Overdue"
+    },
+    "source": {
+      "empirical": "learned",
+      "seed": "baseline"
+    },
     "add": "Add",
     "cancel": "Cancel",
     "save": "Save",
@@ -1019,6 +1033,14 @@
       "title": "Recalls",
       "subtitle": "Public recall notices for your fleet's vehicles (from a free source).",
       "remedy": "Action"
+    },
+    "durability": {
+      "title": "Durability survey",
+      "subtitle": "Expected lifetime per major component, learned from real replacements (or baseline).",
+      "component": "Component",
+      "expectedKm": "Expected lifetime",
+      "source": "Source",
+      "samples": "Samples"
     }
   },
   "admin": {

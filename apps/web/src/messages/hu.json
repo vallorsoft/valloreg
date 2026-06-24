@@ -746,6 +746,20 @@
   "majorComponents": {
     "title": "Nagy alkatrészek",
     "subtitle": "Fődarab cserék és felújítások idővonala.",
+    "forecastTitle": "Tartósság-előrejelzés",
+    "nextDue": "Becsült esedékesség",
+    "estCost": "Becsült költség",
+    "expected": "várható",
+    "status": {
+      "ok": "Rendben",
+      "watch": "Figyelni",
+      "due": "Esedékes",
+      "overdue": "Lejárt"
+    },
+    "source": {
+      "empirical": "tanult",
+      "seed": "alap"
+    },
     "add": "Hozzáadás",
     "cancel": "Mégse",
     "save": "Mentés",
@@ -1019,6 +1033,14 @@
       "title": "Visszahívások",
       "subtitle": "A flottád járműveire vonatkozó, nyilvános visszahívási értesítések (ingyenes forrásból).",
       "remedy": "Teendő"
+    },
+    "durability": {
+      "title": "Tartósság-felmérés",
+      "subtitle": "A flotta valós cseréiből tanult (vagy seed-alapú) várható élettartam fődarabonként.",
+      "component": "Alkatrész",
+      "expectedKm": "Várható élettartam",
+      "source": "Forrás",
+      "samples": "Minták"
     }
   },
   "admin": {

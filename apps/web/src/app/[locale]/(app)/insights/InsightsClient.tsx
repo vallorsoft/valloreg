@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import {
   insightsApi,
   benchmarkApi,
+  durabilityApi,
   ApiError,
   type Anomaly,
   type AnomalySeverityValue,
@@ -14,7 +15,9 @@ import {
   type BenchmarkComparison,
   type BenchmarkPositionValue,
   type VehicleRecall,
+  type DurabilitySurveyRow,
 } from '@/lib/api';
+import { isMajorComponent } from '@valloreg/shared';
 import { Card } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { PageHeading } from '@/components/app/PageHeading';
@@ -51,6 +54,7 @@ export function InsightsClient() {
   const [tco, setTco] = useState<VehicleTco[]>([]);
   const [benchmark, setBenchmark] = useState<BenchmarkComparison[]>([]);
   const [recalls, setRecalls] = useState<VehicleRecall[]>([]);
+  const [durability, setDurability] = useState<DurabilitySurveyRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
 
@@ -74,7 +78,15 @@ export function InsightsClient() {
       .getRecalls()
       .then(setRecalls)
       .catch(() => setRecalls([]));
+    durabilityApi
+      .survey()
+      .then(setDurability)
+      .catch(() => setDurability([]));
   }, []);
+
+  const tm = useTranslations('majorComponents');
+  const compLabel = (c: string) =>
+    isMajorComponent(c) ? tm(`components.${c}`) : tm('components.other');
 
   function kmBucketLabel(bucket: number): string {
     if (bucket < 0) return t('benchmark.kmUnknown');
@@ -363,6 +375,52 @@ export function InsightsClient() {
                     ) : null}
                   </div>
                 ))}
+              </Card>
+            </section>
+          )}
+
+          {/* Tartósság-felmérés (tanult / seed élettartam fődarabonként) */}
+          {durability.length > 0 && (
+            <section>
+              <h2 className="mb-1 text-sm font-semibold text-anthracite-700">
+                {t('durability.title')}
+              </h2>
+              <p className="mb-2 text-xs text-anthracite-500">
+                {t('durability.subtitle')}
+              </p>
+              <Card className="overflow-hidden p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-anthracite-100 bg-anthracite-50 text-anthracite-600">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">{t('durability.component')}</th>
+                        <th className="px-4 py-3 text-right font-semibold">{t('durability.expectedKm')}</th>
+                        <th className="px-4 py-3 font-semibold">{t('durability.source')}</th>
+                        <th className="px-4 py-3 text-right font-semibold">{t('durability.samples')}</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-anthracite-100">
+                      {durability.map((d) => (
+                        <tr key={d.component}>
+                          <td className="px-4 py-3 font-medium text-anthracite-900">
+                            {compLabel(d.component)}
+                          </td>
+                          <td className="px-4 py-3 text-right text-anthracite-700">
+                            {d.expectedKm.toLocaleString(locale)} km
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge tone={d.source === 'empirical' ? 'success' : 'neutral'}>
+                              {tm(`source.${d.source}`)}
+                            </Badge>
+                          </td>
+                          <td className="px-4 py-3 text-right text-anthracite-500">
+                            {d.sampleCount}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               </Card>
             </section>
           )}
