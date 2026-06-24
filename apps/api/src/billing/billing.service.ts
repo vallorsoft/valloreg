@@ -1,11 +1,13 @@
 import { Injectable } from '@nestjs/common';
 import {
+  effectiveStorageBytes,
   PLAN_CURRENCY,
   PLAN_LIMITS,
   PLAN_PRICES,
   PlanTier,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
+import { TenantContextService } from '../prisma/tenant-context.service';
 import { AppConfigService } from '../config/app-config.service';
 import { FeatureFlagsService } from '../feature-flags/feature-flags.service';
 import { MailerService } from '../storage/mailer.service';
@@ -31,11 +33,14 @@ export class BillingService {
     private readonly mailer: MailerService,
     private readonly audit: AuditService,
     private readonly notifications: NotificationsService,
+    private readonly tenantContext: TenantContextService,
   ) {}
 
   async getOverview() {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const tenantId = this.tenantContext.getTenantId();
 
     const [
       subscription,
@@ -43,6 +48,9 @@ export class BillingService {
       memberCount,
       pendingInvites,
       documentsThisMonth,
+      docSize,
+      vehicleDocSize,
+      tenant,
       features,
     ] = await Promise.all([
       this.prisma.scoped.subscription.findFirst(),
@@ -54,11 +62,27 @@ export class BillingService {
       this.prisma.scoped.document.count({
         where: { createdAt: { gte: monthStart } },
       }),
+      this.prisma.scoped.document.aggregate({ _sum: { sizeBytes: true } }),
+      this.prisma.scoped.vehicleDocument.aggregate({ _sum: { sizeBytes: true } }),
+      tenantId
+        ? this.prisma.system.tenant.findUnique({
+            where: { id: tenantId },
+            select: { extraStorageGb: true },
+          })
+        : Promise.resolve(null),
       this.featureFlags.getEffectiveFeatures(),
     ]);
 
     const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
     const limits = PLAN_LIMITS[planTier];
+
+    const extraStorageGb = tenant?.extraStorageGb ?? 0;
+    const storageBytes =
+      (docSize._sum.sizeBytes ?? 0) + (vehicleDocSize._sum.sizeBytes ?? 0);
+    const maxStorageBytes = effectiveStorageBytes(
+      limits.maxStorageBytes,
+      extraStorageGb,
+    );
 
     return {
       plan: planTier,
@@ -69,13 +93,16 @@ export class BillingService {
         maxVehicles: limits.maxVehicles,
         maxUsers: limits.maxUsers,
         maxDocumentsPerMonth: limits.maxDocumentsPerMonth,
-        maxStorageBytes: limits.maxStorageBytes,
+        // Effektív keret: csomag-tárhely + vásárolt extra.
+        maxStorageBytes,
       },
       usage: {
         vehicles: vehicleCount,
         users: memberCount + pendingInvites,
         documentsThisMonth,
+        storageBytes,
       },
+      extraStorageGb,
       features,
     };
   }

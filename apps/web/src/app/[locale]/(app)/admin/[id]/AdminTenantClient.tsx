@@ -35,12 +35,15 @@ export function AdminTenantClient({ id }: { id: string }) {
   const [planTier, setPlanTier] = useState<string>(PlanTier.STARTER);
   const [status, setStatus] = useState<string>('ACTIVE');
   const [savingSub, setSavingSub] = useState(false);
+  const [extraStorageGb, setExtraStorageGb] = useState<string>('0');
+  const [savingStorage, setSavingStorage] = useState(false);
 
   useEffect(() => {
     adminApi
       .getTenant(id)
       .then((d) => {
         setData(d);
+        setExtraStorageGb(String(d.extraStorageGb ?? 0));
         if (d.subscription) {
           setPlanTier(d.subscription.planTier);
           setStatus(d.subscription.status);
@@ -68,6 +71,23 @@ export function AdminTenantClient({ id }: { id: string }) {
       setError(err instanceof ApiError ? err.message : t('subscription.error'));
     } finally {
       setSavingSub(false);
+    }
+  }
+
+  async function handleSaveStorage() {
+    const gb = parseInt(extraStorageGb, 10);
+    if (isNaN(gb) || gb < 0) return;
+    setSavingStorage(true);
+    setError(null);
+    setNotice(null);
+    try {
+      const res = await adminApi.setExtraStorage(id, gb);
+      setData((prev) => (prev ? { ...prev, extraStorageGb: res.extraStorageGb } : prev));
+      setNotice(t('storage.saved'));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('storage.error'));
+    } finally {
+      setSavingStorage(false);
     }
   }
 
@@ -196,6 +216,28 @@ export function AdminTenantClient({ id }: { id: string }) {
           </div>
           <Button size="sm" onClick={() => void handleSaveSubscription()} disabled={savingSub}>
             {savingSub ? t('subscription.saving') : t('subscription.save')}
+          </Button>
+        </div>
+
+        {/* Extra tárhely (vásárlás aktiválása utalás után) */}
+        <div className="mt-4 flex flex-wrap items-end gap-3 border-t border-anthracite-100 pt-4">
+          <div>
+            <label className="mb-1 block text-xs text-anthracite-500">{t('storage.label')}</label>
+            <input
+              type="number"
+              min={0}
+              value={extraStorageGb}
+              onChange={(e) => setExtraStorageGb(e.target.value)}
+              className="w-28 rounded-lg border border-anthracite-200 bg-white px-3 py-2 text-sm text-anthracite-900"
+            />
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => void handleSaveStorage()}
+            disabled={savingStorage}
+          >
+            {savingStorage ? t('storage.saving') : t('storage.save')}
           </Button>
         </div>
       </Card>

@@ -29,6 +29,13 @@ function fmtLimit(value: number, locale: string): string {
   return value === UNLIMITED ? '∞' : value.toLocaleString(locale);
 }
 
+const GB = 1024 * 1024 * 1024;
+/** Byte → GB, 1 tizedessel; korlátlannál ∞. */
+function fmtGb(bytes: number): string {
+  if (bytes === UNLIMITED) return '∞';
+  return (bytes / GB).toFixed(1);
+}
+
 function UsageBar({ used, limit }: { used: number; limit: number }) {
   const unlimited = limit === UNLIMITED;
   const pct = unlimited ? 0 : Math.min(100, Math.round((used / Math.max(limit, 1)) * 100));
@@ -229,6 +236,20 @@ export function BillingClient() {
               <UsageBar used={row.used} limit={row.limit} />
             </div>
           ))}
+
+          {/* Tárhely (byte → GB), a vásárolt extrával együtt. */}
+          <div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-anthracite-700">{t('usage.storage')}</span>
+              <span className="font-medium text-anthracite-900">
+                {fmtGb(data.usage.storageBytes)} / {fmtGb(data.limits.maxStorageBytes)} GB
+                {data.extraStorageGb > 0 &&
+                  ` (${t('usage.includesExtra', { gb: data.extraStorageGb })})`}
+              </span>
+            </div>
+            <UsageBar used={data.usage.storageBytes} limit={data.limits.maxStorageBytes} />
+            <p className="mt-1 text-xs text-anthracite-500">{t('usage.storageNote')}</p>
+          </div>
         </div>
       </Card>
 

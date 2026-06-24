@@ -1154,6 +1154,13 @@
       "saved": "Subscription saved.",
       "error": "Save failed."
     },
+    "storage": {
+      "label": "Extra storage (GB)",
+      "save": "Save storage",
+      "saving": "Saving…",
+      "saved": "Extra storage saved.",
+      "error": "Save failed."
+    },
     "features": {
       "title": "Features (feature flags)",
       "feature": "Feature",
@@ -1217,7 +1224,10 @@
       "title": "Usage",
       "vehicles": "Vehicles",
       "users": "Users",
-      "documents": "Documents (this month)"
+      "documents": "Documents (this month)",
+      "storage": "Storage",
+      "includesExtra": "includes {gb} GB extra",
+      "storageNote": "Storage is total capacity (does not reset monthly). Extra storage can be purchased – contact us."
     },
     "features": {
       "title": "Available features",

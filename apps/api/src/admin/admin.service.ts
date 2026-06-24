@@ -84,6 +84,7 @@ export class AdminService {
       contactName: tenant.contactName,
       email: tenant.email,
       phone: tenant.phone,
+      extraStorageGb: tenant.extraStorageGb,
       createdAt: tenant.createdAt,
       subscription: tenant.subscription,
       members: tenant.memberships.map((m) => ({
@@ -128,6 +129,28 @@ export class AdminService {
     });
 
     return subscription;
+  }
+
+  /** Vásárolt extra tárhely (GB) beállítása egy cégre (utalás után). */
+  async setExtraStorage(actorUserId: string, tenantId: string, gb: number) {
+    await this.assertTenantExists(tenantId);
+
+    const tenant = await this.prisma.system.tenant.update({
+      where: { id: tenantId },
+      data: { extraStorageGb: gb },
+      select: { id: true, extraStorageGb: true },
+    });
+
+    await this.audit.log({
+      tenantId,
+      userId: actorUserId,
+      action: 'admin.extra_storage_set',
+      resourceType: 'Tenant',
+      resourceId: tenantId,
+      metadata: { extraStorageGb: gb },
+    });
+
+    return tenant;
   }
 
   /** Feature flag override be/kikapcsolása egy cégre. */

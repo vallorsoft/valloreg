@@ -2,10 +2,12 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   DocumentStatus,
+  effectiveStorageBytes,
   isAllowedDocumentMimeType,
   isWithinLimit,
   PLAN_LIMITS,
   PlanTier,
+  UNLIMITED,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppConfigService } from '../config/app-config.service';
@@ -83,6 +85,7 @@ export class DocumentsService {
     }
 
     await this.assertMonthlyDocumentLimit(tenantId);
+    await this.assertStorageLimit(tenantId, file.size);
 
     const documentId = randomUUID();
     const storageKey = this.storage.buildDocumentKey(
@@ -368,6 +371,44 @@ export class DocumentsService {
 
     if (!isWithinLimit(count, limit)) {
       throw AppException.documentsLimitReached();
+    }
+  }
+
+  /**
+   * Tárhely-keret ellenőrzése feltöltés előtt. Az effektív keret = csomag-
+   * tárhely + vásárolt extra (Tenant.extraStorageGb). A használat a tárolt
+   * dokumentumok és jármű-dokumentumok méretének összege (tenant-scope).
+   */
+  private async assertStorageLimit(
+    tenantId: string,
+    additionalBytes: number,
+  ): Promise<void> {
+    const [subscription, tenant] = await Promise.all([
+      this.prisma.system.subscription.findUnique({
+        where: { tenantId },
+        select: { planTier: true },
+      }),
+      this.prisma.system.tenant.findUnique({
+        where: { id: tenantId },
+        select: { extraStorageGb: true },
+      }),
+    ]);
+    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const effective = effectiveStorageBytes(
+      PLAN_LIMITS[planTier].maxStorageBytes,
+      tenant?.extraStorageGb ?? 0,
+    );
+    if (effective === UNLIMITED) return;
+
+    const [docSize, vehicleDocSize] = await Promise.all([
+      this.prisma.scoped.document.aggregate({ _sum: { sizeBytes: true } }),
+      this.prisma.scoped.vehicleDocument.aggregate({ _sum: { sizeBytes: true } }),
+    ]);
+    const used =
+      (docSize._sum.sizeBytes ?? 0) + (vehicleDocSize._sum.sizeBytes ?? 0);
+
+    if (used + additionalBytes > effective) {
+      throw AppException.storageLimitReached();
     }
   }
 }
