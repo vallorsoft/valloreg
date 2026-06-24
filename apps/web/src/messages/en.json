@@ -1162,6 +1162,14 @@
         "bankName": "Bank",
         "swift": "SWIFT",
         "notifyEmail": "Notification email (new request)"
+      },
+      "test": {
+        "title": "Test email (verify Brevo configuration)",
+        "placeholder": "Destination email address",
+        "send": "Send test",
+        "sending": "Sending…",
+        "ok": "Sent to {to}. If it doesn't arrive, check the verified sender in Brevo.",
+        "fail": "Failed: {error}. Check the Brevo API key and the verified sender."
       }
     },
     "subscription": {

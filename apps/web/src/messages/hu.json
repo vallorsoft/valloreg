@@ -1162,6 +1162,14 @@
         "bankName": "Bank",
         "swift": "SWIFT",
         "notifyEmail": "Értesítő e-mail (új igénylésről)"
+      },
+      "test": {
+        "title": "Teszt e-mail (Brevo-konfiguráció ellenőrzése)",
+        "placeholder": "Cél e-mail cím",
+        "send": "Teszt küldése",
+        "sending": "Küldés…",
+        "ok": "Elküldve ide: {to}. Ha nem érkezik meg, ellenőrizd a feladó hitelesítését a Brevóban.",
+        "fail": "Sikertelen: {error}. Ellenőrizd a Brevo API-kulcsot és a hitelesített feladót."
       }
     },
     "subscription": {

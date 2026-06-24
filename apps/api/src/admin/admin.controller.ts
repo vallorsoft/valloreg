@@ -6,6 +6,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Post,
   Put,
   UseGuards,
 } from '@nestjs/common';
@@ -18,6 +19,7 @@ import { SetSubscriptionDto } from './dto/set-subscription.dto';
 import { SetFeatureOverrideDto } from './dto/set-feature-override.dto';
 import { SetExtraStorageDto } from './dto/set-extra-storage.dto';
 import { SetBillingSettingsDto } from './dto/set-billing-settings.dto';
+import { TestEmailDto } from './dto/test-email.dto';
 
 /**
  * Super Admin (platform) végpontok. Minden végpont `isPlatformAdmin` jogot
@@ -45,6 +47,12 @@ export class AdminController {
     @Body() dto: SetBillingSettingsDto,
   ) {
     return this.adminService.setBillingSettings(user.userId, dto);
+  }
+
+  /** Teszt-email küldése a Brevo-konfiguráció ellenőrzésére. */
+  @Post('test-email')
+  sendTestEmail(@CurrentUser() user: AuthUser, @Body() dto: TestEmailDto) {
+    return this.adminService.sendTestEmail(user.userId, dto.to);
   }
 
   @Get('tenants/:id')

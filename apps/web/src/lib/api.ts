@@ -1404,6 +1404,12 @@ export const adminApi = {
       json: payload,
     });
   },
+  sendTestEmail(to: string) {
+    return apiRequest<{ ok: boolean; status?: number; error?: string }>(
+      '/admin/test-email',
+      { method: 'POST', json: { to } },
+    );
+  },
   setFeature(id: string, key: string, enabled: boolean) {
     return apiRequest<{ key: string; enabled: boolean }>(
       `/admin/tenants/${id}/features/${key}`,
