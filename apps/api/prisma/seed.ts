@@ -146,7 +146,7 @@ async function main(): Promise<void> {
         supplierId: supplier.id,
         invoiceNumber: 'SZ-2026-0001',
         date: new Date('2026-06-15'),
-        currency: 'HUF',
+        currency: 'RON',
         odometerKm: 152340,
         netTotal: 48500,
         taxTotal: 13095,
@@ -239,8 +239,8 @@ async function main(): Promise<void> {
 
   // ── Szintetikus flotta-benchmark („Európai trendek") ──────────────────────
   // Illusztratív, ANONIMIZÁLT piaci cellák, hogy a „Piaci összevetés" kevés
-  // céggel is demózható legyen. A demó cég Actros fékköltsége (medián ~9250 HUF)
-  // így a piaci 7000 HUF felett jelenik meg. ÉLESBEN ezt a heti job számolja a
+  // céggel is demózható legyen. A demó cég Actros fékköltsége (medián ~9250 RON)
+  // így a piaci 7000 RON felett jelenik meg. ÉLESBEN ezt a heti job számolja a
   // valódi opt-in adatokból, k-anonimitási küszöbbel (egyetlen cella sem
   // publikus 5 cég / 20 jármű alatt).
   await seedBenchmark();
@@ -294,7 +294,7 @@ async function seedBenchmark(): Promise<void> {
       makeModel: 'mercedes-benz actros',
       itemCategory: 'brakes',
       kmBucket: 150000,
-      currency: 'HUF',
+      currency: 'RON',
       medianUnitPrice: 7000,
       p25: 6000,
       p75: 8500,
@@ -305,7 +305,7 @@ async function seedBenchmark(): Promise<void> {
       makeModel: 'mercedes-benz actros',
       itemCategory: 'fluids',
       kmBucket: 150000,
-      currency: 'HUF',
+      currency: 'RON',
       medianUnitPrice: 3100,
       p25: 2800,
       p75: 3500,
@@ -316,7 +316,7 @@ async function seedBenchmark(): Promise<void> {
       makeModel: 'volkswagen crafter',
       itemCategory: 'brakes',
       kmBucket: 50000,
-      currency: 'HUF',
+      currency: 'RON',
       medianUnitPrice: 8200,
       p25: 7000,
       p75: 9500,

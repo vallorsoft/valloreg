@@ -142,7 +142,7 @@ export class GeminiExtractionProvider implements ExtractionProvider {
       '  "documentType": "invoice"|"registration"|"compliance"|"other",',
       '  "invoice": {',
       '    "supplier": string, "date": "YYYY-MM-DD"|"", "invoiceNumber": string,',
-      '    "currency": "HUF"|"RON"|"EUR"|..., "odometerKm": number|null,',
+      '    "currency": "RON"|"EUR"|"HUF"|..., "odometerKm": number|null,',
       '    "netTotal": number|null, "taxTotal": number|null, "grossTotal": number|null,',
       '    "vehicleCandidates": [{ "plate": string|null, "vin": string|null,',
       '      "vehicleId": null, "source": "plate"|"vin"|"supplier_pattern"|"history"|"manual",',

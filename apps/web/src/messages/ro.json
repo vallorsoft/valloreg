@@ -1052,7 +1052,7 @@
     "unavailable": "Această funcție nu este disponibilă în planul tău.",
     "empty": "Încă nu există suficiente date pentru clasament.",
     "exportCsv": "Export CSV",
-    "exportPdf": "PDF / Tipărire",
+    "exportPdf": "PDF",
     "replaceAdvice": "De înlocuit",
     "tabs": { "segment": "După segment", "model": "După marcă/model", "suppliers": "Furnizori" },
     "suppliers": {

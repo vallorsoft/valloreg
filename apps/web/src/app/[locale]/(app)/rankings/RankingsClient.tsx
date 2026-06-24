@@ -96,6 +96,113 @@ export function RankingsClient() {
     URL.revokeObjectURL(url);
   }
 
+  /** Márkázott PDF (fejléc + logó-glif + táblázatok) jsPDF-fel, dinamikus import. */
+  async function downloadPdf() {
+    if (!data) return;
+    const { jsPDF } = await import('jspdf');
+    const autoTable = (await import('jspdf-autotable')).default;
+    const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+    const pageW = doc.internal.pageSize.getWidth();
+    const navy: [number, number, number] = [17, 24, 39];
+    const accent: [number, number, number] = [37, 99, 235];
+
+    // Fejléc: „V" glif + Valloreg + cím + dátum.
+    doc.setFillColor(...accent);
+    doc.roundedRect(40, 28, 22, 22, 4, 4, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFont('helvetica', 'bold');
+    doc.setFontSize(14);
+    doc.text('V', 51, 44, { align: 'center' });
+    doc.setTextColor(...navy);
+    doc.setFontSize(16);
+    doc.text('Valloreg', 70, 45);
+    doc.setFont('helvetica', 'normal');
+    doc.setFontSize(11);
+    doc.setTextColor(100, 116, 139);
+    doc.text(t('title'), 70, 60);
+    const now = new Date().toLocaleDateString(locale);
+    doc.text(now, pageW - 40, 45, { align: 'right' });
+
+    // Ranglista táblázat (szegmensenként, lapos).
+    const body: string[][] = [];
+    for (const g of data.bySegment) {
+      g.vehicles.forEach((v, i) => {
+        body.push([
+          safeSeg(tseg, g.key),
+          String(i + 1),
+          v.label,
+          String(v.economyScore),
+          v.costPerKm != null ? `${v.costPerKm} ${v.currency ?? ''}`.trim() : '-',
+          v.profitPerKm != null ? `${v.profitPerKm} ${v.currency ?? ''}`.trim() : '-',
+          String(v.bigPartsDue),
+          v.badges.map((b) => (t as unknown as (k: string) => string)(`badges.${b}`)).join(', ') +
+            (v.replaceAdvice ? ` • ${t('replaceAdvice')}` : ''),
+        ]);
+      });
+    }
+    autoTable(doc, {
+      startY: 80,
+      head: [[
+        t('csv.group'),
+        '#',
+        t('table.vehicle'),
+        t('table.score'),
+        t('table.costPerKm'),
+        t('table.profitPerKm'),
+        t('table.bigPartsDue'),
+        t('table.badges'),
+      ]],
+      body,
+      styles: { fontSize: 8, cellPadding: 4 },
+      headStyles: { fillColor: navy, textColor: 255 },
+      margin: { left: 40, right: 40 },
+    });
+
+    // Beszállító-minőség táblázat.
+    if (suppliers.length > 0) {
+      const lastY = (doc as unknown as { lastAutoTable?: { finalY: number } }).lastAutoTable?.finalY ?? 80;
+      doc.setFontSize(12);
+      doc.setTextColor(...navy);
+      doc.text(t('tabs.suppliers'), 40, lastY + 24);
+      autoTable(doc, {
+        startY: lastY + 32,
+        head: [[
+          t('suppliers.supplier'),
+          t('suppliers.component'),
+          t('suppliers.medianCost'),
+          t('suppliers.medianLife'),
+          t('suppliers.events'),
+        ]],
+        body: suppliers.map((s) => [
+          s.supplierName,
+          compLabel(s.component),
+          s.medianCost != null ? `${s.medianCost} ${s.currency ?? ''}`.trim() : '-',
+          s.medianIntervalKm != null ? `${s.medianIntervalKm.toLocaleString(locale)} km` : '-',
+          String(s.eventCount),
+        ]),
+        styles: { fontSize: 8, cellPadding: 4 },
+        headStyles: { fillColor: navy, textColor: 255 },
+        margin: { left: 40, right: 40 },
+      });
+    }
+
+    // Lábléc: oldalszám.
+    const pages = doc.getNumberOfPages();
+    for (let i = 1; i <= pages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(8);
+      doc.setTextColor(148, 163, 184);
+      doc.text(
+        `Valloreg • ${now} • ${i}/${pages}`,
+        pageW / 2,
+        doc.internal.pageSize.getHeight() - 20,
+        { align: 'center' },
+      );
+    }
+
+    doc.save('valloreg-ranglista.pdf');
+  }
+
   return (
     <>
       <PageHeading
@@ -106,7 +213,7 @@ export function RankingsClient() {
             <Button variant="outline" size="sm" onClick={downloadCsv}>
               {t('exportCsv')}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => window.print()}>
+            <Button variant="outline" size="sm" onClick={() => void downloadPdf()}>
               {t('exportPdf')}
             </Button>
           </div>
