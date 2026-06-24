@@ -18,6 +18,7 @@ import { CurrentTenant } from '../common/decorators/current-tenant.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import type { ActiveTenant, AuthUser } from '../common/types/request-context';
 import { MajorComponentsService } from './major-components.service';
+import { DurabilityService } from './durability.service';
 import { CreateMajorComponentEventDto } from './dto/create-major-component-event.dto';
 
 const WRITE_ROLES = [
@@ -35,12 +36,27 @@ const WRITE_ROLES = [
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)
 @RequireFeature(FeatureKey.REPORTS)
 export class MajorComponentsController {
-  constructor(private readonly service: MajorComponentsService) {}
+  constructor(
+    private readonly service: MajorComponentsService,
+    private readonly durability: DurabilityService,
+  ) {}
 
   /** Egy jármű nagy-alkatrész idővonala. */
   @Get('vehicles/:vehicleId/major-components')
   list(@Param('vehicleId') vehicleId: string) {
     return this.service.listForVehicle(vehicleId);
+  }
+
+  /** Egy jármű fődarab-előrejelzése (esedékesség + becsült költség). */
+  @Get('vehicles/:vehicleId/durability')
+  forecast(@Param('vehicleId') vehicleId: string) {
+    return this.durability.forecastForVehicle(vehicleId);
+  }
+
+  /** Flotta-szintű tartósság-felmérés (tanult/seed élettartam per fődarab). */
+  @Get('durability/survey')
+  survey() {
+    return this.durability.survey();
   }
 
   /** Nagy alkatrész esemény rögzítése (kézzel vagy tételekből összerakva). */
