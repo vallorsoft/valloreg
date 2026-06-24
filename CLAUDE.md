@@ -28,3 +28,47 @@
   (kvóta-kimerülés vagy kivezetett modell ne bukatja el a feldolgozást).
 - A providert a `render.yaml` `value: gemini`-vel kényszeríti (OCR + EXTRACTION) –
   **ne állítsd vissza `stub`-ra**, mert a Blueprint-sync felülírná a dashboardot.
+
+## Web + API topológia (domének)
+
+- **Két külön Render-szolgáltatás, KÜLÖN aldomainen:**
+  - `valloreg-api` → `https://valloreg-api.onrender.com` (NestJS, prefix `/api`),
+  - `valloreg-web` → `https://valloreg-web.onrender.com` (Next.js PWA).
+- A web az API-t a `NEXT_PUBLIC_API_URL=https://valloreg-api.onrender.com/api`
+  címen éri el; az API a `CORS_ORIGINS`/`WEB_APP_URL`-ben a web origint engedi,
+  `credentials: true`-val.
+- **FONTOS: a két aldomain CROSS-SITE egymáshoz képest.** Az `onrender.com` rajta
+  van a Public Suffix List-en, így `valloreg-web.onrender.com` és
+  `valloreg-api.onrender.com` KÜLÖN „site" – nem csak külön origin. Ez minden
+  cookie-/CORS-/credentials-kérdést befolyásol.
+
+## Auth / session – gondok és buktatók
+
+- **Token-modell:** rövid életű access token (15 perc) a kliensben
+  (`localStorage` ha „Remember me", különben `sessionStorage`), az `Authorization`
+  fejléchez. A refresh token **httpOnly cookie**-ban (`valloreg_rt`,
+  `Path=/api/auth`), JS-ből NEM elérhető. A kliens 401-re csendben frissít
+  (single-flight), a refresh `credentials: 'include'`-dal megy.
+- **„Remember me":** bepipálva tartós cookie (90 nap, gördülő) + `localStorage`;
+  kipipálatlanul session cookie + `sessionStorage`. A `remember` a refresh token
+  payloadjában utazik, hogy a rotációknál is megőrződjön.
+- **⚠️ Cross-site cookie (a fő buktató):** mivel web és api külön „site", a refresh
+  cookie csak `SameSite=None; Secure` attribútumokkal megy át. Ezt
+  `NODE_ENV=production` esetén állítjuk be (dev: `Lax`, Secure nélkül, mert
+  localhost azonos site). **Ha a cookie-folyamat elromlik, ELŐSZÖR ezt nézd:**
+  - `NODE_ENV=production` legyen az API-n (különben `Lax`/nem-Secure → a böngésző
+    nem küldi cross-site),
+  - `CORS_ORIGINS` PONTOS web origin (nem `*`), `credentials: true` mellett,
+  - a kliens auth-hívásai `credentials: 'include'`-dal menjenek.
+- **⚠️ Harmadik-fél-cookie korlátozás:** mivel a cookie a web oldaláról nézve
+  „third-party" (másik site), a böngészők szigorodó harmadik-fél-cookie szabályai
+  (Safari ITP, Chrome) blokkolhatják. Jelenleg működik, de **a végleges, robusztus
+  megoldás: a web és az api KÖZÖS domain alá** (pl. `app.valloreg.com` +
+  `app.valloreg.com/api`, vagy `api.valloreg.com` ugyanazon regisztrált domainen),
+  ekkor a cookie first-party `SameSite=Lax` lehet. Saját domain bevezetésekor ezt
+  érdemes egyből így tervezni.
+- **Hideg indítás (Render free):** az API ~15 perc tétlenség után leáll; az első
+  kérés 502/503/504 vagy „Failed to fetch" lehet ~30–60 mp-ig. A web api-kliense
+  ezt backoff-fal újrapróbálja (lásd `apps/web/src/lib/api.ts`), és egy
+  keep-alive GitHub Action pingeli az API health-et.
+
