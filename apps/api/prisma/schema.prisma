@@ -86,6 +86,9 @@ model Tenant {
   // A benchmark CSAK aggregátum, k-anonimitási küszöbbel; kikapcsolva nem
   // számít bele az aggregátumba (de továbbra is láthatja a piaci összevetést).
   benchmarkOptIn Boolean @default(true)
+  // Vásárolt EXTRA tárhely GB-ban (a csomag-tárhely fölé adódik). A tárhely
+  // teljes kapacitás (nem havi reset); a Super Admin állítja az utalás után.
+  extraStorageGb Int @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 

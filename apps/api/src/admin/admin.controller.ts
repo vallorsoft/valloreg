@@ -16,6 +16,7 @@ import type { AuthUser } from '../common/types/request-context';
 import { AdminService } from './admin.service';
 import { SetSubscriptionDto } from './dto/set-subscription.dto';
 import { SetFeatureOverrideDto } from './dto/set-feature-override.dto';
+import { SetExtraStorageDto } from './dto/set-extra-storage.dto';
 
 /**
  * Super Admin (platform) végpontok. Minden végpont `isPlatformAdmin` jogot
@@ -43,6 +44,15 @@ export class AdminController {
     @Body() dto: SetSubscriptionDto,
   ) {
     return this.adminService.setSubscription(user.userId, id, dto);
+  }
+
+  @Put('tenants/:id/extra-storage')
+  setExtraStorage(
+    @Param('id') id: string,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: SetExtraStorageDto,
+  ) {
+    return this.adminService.setExtraStorage(user.userId, id, dto.gb);
   }
 
   @Put('tenants/:id/features/:key')
