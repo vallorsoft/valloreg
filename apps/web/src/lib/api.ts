@@ -495,11 +495,36 @@ export interface UpdateInvoiceItemPayload {
   partType?: string | null;
 }
 
+/** Kézi tétel (tipikusan munkadíj) hozzáadása egy számlához. */
+export interface AddInvoiceItemPayload {
+  name: string;
+  /** A tétel teljes összege. */
+  price: number;
+  /** Alapból `labor` (munkadíj). */
+  category?: string;
+  type?: string;
+  partType?: string | null;
+  vehicleId?: string | null;
+  quantity?: number;
+  unitPrice?: number;
+}
+
 export const invoicesApi = {
   updateItem(itemId: string, payload: UpdateInvoiceItemPayload) {
     return apiRequest<InvoiceItem>(`/invoices/items/${itemId}`, {
       method: 'PATCH',
       json: payload,
+    });
+  },
+  addItem(invoiceId: string, payload: AddInvoiceItemPayload) {
+    return apiRequest<InvoiceItem>(`/invoices/${invoiceId}/items`, {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  deleteItem(itemId: string) {
+    return apiRequest<{ id: string }>(`/invoices/items/${itemId}`, {
+      method: 'DELETE',
     });
   },
 };
