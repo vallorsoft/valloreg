@@ -195,7 +195,7 @@
         },
         "STANDARD": {
           "name": "Pro",
-          "description": "Növekvő flottáknak: riport, export, emlékeztető, nagy alkatrész."
+          "description": "Növekvő flottáknak: riport, export, emlékeztető, komplex szerviz."
         },
         "PROFESSIONAL": {
           "name": "Fleet",
@@ -212,6 +212,7 @@
       "subtitle": "Mit tud pontosan az egyes csomag – egy táblázatban.",
       "feature": "Funkció",
       "note": "A tárhely teljes kapacitás (nem nullázódik havonta); bármely csomaghoz vehető extra tárhely.",
+      "storagePacks": "Vásárolható extra tárhely (havi díj): {list}",
       "limits": {
         "vehicles": "Járművek",
         "users": "Felhasználók",
@@ -224,7 +225,7 @@
         "dashboard": "Költség-dashboard",
         "reports": "Riportok + CSV/PDF export",
         "reminders": "Emlékeztetők (idő/km karbantartás)",
-        "majorParts": "Munkadíj + nagy alkatrész + idővonal",
+        "majorParts": "Munkadíj + komplex szerviz + idővonal",
         "insights": "Insights (anomáliák, TCO, Európai benchmark)",
         "durability": "Tanuló élettartam + prediktív karbantartás",
         "rankings": "Ranglista + jelvények + csere-tanácsadó",
@@ -773,8 +774,8 @@
     }
   },
   "majorComponents": {
-    "title": "Nagy alkatrészek",
-    "subtitle": "Fődarab cserék és felújítások idővonala.",
+    "title": "Komplex szerviz",
+    "subtitle": "Komplex szervizek (csere/felújítás) idővonala.",
     "forecastTitle": "Tartósság-előrejelzés",
     "nextDue": "Becsült esedékesség",
     "estCost": "Becsült költség",
@@ -794,7 +795,7 @@
     "save": "Mentés",
     "saving": "Mentés…",
     "loading": "Betöltés…",
-    "empty": "Még nincs rögzített nagy alkatrész esemény.",
+    "empty": "Még nincs rögzített komplex szerviz esemény.",
     "delete": "Törlés",
     "confirmDelete": "Biztosan törlöd ezt az eseményt?",
     "addError": "A rögzítés sikertelen.",
@@ -1065,7 +1066,7 @@
     },
     "durability": {
       "title": "Tartósság-felmérés",
-      "subtitle": "A flotta valós cseréiből tanult (vagy seed-alapú) várható élettartam fődarabonként.",
+      "subtitle": "A flotta valós cseréiből tanult (vagy seed-alapú) várható élettartam komplex szerviz-elemenként.",
       "component": "Alkatrész",
       "expectedKm": "Várható élettartam",
       "source": "Forrás",
@@ -1083,7 +1084,7 @@
     "replaceAdvice": "Cserére érdemes",
     "tabs": { "segment": "Szegmensek szerint", "model": "Márka/modell szerint", "suppliers": "Beszállítók" },
     "suppliers": {
-      "empty": "Még nincs beszállítóhoz köthető nagy alkatrész adat.",
+      "empty": "Még nincs beszállítóhoz köthető komplex szerviz adat.",
       "supplier": "Beszállító",
       "component": "Alkatrész",
       "medianCost": "Medián költség",
@@ -1095,7 +1096,7 @@
       "score": "Pontszám",
       "costPerKm": "Költség/km",
       "profitPerKm": "Nyereség/km",
-      "bigPartsDue": "Esedékes nagy rész",
+      "bigPartsDue": "Esedékes komplex szerviz",
       "badges": "Jelvények"
     },
     "badges": {
@@ -1111,8 +1112,8 @@
       "costPerKm": "Költség/km",
       "revenuePerKm": "Bevétel/km",
       "profitPerKm": "Nyereség/km",
-      "majorEvents": "Nagy események",
-      "bigPartsDue": "Esedékes nagy rész",
+      "majorEvents": "Komplex szervizek",
+      "bigPartsDue": "Esedékes komplex szerviz",
       "replaceAdvice": "Cserére érdemes"
     }
   },
@@ -1254,7 +1255,8 @@
       "documents": "Dokumentumok (ez a hónap)",
       "storage": "Tárhely",
       "includesExtra": "tartalmaz {gb} GB extrát",
-      "storageNote": "A tárhely teljes kapacitás (nem nullázódik havonta). Extra tárhely vásárolható – írj nekünk."
+      "storageNote": "A tárhely teljes kapacitás (nem nullázódik havonta). Extra tárhely vásárolható – írj nekünk.",
+      "storagePacks": "Vásárolható extra tárhely (havi díj): {list}"
     },
     "features": {
       "title": "Elérhető funkciók",
