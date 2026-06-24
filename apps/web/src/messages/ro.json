@@ -875,6 +875,29 @@
         "watch": "De urmărit",
         "consider_replacement": "De luat în calcul înlocuirea"
       }
+    },
+    "benchmark": {
+      "title": "Comparație de piață (Tendințe europene)",
+      "subtitle": "Costurile tale raportate la mediana anonimizată a flotelor similare. Un segment apare doar peste un număr suficient de firme și vehicule.",
+      "segment": "Segment",
+      "yourCost": "Tu",
+      "marketCost": "Mediana pieței",
+      "delta": "Diferență",
+      "position": "Poziție",
+      "sample": "{n} vehicule",
+      "kmRange": "{from}–{to} mii km",
+      "kmOver": "peste {km} mii km",
+      "kmUnknown": "km necunoscut",
+      "positions": {
+        "below": "Sub piață",
+        "within": "În piață",
+        "above": "Peste piață"
+      }
+    },
+    "recalls": {
+      "title": "Rechemări",
+      "subtitle": "Notificări publice de rechemare pentru vehiculele flotei tale (din sursă gratuită).",
+      "remedy": "De făcut"
     }
   },
   "admin": {

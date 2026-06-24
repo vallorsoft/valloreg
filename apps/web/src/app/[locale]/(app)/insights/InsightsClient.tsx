@@ -5,11 +5,15 @@ import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
   insightsApi,
+  benchmarkApi,
   ApiError,
   type Anomaly,
   type AnomalySeverityValue,
   type TcoRecommendationValue,
   type VehicleTco,
+  type BenchmarkComparison,
+  type BenchmarkPositionValue,
+  type VehicleRecall,
 } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
@@ -33,12 +37,20 @@ const TCO_TONE: Record<TcoRecommendationValue, BadgeTone> = {
   ok: 'success',
 };
 
+const POSITION_TONE: Record<BenchmarkPositionValue, BadgeTone> = {
+  above: 'danger',
+  within: 'neutral',
+  below: 'success',
+};
+
 export function InsightsClient() {
   const t = useTranslations('insights');
   const locale = useLocale();
   const router = useRouter();
   const [anomalies, setAnomalies] = useState<Anomaly[]>([]);
   const [tco, setTco] = useState<VehicleTco[]>([]);
+  const [benchmark, setBenchmark] = useState<BenchmarkComparison[]>([]);
+  const [recalls, setRecalls] = useState<VehicleRecall[]>([]);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
 
@@ -54,7 +66,23 @@ export function InsightsClient() {
       .getTco()
       .then(setTco)
       .catch(() => setTco([]));
+    benchmarkApi
+      .getComparison()
+      .then(setBenchmark)
+      .catch(() => setBenchmark([]));
+    benchmarkApi
+      .getRecalls()
+      .then(setRecalls)
+      .catch(() => setRecalls([]));
   }, []);
+
+  function kmBucketLabel(bucket: number): string {
+    if (bucket < 0) return t('benchmark.kmUnknown');
+    const lo = Math.round(bucket / 1000);
+    const hi = Math.round((bucket + 50000) / 1000);
+    if (bucket >= 200000) return t('benchmark.kmOver', { km: lo });
+    return t('benchmark.kmRange', { from: lo, to: hi });
+  }
 
   function fmt(value: string | null): string {
     if (!value) return '-';
@@ -225,6 +253,116 @@ export function InsightsClient() {
                     </tbody>
                   </table>
                 </div>
+              </Card>
+            </section>
+          )}
+
+          {/* Piaci összevetés („Európai trendek") */}
+          {benchmark.length > 0 && (
+            <section>
+              <h2 className="mb-1 text-sm font-semibold text-anthracite-700">
+                {t('benchmark.title')}
+              </h2>
+              <p className="mb-2 text-xs text-anthracite-500">
+                {t('benchmark.subtitle')}
+              </p>
+              <Card className="overflow-hidden p-0">
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-sm">
+                    <thead className="border-b border-anthracite-100 bg-anthracite-50 text-anthracite-600">
+                      <tr>
+                        <th className="px-4 py-3 font-semibold">
+                          {t('benchmark.segment')}
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-right">
+                          {t('benchmark.yourCost')}
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-right">
+                          {t('benchmark.marketCost')}
+                        </th>
+                        <th className="px-4 py-3 font-semibold text-right">
+                          {t('benchmark.delta')}
+                        </th>
+                        <th className="px-4 py-3 font-semibold">
+                          {t('benchmark.position')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-anthracite-100">
+                      {benchmark.map((b) => (
+                        <tr key={`${b.makeModel}-${b.itemCategory}-${b.kmBucket}`}>
+                          <td className="px-4 py-3">
+                            <p className="font-medium capitalize text-anthracite-900">
+                              {b.makeModel}
+                            </p>
+                            <p className="text-xs text-anthracite-500">
+                              {b.itemCategory} · {kmBucketLabel(b.kmBucket)} ·{' '}
+                              {t('benchmark.sample', { n: b.sampleVehicles })}
+                            </p>
+                          </td>
+                          <td className="px-4 py-3 text-right text-anthracite-700">
+                            {fmt(b.tenantMedian)} {b.currency}
+                          </td>
+                          <td className="px-4 py-3 text-right text-anthracite-700">
+                            {fmt(b.benchmarkMedian)} {b.currency}
+                          </td>
+                          <td
+                            className={`px-4 py-3 text-right font-medium ${
+                              b.deltaPct > 0
+                                ? 'text-red-600'
+                                : b.deltaPct < 0
+                                  ? 'text-emerald-600'
+                                  : 'text-anthracite-400'
+                            }`}
+                          >
+                            {b.deltaPct > 0 ? '+' : ''}
+                            {b.deltaPct}%
+                          </td>
+                          <td className="px-4 py-3">
+                            <Badge tone={POSITION_TONE[b.position]}>
+                              {t(`benchmark.positions.${b.position}`)}
+                            </Badge>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </Card>
+            </section>
+          )}
+
+          {/* Visszahívások (ingyenes forrásból) */}
+          {recalls.length > 0 && (
+            <section>
+              <h2 className="mb-1 text-sm font-semibold text-anthracite-700">
+                {t('recalls.title')}
+              </h2>
+              <p className="mb-2 text-xs text-anthracite-500">
+                {t('recalls.subtitle')}
+              </p>
+              <Card className="divide-y divide-anthracite-100 p-0">
+                {recalls.map((r) => (
+                  <div key={r.reference} className="px-4 py-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <p className="text-sm font-medium capitalize text-anthracite-900">
+                        {r.makeModel}
+                        {r.yearFrom && r.yearTo ? (
+                          <span className="ml-1 font-normal text-anthracite-500">
+                            ({r.yearFrom}–{r.yearTo})
+                          </span>
+                        ) : null}
+                      </p>
+                      <Badge tone="warning">{r.reference}</Badge>
+                    </div>
+                    <p className="mt-1 text-sm text-anthracite-700">{r.hazard}</p>
+                    {r.remedy ? (
+                      <p className="mt-1 text-xs text-anthracite-500">
+                        {t('recalls.remedy')}: {r.remedy}
+                      </p>
+                    ) : null}
+                  </div>
+                ))}
               </Card>
             </section>
           )}

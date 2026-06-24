@@ -875,6 +875,29 @@
         "watch": "Watch",
         "consider_replacement": "Consider replacement"
       }
+    },
+    "benchmark": {
+      "title": "Market comparison (European trends)",
+      "subtitle": "Your costs versus the anonymised median of similar fleets. A segment only appears above enough companies and vehicles.",
+      "segment": "Segment",
+      "yourCost": "You",
+      "marketCost": "Market median",
+      "delta": "Delta",
+      "position": "Position",
+      "sample": "{n} vehicles",
+      "kmRange": "{from}–{to}k km",
+      "kmOver": "over {km}k km",
+      "kmUnknown": "unknown km",
+      "positions": {
+        "below": "Below market",
+        "within": "At market",
+        "above": "Above market"
+      }
+    },
+    "recalls": {
+      "title": "Recalls",
+      "subtitle": "Public recall notices for your fleet's vehicles (from a free source).",
+      "remedy": "Action"
     }
   },
   "admin": {
