@@ -9,6 +9,7 @@ import { DashboardPreview } from '@/components/landing/DashboardPreview';
 import { Benefits } from '@/components/landing/Benefits';
 import { Testimonials } from '@/components/landing/Testimonials';
 import { Pricing } from '@/components/landing/Pricing';
+import { PlanComparison } from '@/components/landing/PlanComparison';
 import { Faq } from '@/components/landing/Faq';
 import { Contact } from '@/components/landing/Contact';
 
@@ -40,6 +41,8 @@ export default async function LandingPage({
         <Testimonials />
         {/* 8 */}
         <Pricing />
+        {/* 8b */}
+        <PlanComparison />
         {/* 9 */}
         <Faq />
         {/* 10 */}

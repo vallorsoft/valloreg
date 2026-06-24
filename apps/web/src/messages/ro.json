@@ -184,25 +184,52 @@
       "usersUnlimited": "Utilizatori nelimitați",
       "documents": "{count} documente / lună",
       "documentsUnlimited": "Documente nelimitate / lună",
+      "storage": "{gb} GB stocare",
+      "compareButton": "Compară pachetele",
       "mostPopular": "Cel mai popular",
       "cta": "Alege",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "Pentru flote mici, pentru primii pași."
         },
         "STANDARD": {
-          "name": "Standard",
-          "description": "Pentru flote în creștere, cu rapoarte și export."
+          "name": "Pro",
+          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, componente majore."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "Pentru gestionarea activă a flotei, cu set complet de funcții."
+          "name": "Fleet",
+          "description": "Inteligență completă a flotei: clasament, durabilitate, calitatea furnizorilor."
         },
         "BUSINESS": {
           "name": "Business",
           "description": "Pentru flote mari, fără limite."
         }
+      }
+    },
+    "compare": {
+      "title": "Compară pachetele",
+      "subtitle": "Ce poate fiecare pachet – într-un singur tabel.",
+      "feature": "Funcție",
+      "note": "Stocarea este capacitate totală (nu se resetează lunar); se poate cumpăra stocare suplimentară pentru orice pachet.",
+      "limits": {
+        "vehicles": "Vehicule",
+        "users": "Utilizatori",
+        "documents": "Documente / lună",
+        "storage": "Stocare"
+      },
+      "rows": {
+        "ocrAi": "Procesare OCR + AI",
+        "serviceBook": "Carnet de service digital + bibliotecă",
+        "dashboard": "Panou de costuri",
+        "reports": "Rapoarte + export CSV/PDF",
+        "reminders": "Memento-uri (revizii timp/km)",
+        "majorParts": "Manoperă + componente majore + cronologie",
+        "insights": "Insights (anomalii, TCO, benchmark european)",
+        "durability": "Durabilitate învățată + mentenanță predictivă",
+        "rankings": "Clasament + insigne + sfat de înlocuire",
+        "supplier": "Calitatea furnizorilor",
+        "extraStorage": "Stocare suplimentară opțională"
       }
     },
     "faq": {

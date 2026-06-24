@@ -12,15 +12,16 @@ import { Link } from '@/i18n/routing';
 import { SectionHeading } from './SectionHeading';
 import { cn } from '@/lib/cn';
 
-// Display order; PROFESSIONAL is highlighted as the recommended plan.
+// Három csomag a landingen (Start / Pro / Fleet). A „Pro" a kiemelt.
 const PLAN_ORDER: PlanTier[] = [
   PlanTier.STARTER,
   PlanTier.STANDARD,
   PlanTier.PROFESSIONAL,
-  PlanTier.BUSINESS,
 ];
 
-const HIGHLIGHTED: PlanTier = PlanTier.PROFESSIONAL;
+const HIGHLIGHTED: PlanTier = PlanTier.STANDARD;
+
+const GB = 1024 * 1024 * 1024;
 
 export function Pricing() {
   const t = useTranslations('landing.pricing');
@@ -32,7 +33,7 @@ export function Pricing() {
         <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-anthracite-500">
           {t('transferNote')}
         </p>
-        <div className="mt-12 grid gap-6 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {PLAN_ORDER.map((tier) => {
             const limits = PLAN_LIMITS[tier];
             const highlighted = tier === HIGHLIGHTED;
@@ -49,6 +50,7 @@ export function Pricing() {
               limits.maxDocumentsPerMonth === UNLIMITED
                 ? t('documentsUnlimited')
                 : t('documents', { count: limits.maxDocumentsPerMonth });
+            const storage = t('storage', { gb: Math.round(limits.maxStorageBytes / GB) });
 
             return (
               <Card
@@ -91,6 +93,9 @@ export function Pricing() {
                   <li className="flex items-center gap-2">
                     <Check /> {documents}
                   </li>
+                  <li className="flex items-center gap-2">
+                    <Check /> {storage}
+                  </li>
                 </ul>
 
                 <Link href="/register" className="mt-6">
@@ -104,6 +109,14 @@ export function Pricing() {
               </Card>
             );
           })}
+        </div>
+
+        <div className="mt-10 text-center">
+          <a href="#compare">
+            <Button variant="outline" size="lg">
+              {t('compareButton')}
+            </Button>
+          </a>
         </div>
       </div>
     </section>
