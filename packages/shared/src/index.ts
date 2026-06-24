@@ -8,6 +8,7 @@ export * from './feature-flags';
 export * from './categories';
 export * from './reminders';
 export * from './insights';
+export * from './benchmark';
 export * from './extraction';
 export * from './vehicle-extraction';
 export * from './compliance-extraction';

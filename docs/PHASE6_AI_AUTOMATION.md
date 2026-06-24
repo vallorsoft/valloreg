@@ -1,9 +1,29 @@
-# Fázis 6 – AI Differenciátorok (javaslat)
+# Fázis 6 – AI Differenciátorok
 
-> **Státusz:** javaslat / ötlettár, megvitatásra. Nem implementált.
 > **Cél:** a meglévő szerviztörténet- és riport-magot úgy okosítani, hogy a termék
 > **láthatóan kitűnjön** a passzív flotta-nyilvántartók közül – minimális emberi
 > munkával, valódi döntéstámogatással.
+
+## Implementáció státusza
+
+- **6/A – Flotta-benchmark („Európai trendek") + visszahívások: KÉSZ (ingyenes-only).**
+  - Megosztott kontraktus: `packages/shared/src/benchmark.ts` (k-anonimitás konstansok,
+    km-sávok, pozíció-számítás, típusok).
+  - Adatmodell: `FleetBenchmark` (tenantId NÉLKÜL) + `Tenant.benchmarkOptIn` + migráció.
+  - Aggregáló: `BenchmarkService.recompute()` (cross-tenant, k-anonimitási kapu,
+    atomikus csere) + heti `BenchmarkScheduler` (BullMQ, boot-biztos).
+  - Olvasásidejű összevetés: `BenchmarkService.getComparison()` + visszahívások
+    `getRecalls()`; végpontok `GET /benchmark`, `GET /benchmark/recalls` (REPORTS flag).
+  - Recall provider-port: `stub` (beépített kurált lista, INGYENES) + `external`
+    (konfigurált INGYENES feed); **fizetős forrás szándékosan nincs bekötve.**
+  - Frontend: `/insights` „Piaci összevetés" + „Visszahívások" szekció, i18n (hu/ro/en).
+  - Seed: szintetikus benchmark cellák a demóhoz; SECURITY.md k-anonimitás szakasz.
+- **6/B–6/E:** továbbra is javaslat (lásd lent).
+
+> **Megjegyzés (ingyenes-only):** a költség-benchmark a SAJÁT, anonimizált adatból
+> számol (nincs külső, fizetős API). A cold-start „azonnali érték" az ingyenes
+> visszahívás-forrásból jön. A lent dokumentált fizetős baseline-ok (Eurotax érték,
+> OEM szerviz-intervallum) provider-helyként megmaradnak, de **nincsenek bekötve**.
 
 ## Vezérelvek (a Fázis 5 hatóköréből örökölve)
 

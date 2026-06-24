@@ -173,6 +173,19 @@ async function main(): Promise<void> {
         {
           tenantId: tenant.id,
           invoiceId: invoice.id,
+          name: 'Fékbetét csere (hátsó)',
+          category: 'part',
+          partType: 'brakes',
+          type: 'vehicle',
+          vehicleId: vehicle1.id,
+          quantity: 2,
+          unitPrice: 9500,
+          price: 19000,
+          confidence: 0.87,
+        },
+        {
+          tenantId: tenant.id,
+          invoiceId: invoice.id,
           name: 'Olajcsere 5W30 motorolaj',
           category: 'consumable',
           partType: 'fluids',
@@ -224,6 +237,14 @@ async function main(): Promise<void> {
     intervalDays: 365,
   });
 
+  // ── Szintetikus flotta-benchmark („Európai trendek") ──────────────────────
+  // Illusztratív, ANONIMIZÁLT piaci cellák, hogy a „Piaci összevetés" kevés
+  // céggel is demózható legyen. A demó cég Actros fékköltsége (medián ~9250 HUF)
+  // így a piaci 7000 HUF felett jelenik meg. ÉLESBEN ezt a heti job számolja a
+  // valódi opt-in adatokból, k-anonimitási küszöbbel (egyetlen cella sem
+  // publikus 5 cég / 20 jármű alatt).
+  await seedBenchmark();
+
   console.log('Seed kész.');
   console.log(`  Super admin: admin@valloreg.local / SuperAdmin123!`);
   console.log(`  Demo owner:  demo@valloreg.local / Demo1234!`);
@@ -260,6 +281,64 @@ async function ensureReminder(
       intervalKm: data.intervalKm ?? null,
     },
   });
+}
+
+/**
+ * Illusztratív flotta-benchmark cellák (anonimizált aggregátum). A
+ * sampleTenants/sampleVehicles a k-anonimitási küszöb felett van, hogy publikus
+ * cellát mintázzon. Idempotens: a kulcsra upsertel.
+ */
+async function seedBenchmark(): Promise<void> {
+  const cells = [
+    {
+      makeModel: 'mercedes-benz actros',
+      itemCategory: 'brakes',
+      kmBucket: 150000,
+      currency: 'HUF',
+      medianUnitPrice: 7000,
+      p25: 6000,
+      p75: 8500,
+      sampleTenants: 7,
+      sampleVehicles: 41,
+    },
+    {
+      makeModel: 'mercedes-benz actros',
+      itemCategory: 'fluids',
+      kmBucket: 150000,
+      currency: 'HUF',
+      medianUnitPrice: 3100,
+      p25: 2800,
+      p75: 3500,
+      sampleTenants: 6,
+      sampleVehicles: 33,
+    },
+    {
+      makeModel: 'volkswagen crafter',
+      itemCategory: 'brakes',
+      kmBucket: 50000,
+      currency: 'HUF',
+      medianUnitPrice: 8200,
+      p25: 7000,
+      p75: 9500,
+      sampleTenants: 5,
+      sampleVehicles: 24,
+    },
+  ];
+
+  for (const c of cells) {
+    await prisma.fleetBenchmark.upsert({
+      where: {
+        makeModel_itemCategory_kmBucket_currency: {
+          makeModel: c.makeModel,
+          itemCategory: c.itemCategory,
+          kmBucket: c.kmBucket,
+          currency: c.currency,
+        },
+      },
+      create: c,
+      update: c,
+    });
+  }
 }
 
 async function ensureVehicle(

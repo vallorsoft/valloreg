@@ -150,6 +150,18 @@ export class AppConfigService {
     };
   }
 
+  get recallProvider(): AppEnv['BENCHMARK_RECALL_PROVIDER'] {
+    return this.get('BENCHMARK_RECALL_PROVIDER');
+  }
+
+  /** Jármű-visszahívás (recall) ingyenes külső feed konfigurációja. */
+  get recall(): { apiUrl: string; apiKey: string } {
+    return {
+      apiUrl: this.get('RECALL_API_URL'),
+      apiKey: this.get('RECALL_API_KEY'),
+    };
+  }
+
   /**
    * Gemini konfiguráció. A `models` a feldolgozó modell-lánc: 429 (kvóta) esetén
    * a provider a következő modellre vált. A láncot a GEMINI_MODELS felülírja;
