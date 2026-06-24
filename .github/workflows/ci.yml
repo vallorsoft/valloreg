@@ -1,0 +1,47 @@
+name: CI
+
+# Minden main-be menő PR-t és a main push-okat ellenőrzi: a shared/web/api
+# typecheck + build + (no-op) lint a turbo pipeline-on át. A prisma client az
+# api postinstall-ban generálódik (a GitHub runneren van háló, helyben nincs).
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# Egy ágon egyszerre csak a legutóbbi futás éljen.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      # A postinstall (apps/api) lefuttatja a `prisma generate`-et – ehhez kell háló.
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Lint
+        run: pnpm lint
