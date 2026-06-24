@@ -5,7 +5,9 @@ import type { ApiErrorBody } from '@valloreg/shared';
 import {
   getAccessToken,
   getActiveTenantId,
+  getRefreshToken,
   setTokens,
+  clearTokens,
   resolveActiveTenant,
   type AuthTokens,
   type AuthSession,
@@ -19,8 +21,10 @@ import {
  * - Base URL comes from NEXT_PUBLIC_API_URL.
  * - Attaches `Authorization: Bearer <access>` and `x-tenant-id` when available.
  * - Parses the shared `ApiErrorBody` shape and throws a typed `ApiError`.
- *
- * TODO (later phase): automatic refresh-token rotation on 401.
+ * - Transparent refresh-token rotation on 401: ha a (rövid életű) access token
+ *   lejár, a tárolt refresh tokennel csendben új tokeneket kérünk és újrapróbáljuk
+ *   a kérést – így a felhasználó az eszközön bejelentkezve marad (a refresh token
+ *   élettartamáig, ami minden használatkor gördül előre).
  */
 
 const API_BASE_URL =
@@ -164,10 +168,13 @@ async function performRequest<T>(
   return (await response.json()) as T;
 }
 
-/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
-export async function apiRequest<T>(
+/**
+ * Egy kérés a hideg-indítás (Render free) elleni backoff-újrapróbával, de
+ * token-refresh NÉLKÜL. A refresh-réteget az `apiRequest` adja köré.
+ */
+async function sendRequest<T>(
   path: string,
-  options: RequestOptions = {},
+  options: RequestOptions,
 ): Promise<T> {
   const { json, form, anonymous: _anonymous, ...init } = options;
   const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
@@ -203,6 +210,72 @@ export async function apiRequest<T>(
     }
   }
   throw lastError;
+}
+
+/**
+ * Egyszerre futó ("single-flight") refresh: ha több kérés is 401-et kap az access
+ * token lejárta miatt, MIND ugyanarra az egy refresh-hívásra vár, hogy ne
+ * forgassuk feleslegesen (és egymást érvénytelenítve) a refresh tokent.
+ */
+let refreshInFlight: Promise<boolean> | null = null;
+
+function tryRefreshTokens(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+
+  const refreshToken = getRefreshToken();
+  if (!refreshToken) return Promise.resolve(false);
+
+  refreshInFlight = (async () => {
+    try {
+      // A refresh maga anonim (saját Authorization nélkül), és NEM megy át a
+      // refresh-rétegen (különben 401-nél önmagát hívná).
+      const tokens = await sendRequest<AuthTokens>('/auth/refresh', {
+        method: 'POST',
+        json: { refreshToken },
+        anonymous: true,
+      });
+      setTokens(tokens);
+      return true;
+    } catch {
+      // A refresh token lejárt/visszavont: tiszta kijelentkeztetés. A következő
+      // védett oldal-betöltéskor az AppShell a login oldalra irányít.
+      clearTokens();
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+/**
+ * Core request helper. Returns parsed JSON, or `undefined` for 204.
+ *
+ * Ha egy védett (nem `anonymous`) kérés 401-et kap és van tárolt refresh token,
+ * EGYSZER csendben frissítünk és újrapróbáljuk a kérést. Így a rövid életű access
+ * token lejárta nem jelentkezteti ki a felhasználót.
+ */
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  try {
+    return await sendRequest<T>(path, options);
+  } catch (err) {
+    const isAuthExpiry =
+      err instanceof ApiError &&
+      err.status === 401 &&
+      !options.anonymous &&
+      getRefreshToken() !== null;
+    if (!isAuthExpiry) throw err;
+
+    const refreshed = await tryRefreshTokens();
+    if (!refreshed) throw err;
+
+    // Új access tokennel (a buildHeaders újraolvassa) még egyszer megpróbáljuk.
+    return await sendRequest<T>(path, options);
+  }
 }
 
 // ── Typed endpoint helpers (Phase 1 contracts; backend wiring later) ─────────
@@ -259,6 +332,14 @@ export const authApi = {
     return apiRequest<{ ok: true }>('/auth/reset-password', {
       method: 'POST',
       json: { token, password },
+      anonymous: true,
+    });
+  },
+  /** Kijelentkezés: a megadott refresh token szerveroldali visszavonása. */
+  logout(refreshToken: string): Promise<void> {
+    return apiRequest<void>('/auth/logout', {
+      method: 'POST',
+      json: { refreshToken },
       anonymous: true,
     });
   },
