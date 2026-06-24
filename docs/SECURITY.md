@@ -57,3 +57,25 @@ ide kerülnek (Fázis 2), hogy a feldolgozás visszakövethető legyen.
 
 Cégenként engedélyezhető/tiltható funkciók (OCR, AI, Dashboard, Riportok, API, Export,
 Emlékeztetők, Dokumentumtár). A tiltott funkció a backenden is elutasít (nem csak UI).
+
+## Flotta-benchmark („Európai trendek") és k-anonimitás
+
+A piaci összevetés több cég VALÓDI költségadatából képzett, **anonimizált aggregátum**
+(`FleetBenchmark`). Az adatvédelem több rétegű:
+
+- **Nincs tenantId, nincs azonosító:** a benchmark-tábla csak szegmens-kulcsot
+  (márka-modell / kategória / km-sáv / pénznem) és statisztikát (medián, p25, p75)
+  tárol. Egyetlen számla, jármű vagy cég sem köthető hozzá.
+- **k-anonimitási kapu:** egy cella CSAK akkor publikus, ha legalább **5 különböző
+  cég** ÉS **20 különböző jármű** adta (`BENCHMARK_MIN_TENANTS` / `_VEHICLES`).
+  Küszöb alatt a szegmens egyszerűen nem jelenik meg – így nem fejthető vissza
+  egyetlen flotta költsége sem.
+- **Opt-in:** a cég kikapcsolhatja a hozzájárulást (`Tenant.benchmarkOptIn`); ekkor
+  az adatai nem számítanak bele az aggregátumba (a piaci összevetést továbbra is láthatja).
+- **Super Admin sem lát tenant-szintű benchmark-adatot** – csak a publikus aggregátumot.
+- A heti újraszámítás a `system` klienssel fut; perzisztálni csak a küszöböt elért
+  cellák statisztikáját perzisztáljuk.
+
+A visszahívás-adat (recall) **ingyenes** forrásból jön (beépített kurált lista, vagy
+konfigurált ingyenes feed). Fizetős külső adat-API (érték/maradványérték, OEM
+szerviz-intervallum) **szándékosan nincs bekötve**.

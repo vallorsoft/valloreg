@@ -93,6 +93,13 @@ export const envSchema = z.object({
   RO_VERIFY_API_URL: z.string().optional().default(''),
   RO_VERIFY_API_KEY: z.string().optional().default(''),
 
+  // Jármű-visszahívás (recall) forrás a benchmarkhoz. `stub` = kurált, beépített
+  // (INGYENES, kulcs nélkül fut). `external` = konfigurált INGYENES feed
+  // (pl. EU Safety Gate / car-recalls.eu) a RECALL_API_URL-en. URL nélkül üresre esik.
+  BENCHMARK_RECALL_PROVIDER: z.enum(['stub', 'external']).default('stub'),
+  RECALL_API_URL: z.string().optional().default(''),
+  RECALL_API_KEY: z.string().optional().default(''),
+
   // E-mail: Brevo (transactional API). Ha nincs kulcs, a mailer csak logol.
   BREVO_API_KEY: z.string().optional().default(''),
   BREVO_SENDER: z.string().default('noreply@valloreg.local'),
