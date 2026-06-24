@@ -257,7 +257,8 @@
       "submit": "Bejelentkezés",
       "noAccount": "Még nincs fiókja?",
       "registerLink": "Regisztráljon",
-      "forgotPassword": "Elfelejtett jelszó?"
+      "forgotPassword": "Elfelejtett jelszó?",
+      "rememberMe": "Maradjak bejelentkezve"
     },
     "register": {
       "title": "Regisztráció",

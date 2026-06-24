@@ -5,8 +5,8 @@ import type { ApiErrorBody } from '@valloreg/shared';
 import {
   getAccessToken,
   getActiveTenantId,
-  getRefreshToken,
-  setTokens,
+  getRememberMe,
+  setAccessToken,
   clearTokens,
   resolveActiveTenant,
   type AuthTokens,
@@ -222,23 +222,21 @@ let refreshInFlight: Promise<boolean> | null = null;
 function tryRefreshTokens(): Promise<boolean> {
   if (refreshInFlight) return refreshInFlight;
 
-  const refreshToken = getRefreshToken();
-  if (!refreshToken) return Promise.resolve(false);
-
   refreshInFlight = (async () => {
     try {
-      // A refresh maga anonim (saját Authorization nélkül), és NEM megy át a
-      // refresh-rétegen (különben 401-nél önmagát hívná).
+      // A refresh token httpOnly cookie-ban van: a böngésző automatikusan küldi
+      // (credentials: 'include'), a kérés body-jában NINCS token. A hívás anonim
+      // (nem megy át a refresh-rétegen, különben 401-nél önmagát hívná).
       const tokens = await sendRequest<AuthTokens>('/auth/refresh', {
         method: 'POST',
-        json: { refreshToken },
         anonymous: true,
+        credentials: 'include',
       });
-      setTokens(tokens);
+      setAccessToken(tokens.accessToken, getRememberMe());
       return true;
     } catch {
-      // A refresh token lejárt/visszavont: tiszta kijelentkeztetés. A következő
-      // védett oldal-betöltéskor az AppShell a login oldalra irányít.
+      // A refresh cookie lejárt/visszavont/hiányzik: tiszta kijelentkeztetés. A
+      // következő védett oldal-betöltéskor az AppShell a login oldalra irányít.
       clearTokens();
       return false;
     } finally {
@@ -263,11 +261,14 @@ export async function apiRequest<T>(
   try {
     return await sendRequest<T>(path, options);
   } catch (err) {
+    // A refresh token httpOnly cookie-ban van (JS-ből nem látható), ezért a
+    // meglévő access token alapján döntünk: ha van session, megpróbálunk
+    // frissíteni (a cookie a böngészővel automatikusan megy a refreshhez).
     const isAuthExpiry =
       err instanceof ApiError &&
       err.status === 401 &&
       !options.anonymous &&
-      getRefreshToken() !== null;
+      getAccessToken() !== null;
     if (!isAuthExpiry) throw err;
 
     const refreshed = await tryRefreshTokens();
@@ -283,6 +284,8 @@ export async function apiRequest<T>(
 export interface LoginPayload {
   email: string;
   password: string;
+  /** "Remember me": tartós (eszközön maradó) vagy csak munkamenetnyi belépés. */
+  rememberMe: boolean;
 }
 
 export interface RegisterPayload {
@@ -292,6 +295,7 @@ export interface RegisterPayload {
   email: string;
   phone: string;
   password: string;
+  rememberMe: boolean;
 }
 
 export interface AuthResponse extends AuthTokens {
@@ -305,6 +309,8 @@ export const authApi = {
       method: 'POST',
       json: payload,
       anonymous: true,
+      // credentials: a böngésző fogadja és tárolja a refresh httpOnly cookie-t.
+      credentials: 'include',
     });
   },
   register(payload: RegisterPayload): Promise<AuthResponse> {
@@ -314,6 +320,7 @@ export const authApi = {
       // A backend `taxNumber` mezőt vár (a DB oszlop neve), a form `taxId`-t használ.
       json: { ...rest, taxNumber: taxId },
       anonymous: true,
+      credentials: 'include',
     });
   },
   me(): Promise<AuthSession> {
@@ -335,22 +342,26 @@ export const authApi = {
       anonymous: true,
     });
   },
-  /** Kijelentkezés: a megadott refresh token szerveroldali visszavonása. */
-  logout(refreshToken: string): Promise<void> {
+  /**
+   * Kijelentkezés: a refresh token szerveroldali visszavonása. A token a httpOnly
+   * cookie-ból jön (credentials: 'include'), nem a body-ból.
+   */
+  logout(): Promise<void> {
     return apiRequest<void>('/auth/logout', {
       method: 'POST',
-      json: { refreshToken },
       anonymous: true,
+      credentials: 'include',
     });
   },
 };
 
-/** Persist tokens and select the active tenant after a successful auth call. */
-export function storeAuth(response: AuthResponse): void {
-  setTokens({
-    accessToken: response.accessToken,
-    refreshToken: response.refreshToken,
-  });
+/**
+ * Az access token és az aktív cég eltárolása sikeres bejelentkezés/regisztráció
+ * után. A `rememberMe` dönti el a token tárhelyét (localStorage vs sessionStorage);
+ * a refresh token a backend által beállított httpOnly cookie-ban van.
+ */
+export function storeAuth(response: AuthResponse, rememberMe: boolean): void {
+  setAccessToken(response.accessToken, rememberMe);
   resolveActiveTenant(response.memberships);
 }
 
