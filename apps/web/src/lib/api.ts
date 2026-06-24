@@ -30,6 +30,18 @@ import {
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
+/**
+ * KAPCSOLÓ: same-origin auth. Ha be van kapcsolva, az AUTH-végpontokat (login/
+ * register/refresh/logout – ezekhez kell a httpOnly refresh cookie) a saját
+ * originról hívjuk (`/api`), amit a Next az API-ra proxyz → first-party cookie,
+ * nincs harmadik-fél-cookie gond. Minden MÁS hívás marad az API_BASE_URL-en
+ * (cross-origin, access tokennel). Kikapcsolva minden a mostani módon megy.
+ */
+const SAME_ORIGIN_AUTH =
+  process.env.NEXT_PUBLIC_SAME_ORIGIN_AUTH === 'true' ||
+  process.env.NEXT_PUBLIC_SAME_ORIGIN_AUTH === '1';
+const AUTH_BASE_URL = SAME_ORIGIN_AUTH ? '/api' : API_BASE_URL;
+
 /** Typed error carrying the machine-readable code for i18n mapping. */
 export class ApiError extends Error {
   readonly code: ErrorCode | 'NETWORK_ERROR';
@@ -90,6 +102,8 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   form?: FormData;
   /** Skip attaching the Authorization header (e.g. login/register). */
   anonymous?: boolean;
+  /** Bázis-URL felülírása (pl. az auth-végpontok same-origin proxyjához). */
+  baseUrl?: string;
 }
 
 function buildHeaders(options: RequestOptions): Headers {
@@ -176,8 +190,9 @@ async function sendRequest<T>(
   path: string,
   options: RequestOptions,
 ): Promise<T> {
-  const { json, form, anonymous: _anonymous, ...init } = options;
-  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+  const { json, form, anonymous: _anonymous, baseUrl, ...init } = options;
+  const base = baseUrl ?? API_BASE_URL;
+  const url = path.startsWith('http') ? path : `${base}${path}`;
 
   const body =
     form !== undefined
@@ -231,6 +246,7 @@ function tryRefreshTokens(): Promise<boolean> {
         method: 'POST',
         anonymous: true,
         credentials: 'include',
+        baseUrl: AUTH_BASE_URL,
       });
       setAccessToken(tokens.accessToken, getRememberMe());
       return true;
@@ -311,6 +327,7 @@ export const authApi = {
       anonymous: true,
       // credentials: a böngésző fogadja és tárolja a refresh httpOnly cookie-t.
       credentials: 'include',
+      baseUrl: AUTH_BASE_URL,
     });
   },
   register(payload: RegisterPayload): Promise<AuthResponse> {
@@ -321,6 +338,7 @@ export const authApi = {
       json: { ...rest, taxNumber: taxId },
       anonymous: true,
       credentials: 'include',
+      baseUrl: AUTH_BASE_URL,
     });
   },
   me(): Promise<AuthSession> {
@@ -351,6 +369,7 @@ export const authApi = {
       method: 'POST',
       anonymous: true,
       credentials: 'include',
+      baseUrl: AUTH_BASE_URL,
     });
   },
 };

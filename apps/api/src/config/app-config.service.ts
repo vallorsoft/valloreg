@@ -58,9 +58,20 @@ export class AppConfigService {
   }
 
   /**
-   * A refresh token httpOnly cookie beállításai. Production-ben (HTTPS, külön
-   * web/api domain) `SameSite=None; Secure` kell, hogy a böngésző cross-site
-   * elküldje; helyi fejlesztésben (http, azonos site) `Lax` Secure nélkül.
+   * KAPCSOLÓ: a frontend same-origin proxyn éri-e el az auth-végpontokat. Ha igen,
+   * a refresh cookie first-party → `SameSite=Lax` mehet.
+   */
+  get sameOriginFrontend(): boolean {
+    return this.get('SAME_ORIGIN_FRONTEND');
+  }
+
+  /**
+   * A refresh token httpOnly cookie beállításai.
+   *  - Production + CROSS-SITE (alap): `SameSite=None; Secure` kell, hogy a
+   *    böngésző a külön web/api domain közt elküldje.
+   *  - Production + SAME-ORIGIN (kapcsoló be): a cookie first-party →
+   *    `SameSite=Lax; Secure` (nem érinti a harmadik-fél-cookie korlátozás).
+   *  - Helyi fejlesztés (http, azonos site): `Lax`, Secure nélkül.
    * A cookie csak az auth-útvonalakra megy (`/<prefix>/auth`).
    */
   get refreshCookie(): {
@@ -68,9 +79,11 @@ export class AppConfigService {
     sameSite: 'lax' | 'none';
     path: string;
   } {
+    const sameSite: 'lax' | 'none' =
+      this.isProduction && !this.sameOriginFrontend ? 'none' : 'lax';
     return {
       secure: this.isProduction,
-      sameSite: this.isProduction ? 'none' : 'lax',
+      sameSite,
       path: `/${this.apiGlobalPrefix}/auth`,
     };
   }
