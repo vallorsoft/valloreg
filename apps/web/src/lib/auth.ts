@@ -5,17 +5,20 @@ import type { TenantRole } from '@valloreg/shared';
 /**
  * Client-side auth helpers.
  *
- * Token storage uses localStorage for Phase 1 simplicity. A later phase should
- * move refresh tokens to httpOnly cookies for stronger XSS resistance.
+ * A REFRESH token NEM a JS számára elérhető tárban van, hanem httpOnly cookie-ban
+ * (a backend állítja be) – így XSS esetén sem olvasható ki. Itt csak a rövid
+ * életű ACCESS tokent tároljuk:
+ *  - "Remember me" bepipálva → localStorage (túléli a böngésző újraindítását),
+ *  - kipipálatlanul → sessionStorage (a böngésző bezárásakor törlődik).
  */
 
 const ACCESS_TOKEN_KEY = 'valloreg.accessToken';
-const REFRESH_TOKEN_KEY = 'valloreg.refreshToken';
+const REMEMBER_KEY = 'valloreg.remember';
 const ACTIVE_TENANT_KEY = 'valloreg.activeTenantId';
 
+/** A login/refresh által visszaadott token (a refresh token cookie-ban van). */
 export interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
 }
 
 /** Minimal membership shape (a user can belong to several tenants). */
@@ -47,24 +50,37 @@ function isBrowser(): boolean {
 
 export function getAccessToken(): string | null {
   if (!isBrowser()) return null;
-  return window.localStorage.getItem(ACCESS_TOKEN_KEY);
+  return (
+    window.localStorage.getItem(ACCESS_TOKEN_KEY) ??
+    window.sessionStorage.getItem(ACCESS_TOKEN_KEY)
+  );
 }
 
-export function getRefreshToken(): string | null {
-  if (!isBrowser()) return null;
-  return window.localStorage.getItem(REFRESH_TOKEN_KEY);
+/** A "Remember me" választás (a tárhely megválasztásához). Alap: true. */
+export function getRememberMe(): boolean {
+  if (!isBrowser()) return true;
+  return window.localStorage.getItem(REMEMBER_KEY) !== '0';
 }
 
-export function setTokens(tokens: AuthTokens): void {
+/**
+ * Az access token mentése. `remember` dönti el a tárat: localStorage (tartós)
+ * vagy sessionStorage (a böngésző bezárásáig). A másik tárból töröljük, hogy ne
+ * maradjon elárvult token.
+ */
+export function setAccessToken(accessToken: string, remember: boolean): void {
   if (!isBrowser()) return;
-  window.localStorage.setItem(ACCESS_TOKEN_KEY, tokens.accessToken);
-  window.localStorage.setItem(REFRESH_TOKEN_KEY, tokens.refreshToken);
+  const primary = remember ? window.localStorage : window.sessionStorage;
+  const other = remember ? window.sessionStorage : window.localStorage;
+  primary.setItem(ACCESS_TOKEN_KEY, accessToken);
+  other.removeItem(ACCESS_TOKEN_KEY);
+  window.localStorage.setItem(REMEMBER_KEY, remember ? '1' : '0');
 }
 
 export function clearTokens(): void {
   if (!isBrowser()) return;
   window.localStorage.removeItem(ACCESS_TOKEN_KEY);
-  window.localStorage.removeItem(REFRESH_TOKEN_KEY);
+  window.sessionStorage.removeItem(ACCESS_TOKEN_KEY);
+  window.localStorage.removeItem(REMEMBER_KEY);
   window.localStorage.removeItem(ACTIVE_TENANT_KEY);
 }
 

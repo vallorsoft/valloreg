@@ -6,22 +6,20 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { InstallButton } from '@/components/app/InstallButton';
 import { Button } from '@/components/ui/Button';
 import { authApi } from '@/lib/api';
-import { clearTokens, getRefreshToken } from '@/lib/auth';
+import { clearTokens } from '@/lib/auth';
 
 export function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
   const t = useTranslations('app');
   const router = useRouter();
 
   async function onLogout() {
-    // A refresh token szerveroldali visszavonása (best-effort: hálózati hiba ne
-    // akadályozza a kijelentkezést), majd a helyi tokenek törlése.
-    const refreshToken = getRefreshToken();
-    if (refreshToken) {
-      try {
-        await authApi.logout(refreshToken);
-      } catch {
-        /* a kijelentkezés helyileg akkor is megtörténik */
-      }
+    // A refresh token (httpOnly cookie) szerveroldali visszavonása + a cookie
+    // törlése (best-effort: hálózati hiba ne akadályozza a kijelentkezést),
+    // majd a helyi access token törlése.
+    try {
+      await authApi.logout();
+    } catch {
+      /* a kijelentkezés helyileg akkor is megtörténik */
     }
     clearTokens();
     router.push('/login');

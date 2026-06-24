@@ -257,7 +257,8 @@
       "submit": "Autentificare",
       "noAccount": "Nu aveți cont?",
       "registerLink": "Înregistrați-vă",
-      "forgotPassword": "Ați uitat parola?"
+      "forgotPassword": "Ați uitat parola?",
+      "rememberMe": "Ține-mă conectat"
     },
     "register": {
       "title": "Înregistrare",
