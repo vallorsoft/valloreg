@@ -57,7 +57,7 @@ export class MajorComponentsService {
         );
         partsCost = Number(sum);
       }
-      const first = items[0].invoice;
+      const first = items[0]?.invoice ?? null;
       if (!currency) currency = first?.currency ?? null;
       if (!date) date = first?.date ?? null;
       if (!invoiceId) invoiceId = first?.id ?? null;
