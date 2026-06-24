@@ -1,8 +1,20 @@
 import { useTranslations } from 'next-intl';
-import { PLAN_LIMITS, PlanTier, UNLIMITED } from '@valloreg/shared';
+import {
+  BYTES_PER_GB,
+  PLAN_CURRENCY,
+  PLAN_LIMITS,
+  PlanTier,
+  STORAGE_PACKS,
+  UNLIMITED,
+} from '@valloreg/shared';
 import { SectionHeading } from './SectionHeading';
 
 const GB = 1024 * 1024 * 1024;
+
+// "+5 GB — 19 RON · +10 GB — 29 RON · +25 GB — 59 RON"
+const STORAGE_PACK_LIST = STORAGE_PACKS.map(
+  (p) => `+${Math.round(p.bytes / BYTES_PER_GB)} GB — ${p.price} ${PLAN_CURRENCY}`,
+).join(' · ');
 
 // A landing három csomagja, sorrendben (Start / Pro / Fleet).
 const COLS: PlanTier[] = [
@@ -115,6 +127,9 @@ export function PlanComparison() {
         </div>
 
         <p className="mt-6 text-center text-xs text-anthracite-500">{t('note')}</p>
+        <p className="mt-1 text-center text-xs font-medium text-anthracite-600">
+          {t('storagePacks', { list: STORAGE_PACK_LIST })}
+        </p>
       </div>
     </section>
   );

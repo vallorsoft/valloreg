@@ -195,7 +195,7 @@
         },
         "STANDARD": {
           "name": "Pro",
-          "description": "For growing fleets: reports, export, reminders, major components."
+          "description": "For growing fleets: reports, export, reminders, complex services."
         },
         "PROFESSIONAL": {
           "name": "Fleet",
@@ -212,6 +212,7 @@
       "subtitle": "Exactly what each plan can do – in one table.",
       "feature": "Feature",
       "note": "Storage is total capacity (does not reset monthly); extra storage can be purchased for any plan.",
+      "storagePacks": "Extra storage (monthly): {list}",
       "limits": {
         "vehicles": "Vehicles",
         "users": "Users",
@@ -224,7 +225,7 @@
         "dashboard": "Cost dashboard",
         "reports": "Reports + CSV/PDF export",
         "reminders": "Reminders (time/km maintenance)",
-        "majorParts": "Labor + major components + timeline",
+        "majorParts": "Labor + complex services + timeline",
         "insights": "Insights (anomalies, TCO, European benchmark)",
         "durability": "Learned durability + predictive maintenance",
         "rankings": "Rankings + badges + replacement advice",
@@ -773,8 +774,8 @@
     }
   },
   "majorComponents": {
-    "title": "Major components",
-    "subtitle": "Timeline of major component replacements and overhauls.",
+    "title": "Complex services",
+    "subtitle": "Timeline of complex services (replacements/overhauls).",
     "forecastTitle": "Durability forecast",
     "nextDue": "Est. due",
     "estCost": "Est. cost",
@@ -794,7 +795,7 @@
     "save": "Save",
     "saving": "Saving…",
     "loading": "Loading…",
-    "empty": "No major component events recorded yet.",
+    "empty": "No complex services recorded yet.",
     "delete": "Delete",
     "confirmDelete": "Delete this event?",
     "addError": "Failed to record the event.",
@@ -1065,7 +1066,7 @@
     },
     "durability": {
       "title": "Durability survey",
-      "subtitle": "Expected lifetime per major component, learned from real replacements (or baseline).",
+      "subtitle": "Expected lifetime per complex service item, learned from real replacements (or baseline).",
       "component": "Component",
       "expectedKm": "Expected lifetime",
       "source": "Source",
@@ -1083,7 +1084,7 @@
     "replaceAdvice": "Replace advised",
     "tabs": { "segment": "By segment", "model": "By make/model", "suppliers": "Suppliers" },
     "suppliers": {
-      "empty": "No supplier-linked major component data yet.",
+      "empty": "No supplier-linked complex service data yet.",
       "supplier": "Supplier",
       "component": "Component",
       "medianCost": "Median cost",
@@ -1095,7 +1096,7 @@
       "score": "Score",
       "costPerKm": "Cost/km",
       "profitPerKm": "Profit/km",
-      "bigPartsDue": "Big parts due",
+      "bigPartsDue": "Complex service due",
       "badges": "Badges"
     },
     "badges": {
@@ -1111,8 +1112,8 @@
       "costPerKm": "Cost/km",
       "revenuePerKm": "Revenue/km",
       "profitPerKm": "Profit/km",
-      "majorEvents": "Major events",
-      "bigPartsDue": "Big parts due",
+      "majorEvents": "Complex services",
+      "bigPartsDue": "Complex service due",
       "replaceAdvice": "Replace advised"
     }
   },
@@ -1254,7 +1255,8 @@
       "documents": "Documents (this month)",
       "storage": "Storage",
       "includesExtra": "includes {gb} GB extra",
-      "storageNote": "Storage is total capacity (does not reset monthly). Extra storage can be purchased – contact us."
+      "storageNote": "Storage is total capacity (does not reset monthly). Extra storage can be purchased – contact us.",
+      "storagePacks": "Extra storage (monthly): {list}"
     },
     "features": {
       "title": "Available features",

@@ -7,7 +7,14 @@ import {
   PLAN_PRICES,
   PLAN_CURRENCY,
   PlanTier,
+  STORAGE_PACKS,
+  BYTES_PER_GB,
 } from '@valloreg/shared';
+
+// "+5 GB — 19 RON · +10 GB — 29 RON · +25 GB — 59 RON"
+const STORAGE_PACK_LIST = STORAGE_PACKS.map(
+  (p) => `+${Math.round(p.bytes / BYTES_PER_GB)} GB — ${p.price} ${PLAN_CURRENCY}`,
+).join(' · ');
 import {
   billingApi,
   ApiError,
@@ -249,6 +256,9 @@ export function BillingClient() {
             </div>
             <UsageBar used={data.usage.storageBytes} limit={data.limits.maxStorageBytes} />
             <p className="mt-1 text-xs text-anthracite-500">{t('usage.storageNote')}</p>
+            <p className="mt-1 text-xs font-medium text-anthracite-600">
+              {t('usage.storagePacks', { list: STORAGE_PACK_LIST })}
+            </p>
           </div>
         </div>
       </Card>
