@@ -529,7 +529,7 @@ export const invoicesApi = {
   },
 };
 
-// ── Nagy alkatrész események ──────────────────────────────────────────────────
+// ── Komplex szerviz események ─────────────────────────────────────────────────
 
 export interface MajorComponentEvent {
   id: string;

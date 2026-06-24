@@ -195,7 +195,7 @@
         },
         "STANDARD": {
           "name": "Pro",
-          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, componente majore."
+          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, service complex."
         },
         "PROFESSIONAL": {
           "name": "Fleet",
@@ -212,6 +212,7 @@
       "subtitle": "Ce poate fiecare pachet – într-un singur tabel.",
       "feature": "Funcție",
       "note": "Stocarea este capacitate totală (nu se resetează lunar); se poate cumpăra stocare suplimentară pentru orice pachet.",
+      "storagePacks": "Stocare suplimentară (lunar): {list}",
       "limits": {
         "vehicles": "Vehicule",
         "users": "Utilizatori",
@@ -224,7 +225,7 @@
         "dashboard": "Panou de costuri",
         "reports": "Rapoarte + export CSV/PDF",
         "reminders": "Memento-uri (revizii timp/km)",
-        "majorParts": "Manoperă + componente majore + cronologie",
+        "majorParts": "Manoperă + service complex + cronologie",
         "insights": "Insights (anomalii, TCO, benchmark european)",
         "durability": "Durabilitate învățată + mentenanță predictivă",
         "rankings": "Clasament + insigne + sfat de înlocuire",
@@ -773,8 +774,8 @@
     }
   },
   "majorComponents": {
-    "title": "Componente majore",
-    "subtitle": "Cronologia înlocuirilor și reviziilor de ansambluri mari.",
+    "title": "Service complex",
+    "subtitle": "Cronologia service-urilor complexe (înlocuiri/revizii).",
     "forecastTitle": "Prognoză durabilitate",
     "nextDue": "Scadență estimată",
     "estCost": "Cost estimat",
@@ -794,7 +795,7 @@
     "save": "Salvează",
     "saving": "Se salvează…",
     "loading": "Se încarcă…",
-    "empty": "Încă nu există evenimente de componente majore.",
+    "empty": "Încă nu există evenimente de service complex.",
     "delete": "Șterge",
     "confirmDelete": "Sigur ștergi acest eveniment?",
     "addError": "Înregistrarea a eșuat.",
@@ -1065,7 +1066,7 @@
     },
     "durability": {
       "title": "Studiu de durabilitate",
-      "subtitle": "Durata de viață estimată per ansamblu major, învățată din înlocuirile reale (sau valoare de bază).",
+      "subtitle": "Durata de viață estimată per element de service complex, învățată din înlocuirile reale (sau valoare de bază).",
       "component": "Componentă",
       "expectedKm": "Durată estimată",
       "source": "Sursă",
@@ -1083,7 +1084,7 @@
     "replaceAdvice": "De înlocuit",
     "tabs": { "segment": "După segment", "model": "După marcă/model", "suppliers": "Furnizori" },
     "suppliers": {
-      "empty": "Încă nu există date de componente majore legate de furnizori.",
+      "empty": "Încă nu există date de service complex legate de furnizori.",
       "supplier": "Furnizor",
       "component": "Componentă",
       "medianCost": "Cost median",
@@ -1095,7 +1096,7 @@
       "score": "Scor",
       "costPerKm": "Cost/km",
       "profitPerKm": "Profit/km",
-      "bigPartsDue": "Piese mari scadente",
+      "bigPartsDue": "Service complex scadent",
       "badges": "Insigne"
     },
     "badges": {
@@ -1111,8 +1112,8 @@
       "costPerKm": "Cost/km",
       "revenuePerKm": "Venit/km",
       "profitPerKm": "Profit/km",
-      "majorEvents": "Evenimente mari",
-      "bigPartsDue": "Piese mari scadente",
+      "majorEvents": "Servicii complexe",
+      "bigPartsDue": "Service complex scadent",
       "replaceAdvice": "De înlocuit"
     }
   },
@@ -1254,7 +1255,8 @@
       "documents": "Documente (luna aceasta)",
       "storage": "Stocare",
       "includesExtra": "include {gb} GB extra",
-      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar). Se poate cumpăra stocare suplimentară – scrie-ne."
+      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar). Se poate cumpăra stocare suplimentară – scrie-ne.",
+      "storagePacks": "Stocare suplimentară (lunar): {list}"
     },
     "features": {
       "title": "Funcții disponibile",
