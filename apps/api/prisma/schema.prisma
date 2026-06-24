@@ -288,6 +288,10 @@ model Vehicle {
   firstRegistration DateTime? // B/I – első forgalomba helyezés
   vehicleType       String? // D.2 – típus/variáns/verzió
   category          String? // J – jármű-kategória (M1, N1, …)
+  // Flotta-szegmens KÉZI felülírása (van / truck_7_5_18 / truck_18_plus /
+  // semi_trailer / trailer / other). Alapból null → a szegmenst a forgalmiból
+  // vezetjük le (`fleetSegmentOf`). Csak akkor töltsd, ha az auto-besorolás téved.
+  fleetSegment      String?
   fuelType          String? // P.3 – üzemanyag
   engineCm3         Int? // P.1 – hengerűrtartalom (cm³)
   powerKw           Int? // P.2 – teljesítmény (kW)

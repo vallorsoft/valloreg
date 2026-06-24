@@ -217,6 +217,7 @@ export class VehiclesService {
         odometerKm: dto.odometerKm ?? null,
         firstRegistration: parseIsoDate(dto.firstRegistration),
         category: dto.category ?? null,
+        fleetSegment: dto.fleetSegment ?? null,
         fuelType: dto.fuelType ?? null,
         engineCm3: dto.engineCm3 ?? null,
         powerKw: dto.powerKw ?? null,
@@ -266,6 +267,7 @@ export class VehiclesService {
             ? undefined
             : parseIsoDate(dto.firstRegistration),
         category: dto.category,
+        fleetSegment: dto.fleetSegment,
         fuelType: dto.fuelType,
         engineCm3: dto.engineCm3,
         powerKw: dto.powerKw,

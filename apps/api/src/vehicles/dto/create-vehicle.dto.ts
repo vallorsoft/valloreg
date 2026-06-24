@@ -1,5 +1,6 @@
 import {
   IsArray,
+  IsIn,
   IsInt,
   IsISO8601,
   IsOptional,
@@ -10,6 +11,7 @@ import {
   ValidateNested,
 } from 'class-validator';
 import { Type } from 'class-transformer';
+import { ALL_FLEET_SEGMENTS } from '@valloreg/shared';
 import { VehiclePartyDto } from './vehicle-party.dto';
 
 export class CreateVehicleDto {
@@ -59,6 +61,11 @@ export class CreateVehicleDto {
   @IsString()
   @MaxLength(32)
   category?: string;
+
+  /** Flotta-szegmens KÉZI felülírása (a forgalmiból levezetett érték helyett). */
+  @IsOptional()
+  @IsIn([...ALL_FLEET_SEGMENTS])
+  fleetSegment?: string;
 
   @IsOptional()
   @IsString()
