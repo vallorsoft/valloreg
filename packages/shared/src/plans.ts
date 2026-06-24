@@ -27,10 +27,10 @@ const GB = 1024 * 1024 * 1024;
 
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
   [PlanTier.STARTER]: {
-    maxVehicles: 2,
+    maxVehicles: 3,
     maxUsers: 3,
-    maxStorageBytes: 2 * GB,
-    maxDocumentsPerMonth: 50,
+    maxStorageBytes: 1 * GB,
+    maxDocumentsPerMonth: 75,
     features: [
       FeatureKey.OCR,
       FeatureKey.AI_PROCESSING,
@@ -39,10 +39,10 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     ],
   },
   [PlanTier.STANDARD]: {
-    maxVehicles: 5,
-    maxUsers: 5,
-    maxStorageBytes: 10 * GB,
-    maxDocumentsPerMonth: 200,
+    maxVehicles: 15,
+    maxUsers: 10,
+    maxStorageBytes: 5 * GB,
+    maxDocumentsPerMonth: 400,
     features: [
       FeatureKey.OCR,
       FeatureKey.AI_PROCESSING,
@@ -54,10 +54,10 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     ],
   },
   [PlanTier.PROFESSIONAL]: {
-    maxVehicles: 20,
-    maxUsers: 20,
-    maxStorageBytes: 50 * GB,
-    maxDocumentsPerMonth: 1000,
+    maxVehicles: UNLIMITED,
+    maxUsers: UNLIMITED,
+    maxStorageBytes: 15 * GB,
+    maxDocumentsPerMonth: UNLIMITED,
     features: ALL_FEATURE_KEYS,
   },
   [PlanTier.BUSINESS]: {
@@ -84,10 +84,28 @@ export const PLAN_CURRENCY = 'RON';
 // Havi nettó árak LEJ-ben (RON). Ajánlott alapértékek – az üzemeltető igazíthatja.
 export const PLAN_PRICES: Record<PlanTier, number> = {
   [PlanTier.STARTER]: 49,
-  [PlanTier.STANDARD]: 99,
-  [PlanTier.PROFESSIONAL]: 199,
+  [PlanTier.STANDARD]: 129,
+  [PlanTier.PROFESSIONAL]: 299,
   [PlanTier.BUSINESS]: 399,
 };
+
+/**
+ * Vásárolható extra tárhely-csomagok (havi add-on). A megvett GB hozzáadódik a
+ * csomag tárhelyéhez (a tárhely TELJES kapacitás, nem havi reset). Az aktiválás
+ * – mint a csomag – utalás után, a Super Admin panelen történik.
+ */
+export interface StoragePack {
+  /** Plusz tárhely byte-ban. */
+  bytes: number;
+  /** Havi ár (PLAN_CURRENCY). */
+  price: number;
+}
+
+export const STORAGE_PACKS: readonly StoragePack[] = [
+  { bytes: 5 * GB, price: 19 },
+  { bytes: 10 * GB, price: 29 },
+  { bytes: 25 * GB, price: 59 },
+] as const;
 
 /** A próbaidőszak hossza napokban (a regisztráció ennyit ad ingyen). */
 export const TRIAL_DAYS = 14;

@@ -184,25 +184,52 @@
       "usersUnlimited": "Unlimited users",
       "documents": "{count} documents / mo",
       "documentsUnlimited": "Unlimited documents / mo",
+      "storage": "{gb} GB storage",
+      "compareButton": "Compare plans",
       "mostPopular": "Most popular",
       "cta": "Choose",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "For smaller fleets, to get started."
         },
         "STANDARD": {
-          "name": "Standard",
-          "description": "For growing fleets, with reports and export."
+          "name": "Pro",
+          "description": "For growing fleets: reports, export, reminders, major components."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "For active fleet management, with the full feature set."
+          "name": "Fleet",
+          "description": "Full fleet intelligence: rankings, durability, supplier quality."
         },
         "BUSINESS": {
           "name": "Business",
           "description": "For large fleets, with no limits."
         }
+      }
+    },
+    "compare": {
+      "title": "Compare plans",
+      "subtitle": "Exactly what each plan can do – in one table.",
+      "feature": "Feature",
+      "note": "Storage is total capacity (does not reset monthly); extra storage can be purchased for any plan.",
+      "limits": {
+        "vehicles": "Vehicles",
+        "users": "Users",
+        "documents": "Documents / mo",
+        "storage": "Storage"
+      },
+      "rows": {
+        "ocrAi": "OCR + AI processing",
+        "serviceBook": "Digital service book + library",
+        "dashboard": "Cost dashboard",
+        "reports": "Reports + CSV/PDF export",
+        "reminders": "Reminders (time/km maintenance)",
+        "majorParts": "Labor + major components + timeline",
+        "insights": "Insights (anomalies, TCO, European benchmark)",
+        "durability": "Learned durability + predictive maintenance",
+        "rankings": "Rankings + badges + replacement advice",
+        "supplier": "Supplier quality",
+        "extraStorage": "Optional extra storage"
       }
     },
     "faq": {

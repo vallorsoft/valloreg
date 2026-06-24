@@ -184,25 +184,52 @@
       "usersUnlimited": "Korlátlan felhasználó",
       "documents": "{count} dokumentum / hó",
       "documentsUnlimited": "Korlátlan dokumentum / hó",
+      "storage": "{gb} GB tárhely",
+      "compareButton": "Csomagok összehasonlítása",
       "mostPopular": "Legnépszerűbb",
       "cta": "Kiválasztom",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "Kisebb flottáknak, az első lépésekhez."
         },
         "STANDARD": {
-          "name": "Standard",
-          "description": "Növekvő flottáknak, riportokkal és exporttal."
+          "name": "Pro",
+          "description": "Növekvő flottáknak: riport, export, emlékeztető, nagy alkatrész."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "Aktív flottakezeléshez, teljes funkciókészlettel."
+          "name": "Fleet",
+          "description": "Teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség."
         },
         "BUSINESS": {
           "name": "Business",
           "description": "Nagy flottáknak, korlátok nélkül."
         }
+      }
+    },
+    "compare": {
+      "title": "Csomagok összehasonlítása",
+      "subtitle": "Mit tud pontosan az egyes csomag – egy táblázatban.",
+      "feature": "Funkció",
+      "note": "A tárhely teljes kapacitás (nem nullázódik havonta); bármely csomaghoz vehető extra tárhely.",
+      "limits": {
+        "vehicles": "Járművek",
+        "users": "Felhasználók",
+        "documents": "Dokumentum / hó",
+        "storage": "Tárhely"
+      },
+      "rows": {
+        "ocrAi": "OCR + AI feldolgozás",
+        "serviceBook": "Digitális szervizkönyv + dokumentumtár",
+        "dashboard": "Költség-dashboard",
+        "reports": "Riportok + CSV/PDF export",
+        "reminders": "Emlékeztetők (idő/km karbantartás)",
+        "majorParts": "Munkadíj + nagy alkatrész + idővonal",
+        "insights": "Insights (anomáliák, TCO, Európai benchmark)",
+        "durability": "Tanuló élettartam + prediktív karbantartás",
+        "rankings": "Ranglista + jelvények + csere-tanácsadó",
+        "supplier": "Beszállító-minőség",
+        "extraStorage": "Vásárolható extra tárhely"
       }
     },
     "faq": {
