@@ -128,6 +128,9 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
+      # A feladó megjelenített neve (módosítható). Alap: Valloreg.
+      - key: MAIL_FROM_NAME
+        value: Valloreg
       # Web Push (VAPID) – opcionális:
       - key: VAPID_PUBLIC_KEY
         sync: false

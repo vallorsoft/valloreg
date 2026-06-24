@@ -104,6 +104,8 @@ export const envSchema = z.object({
   BREVO_API_KEY: z.string().optional().default(''),
   BREVO_SENDER: z.string().default('noreply@valloreg.local'),
   MAIL_FROM: z.string().default('noreply@valloreg.local'),
+  // A feladó megjelenített neve (Brevo sender name).
+  MAIL_FROM_NAME: z.string().default('Valloreg'),
 
   // Web Push (VAPID) – Fázis 4 push értesítések.
   VAPID_PUBLIC_KEY: z.string().optional().default(''),
