@@ -30,7 +30,7 @@ export class StubExtractionProvider implements ExtractionProvider {
         supplier: 'Autószerviz Kft.',
         date: '2026-06-15',
         invoiceNumber: 'SZ-2026-0001',
-        currency: 'HUF',
+        currency: 'RON',
         odometerKm: 152340,
         netTotal: 48500,
         taxTotal: 13095,

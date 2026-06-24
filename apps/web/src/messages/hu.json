@@ -375,8 +375,8 @@
       "automationRate": "Automatizáltság"
     },
     "units": {
-      "currency": "Ft",
-      "perKm": "Ft/km",
+      "currency": "RON",
+      "perKm": "RON/km",
       "items": "db",
       "events": "esemény"
     },
@@ -1052,7 +1052,7 @@
     "unavailable": "Ez a funkció a csomagodban nem érhető el.",
     "empty": "Még nincs elég adat a ranglistához.",
     "exportCsv": "CSV export",
-    "exportPdf": "PDF / Nyomtatás",
+    "exportPdf": "PDF",
     "replaceAdvice": "Cserére érdemes",
     "tabs": { "segment": "Szegmensek szerint", "model": "Márka/modell szerint", "suppliers": "Beszállítók" },
     "suppliers": {
