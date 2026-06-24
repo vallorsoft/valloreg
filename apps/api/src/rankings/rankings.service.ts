@@ -91,11 +91,8 @@ export class RankingsService {
     for (const row of eventCounts) {
       eventCountByVehicle.set(row.vehicleId, row._count._all);
     }
-    const odometerByVehicle = new Map<string, number | null>(
-      vehicles.map((v) => [v.id, v.odometerKm] as [string, number | null]),
-    );
-    const dueByVehicle =
-      await this.durability.dueCountsByVehicle(odometerByVehicle);
+    // Esedékes fődarabok járművenként (szegmens-tudatos, a durability service-ből).
+    const dueByVehicle = await this.durability.dueCountsByVehicle();
 
     // Nyers metrikák.
     const metrics: VehicleMetrics[] = vehicles.map((v) => {

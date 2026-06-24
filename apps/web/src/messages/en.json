@@ -788,7 +788,8 @@
     },
     "source": {
       "empirical": "learned",
-      "seed": "baseline"
+      "seed": "baseline",
+      "manual": "manual"
     },
     "add": "Add",
     "cancel": "Cancel",
@@ -1065,12 +1066,19 @@
       "remedy": "Action"
     },
     "durability": {
-      "title": "Durability survey",
-      "subtitle": "Expected lifetime per complex service item, learned from real replacements (or baseline).",
+      "title": "Durability survey (per segment)",
+      "subtitle": "Lifetime differs by category (van vs. tractor unit vs. trailer). The expected value can also be set manually, alongside the default (learned/seed).",
+      "segment": "Segment",
       "component": "Component",
       "expectedKm": "Expected lifetime",
       "source": "Source",
-      "samples": "Samples"
+      "samples": "Samples",
+      "override": "Manual override (km)",
+      "save": "Save",
+      "clear": "Clear",
+      "loading": "Loading…",
+      "saveError": "Save failed.",
+      "sources": { "manual": "manual", "empirical": "learned", "seed": "baseline" }
     }
   },
   "rankings": {

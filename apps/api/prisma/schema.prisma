@@ -107,6 +107,7 @@ model Tenant {
   itemCategoryMappings ItemCategoryMapping[]
   reminders            Reminder[]
   majorComponentEvents MajorComponentEvent[]
+  durabilityBaselines  DurabilityBaseline[]
   vehicleDocuments     VehicleDocument[]
   vehicleVerifications VehicleVerification[]
   vehicleScans         VehicleScan[]
@@ -736,4 +737,24 @@ model BillingSettings {
   updatedAt   DateTime @updatedAt
 
   @@map("billing_settings")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Tartósság KÉZI felülírás: cégenként a várható élettartam (km) egy adott
+// szegmens + fődarab párra. Ha létezik, ez FELÜLÍRJA a seedet és a tanultat.
+// (segment a @valloreg/shared FleetSegment, component a MajorComponent stringje.)
+// ──────────────────────────────────────────────────────────────────────────
+model DurabilityBaseline {
+  id         String   @id @default(uuid())
+  tenantId   String
+  segment    String
+  component  String
+  expectedKm Int
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, segment, component])
+  @@index([tenantId])
+  @@map("durability_baselines")
 }
