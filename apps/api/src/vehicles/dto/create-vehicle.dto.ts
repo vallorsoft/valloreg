@@ -3,6 +3,7 @@ import {
   IsIn,
   IsInt,
   IsISO8601,
+  IsNumber,
   IsOptional,
   IsString,
   Max,
@@ -66,6 +67,13 @@ export class CreateVehicleDto {
   @IsOptional()
   @IsIn([...ALL_FLEET_SEGMENTS])
   fleetSegment?: string;
+
+  /** Opcionális bevétel/km a valós rentabilitás ranglistához. */
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Max(1_000_000)
+  revenuePerKm?: number;
 
   @IsOptional()
   @IsString()

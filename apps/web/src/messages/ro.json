@@ -341,6 +341,7 @@
       "reminders": "Mementouri",
       "reports": "Rapoarte",
       "insights": "Anomalii",
+      "rankings": "Clasament",
       "team": "Echipă",
       "billing": "Abonament",
       "admin": "Super Admin",
@@ -475,6 +476,7 @@
       "category": "Categoria vehiculului (J)",
       "fleetSegment": "Segment de flotă",
       "fleetSegmentAuto": "Automat (din talon)",
+      "revenuePerKm": "Venit/km (opțional)",
       "fuelType": "Combustibil",
       "engineCm3": "Capacitate cilindrică (cm³)",
       "powerKw": "Putere (kW)",
@@ -1041,6 +1043,42 @@
       "expectedKm": "Durată estimată",
       "source": "Sursă",
       "samples": "Mostre"
+    }
+  },
+  "rankings": {
+    "title": "Clasament",
+    "subtitle": "Clasamentul vehiculelor după eficiență de cost și fiabilitate, pe segmente și pe marcă/model.",
+    "loading": "Se încarcă…",
+    "unavailable": "Această funcție nu este disponibilă în planul tău.",
+    "empty": "Încă nu există suficiente date pentru clasament.",
+    "exportCsv": "Export CSV",
+    "exportPdf": "PDF / Tipărire",
+    "replaceAdvice": "De înlocuit",
+    "tabs": { "segment": "După segment", "model": "După marcă/model" },
+    "table": {
+      "vehicle": "Vehicul",
+      "score": "Scor",
+      "costPerKm": "Cost/km",
+      "profitPerKm": "Profit/km",
+      "bigPartsDue": "Piese mari scadente",
+      "badges": "Insigne"
+    },
+    "badges": {
+      "segment_champion": "Campion segment",
+      "model_champion": "Campion model",
+      "lowest_cost_km": "Cel mai ieftin km",
+      "most_reliable": "Cel mai fiabil"
+    },
+    "csv": {
+      "group": "Grup",
+      "vehicle": "Vehicul",
+      "score": "Scor",
+      "costPerKm": "Cost/km",
+      "revenuePerKm": "Venit/km",
+      "profitPerKm": "Profit/km",
+      "majorEvents": "Evenimente mari",
+      "bigPartsDue": "Piese mari scadente",
+      "replaceAdvice": "De înlocuit"
     }
   },
   "admin": {

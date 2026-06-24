@@ -341,6 +341,7 @@
       "reminders": "Reminders",
       "reports": "Reports",
       "insights": "Insights",
+      "rankings": "Rankings",
       "team": "Team",
       "billing": "Billing",
       "admin": "Super Admin",
@@ -475,6 +476,7 @@
       "category": "Vehicle category (J)",
       "fleetSegment": "Fleet segment",
       "fleetSegmentAuto": "Automatic (from registration)",
+      "revenuePerKm": "Revenue/km (optional)",
       "fuelType": "Fuel type",
       "engineCm3": "Engine displacement (cc)",
       "powerKw": "Power (kW)",
@@ -1041,6 +1043,42 @@
       "expectedKm": "Expected lifetime",
       "source": "Source",
       "samples": "Samples"
+    }
+  },
+  "rankings": {
+    "title": "Rankings",
+    "subtitle": "Vehicle ranking by cost-efficiency and reliability, by segment and by make/model.",
+    "loading": "Loading…",
+    "unavailable": "This feature is not available on your plan.",
+    "empty": "Not enough data for the ranking yet.",
+    "exportCsv": "Export CSV",
+    "exportPdf": "PDF / Print",
+    "replaceAdvice": "Replace advised",
+    "tabs": { "segment": "By segment", "model": "By make/model" },
+    "table": {
+      "vehicle": "Vehicle",
+      "score": "Score",
+      "costPerKm": "Cost/km",
+      "profitPerKm": "Profit/km",
+      "bigPartsDue": "Big parts due",
+      "badges": "Badges"
+    },
+    "badges": {
+      "segment_champion": "Segment champion",
+      "model_champion": "Model champion",
+      "lowest_cost_km": "Lowest cost/km",
+      "most_reliable": "Most reliable"
+    },
+    "csv": {
+      "group": "Group",
+      "vehicle": "Vehicle",
+      "score": "Score",
+      "costPerKm": "Cost/km",
+      "revenuePerKm": "Revenue/km",
+      "profitPerKm": "Profit/km",
+      "majorEvents": "Major events",
+      "bigPartsDue": "Big parts due",
+      "replaceAdvice": "Replace advised"
     }
   },
   "admin": {

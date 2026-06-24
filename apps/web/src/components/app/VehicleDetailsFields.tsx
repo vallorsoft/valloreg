@@ -25,6 +25,8 @@ export interface VehicleExtraState {
   category: string;
   /** Flotta-szegmens kézi felülírás ('' = automatikus, a forgalmiból levezetve). */
   fleetSegment: string;
+  /** Opcionális bevétel/km a valós rentabilitás ranglistához. */
+  revenuePerKm: string;
   fuelType: string;
   engineCm3: string;
   powerKw: string;
@@ -51,6 +53,7 @@ export function emptyExtraState(): VehicleExtraState {
     firstRegistration: '',
     category: '',
     fleetSegment: '',
+    revenuePerKm: '',
     fuelType: '',
     engineCm3: '',
     powerKw: '',
@@ -78,6 +81,7 @@ export function extraStateFromVehicle(v: Vehicle): VehicleExtraState {
     firstRegistration: v.firstRegistration ? v.firstRegistration.slice(0, 10) : '',
     category: str(v.category),
     fleetSegment: str(v.fleetSegment),
+    revenuePerKm: str(v.revenuePerKm),
     fuelType: str(v.fuelType),
     engineCm3: str(v.engineCm3),
     powerKw: str(v.powerKw),
@@ -103,6 +107,7 @@ export function extraStateFromDraft(d: VehicleRegistrationDraft): VehicleExtraSt
     firstRegistration: d.firstRegistration ? d.firstRegistration.slice(0, 10) : '',
     category: str(d.category),
     fleetSegment: '', // a forgalmiból nem jön; alapból automatikus levezetés
+    revenuePerKm: '', // a forgalmiból nem jön
     fuelType: str(d.fuelType),
     engineCm3: str(d.engineCm3),
     powerKw: str(d.powerKw),
@@ -134,6 +139,12 @@ const numOrUndef = (v: string): number | undefined => {
   return isNaN(n) ? undefined : n;
 };
 const strOrUndef = (v: string): string | undefined => (v.trim() === '' ? undefined : v.trim());
+const floatOrUndef = (v: string): number | undefined => {
+  const t = v.trim().replace(',', '.');
+  if (t === '') return undefined;
+  const n = parseFloat(t);
+  return isNaN(n) ? undefined : n;
+};
 
 /**
  * Szerkeszthető állapot → API payload-rész. A felek MINDIG szerepelnek (owner +
@@ -145,6 +156,7 @@ export function extraStateToPayload(s: VehicleExtraState): Partial<CreateVehicle
     firstRegistration: strOrUndef(s.firstRegistration),
     category: strOrUndef(s.category),
     fleetSegment: strOrUndef(s.fleetSegment),
+    revenuePerKm: floatOrUndef(s.revenuePerKm),
     fuelType: strOrUndef(s.fuelType),
     engineCm3: numOrUndef(s.engineCm3),
     powerKw: numOrUndef(s.powerKw),
@@ -219,6 +231,7 @@ export function VehicleDetailsFields({ value, onChange, uncertain }: Props) {
               ))}
             </select>
           </div>
+          <Input label={t('revenuePerKm')} type="number" value={value.revenuePerKm} onChange={(e) => set({ revenuePerKm: e.target.value })} />
           <Input label={t('fuelType')} value={value.fuelType} onChange={(e) => set({ fuelType: e.target.value })} />
           <Input label={t('engineCm3')} type="number" value={value.engineCm3} onChange={(e) => set({ engineCm3: e.target.value })} />
           <Input label={t('powerKw')} type="number" value={value.powerKw} onChange={(e) => set({ powerKw: e.target.value })} />
