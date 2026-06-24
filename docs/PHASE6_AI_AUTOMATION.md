@@ -124,3 +124,125 @@ csak a meglévő e-mail gazdagítása az `AssistantProvider`-rel.
 - **LLM-költség és determinizmus** a 6/B-nél: tool-calling korláttal, cache-eléssel.
 - **Külső adat megbízhatósága** a 6/C-nél: csak kurált forrás, „javaslat" címkével.
 - Minden provider stub-bal indul, hogy API-kulcs nélkül is fusson a teszt/CI.
+
+---
+
+## Cold-start: hogyan kap az ELSŐ cég is értéket (külső adat)
+
+A 6/A benchmark a saját adatból táplálkozik → eleinte üres (kevés cég, sok cella a
+k-anonimitás küszöb alatt). Hogy az **első ügyfél is azonnal** értéket kapjon, a
+hiányzó belső adatot **külső, kurált baseline** tölti ki. A logika **blended**:
+
+```
+ha a belső cella eléri a k-anonimitást → belső medián (a moat)
+egyébként                              → külső baseline (azonnali érték)
+mindkettő hiányában                    → „nincs adat"
+```
+
+Ahogy nő a tenant-szám, a belső adat fokozatosan átveszi a külső baseline helyét –
+a termék magától „okosodik", de már nap 1-en is hasznos.
+
+### Külső adatforrások (kutatás eredménye, RO/HU-relevánsan)
+
+| Cél | Forrás | Költség | Megjegyzés |
+| --- | ------ | ------- | ---------- |
+| **Visszahívások / ismert hibák (6/C)** | EU Safety Gate (RAPEX), `car-recalls.eu`, KBA (DE), DVSA (UK) | **ingyenes** | Hivatalos EU-s, heti frissülő. Azonnali érték tenant-adat nélkül. |
+| **VIN→specifikáció / motor / üzemanyag** (autofill + benchmark kulcsok) | `vindecoder.eu`/Vincario, AutoRef (EU-fókusz), Zyla EU VIN | freemium | EU-fedettség jó. NHTSA vPIC ingyenes, de **US-only** (csak make/model/year megbízható). |
+| **OEM karbantartási intervallumok (6/C baseline)** | Vehicle Databases, DataOne, Edmunds | fizetős | Gyári szerviz-intervallum → ajánlás **0 előzményből** is. |
+| **Használtautó piaci / maradványérték (6/C TCO csere-időzítés)** | **Eurotax / Autovista** (lefedi HU+RO-t!), `vindecoder.eu` market value (ingyenes próbakvóta) | fizetős / freemium | A csereablak-előrejelzéshez. |
+| **RO megfelelőség (ITP/RCA)** | RAR `rarom.ro` ITP-ellenőrzés, AIDA/BAAR RCA | ingyenes/publikus | Részben már az 5/F-ben; itt csak baseline-hoz. |
+
+> **Javasolt induló minimum (mind ingyenes/olcsó):** EU Safety Gate visszahívások +
+> egy freemium VIN-decoder. Ez már nap 1-en ad „ismert hiba" figyelmeztetést és
+> autofillt, mindenféle belső adat nélkül. A fizetős intervallum/érték-adat
+> később, ügyfél-igény szerint kapcsolható be (pluggable provider).
+
+---
+
+## Teljes bekötési terv (6/A benchmark, a meglévő mintákra)
+
+Az alábbi pontosan a repo jelenlegi rétegeit követi (`extraction`/`verification`
+provider-port minta, `reminders.scheduler` BullMQ minta, `insights` read-time minta,
+`packages/shared` kontraktus minta).
+
+### 1. Megosztott kontraktus – `packages/shared`
+
+- Új fájl `src/benchmark.ts`: `BenchmarkDimensions` (makeModel, engine, kmBucket,
+  itemCategory, region, currency), `BenchmarkCell` (median, p25, p75, sampleTenants,
+  sampleVehicles, source: `'internal' | 'external'`), küszöb-konstansok
+  `BENCHMARK_MIN_TENANTS = 5`, `BENCHMARK_MIN_VEHICLES = 20`, `KM_BUCKETS`.
+- `src/feature-flags.ts`: `BENCHMARK` flag hozzáadása.
+- `src/index.ts`: re-export. (zod sémák, mint az extraction kontraktusnál.)
+
+### 2. Adatmodell – Prisma (`apps/api/prisma/schema.prisma`)
+
+- `model FleetBenchmark` – **nincs `tenantId`**, csak aggregátum:
+  `id, makeModel, engine, kmBucket, itemCategory, region, currency,`
+  `medianUnitPrice, p25, p75, sampleTenants, sampleVehicles, source, updatedAt`,
+  unique index a dimenzió-tuple-ön.
+- `model BenchmarkOptIn` a tenanten (vagy bool a `Tenant`-on): alapból `true`,
+  GDPR-tájékoztatóval kikapcsolható.
+- Migráció + a `db:seed`-be **szintetikus benchmark seed**, hogy kevés tenanttel is
+  demózható legyen a UI (a stub-elv folytatása).
+
+### 3. Provider port – külső baseline (`apps/api/src/benchmark/providers`)
+
+- `benchmark-baseline.provider.ts` interfész: `getExternalCell(dim) → BenchmarkCell | null`,
+  `getKnownIssues(makeModel, engine, km) → KnownIssue[]`.
+- `stub-baseline.provider.ts` – kurált JSON (visszahívások + tipikus intervallumok),
+  API-kulcs nélkül fut (CI-biztos).
+- `recall-baseline.provider.ts` – EU Safety Gate / car-recalls.eu adapter (env mögött).
+- Provider-választás env-ből, ahogy `OCR_PROVIDER` / `VEHICLE_VERIFY_PROVIDER`.
+
+### 4. Aggregáló job – BullMQ (`apps/api/src/benchmark/benchmark.scheduler.ts`)
+
+- A `reminders.scheduler.ts` mintája: **boot-biztos**, ismétlődő (heti) job.
+- Lépések: opt-in tenantek anonimizált tételeinek beolvasása → csoportosítás a
+  dimenziók szerint → medián/p25/p75 → **k-anonimitás kapu** (`>=5` cég ÉS `>=20`
+  jármű, különben a cella nem publikálódik) → upsert `FleetBenchmark`.
+- Audit-logba **csak a futás ténye** (cellaszám), nem tartalom.
+- Idempotens job-kulcs (a meglévő queue-mintával).
+
+### 5. Olvasásidejű összevetés – `apps/api/src/insights`
+
+- Az `InsightsService` bővítése `getBenchmarkComparison(tenant)`:
+  a tenant saját tétel-mediánja vs. `FleetBenchmark` cella → `deltaPct`,
+  `percentile`, `sampleSize`, `source`. **Blended**: belső, ha k-anonim; külső
+  baseline egyébként; nincs külön provider-hívás kérésidőben (mint a TCO).
+- Controller: `GET /insights/benchmark` a `REPORTS`/`BENCHMARK` flag mögött, RBAC-cel.
+
+### 6. Frontend – `apps/web`
+
+- `/insights` új „Piaci összevetés" szekció (a meglévő anomália/TCO szekciók mellé).
+- Jármű-részletezőn badge: `piac alatt / piacon / piac felett` + minta-méret tooltip.
+- i18n kulcsok hu/ro/en (nincs hardcode szöveg, a meglévő szabály szerint).
+- A `BENCHMARK` flag kikapcsolva → a szekció nem renderelődik.
+
+### 7. Konfiguráció, biztonság, teszt
+
+- `.env.example`: `BENCHMARK_BASELINE_PROVIDER`, `RECALL_API_URL/KEY` (opcionális).
+- `docs/SECURITY.md`: új szakasz a k-anonimitásról és az opt-inról; Super Admin
+  **nem** lát tenant-szintű benchmark-adatot, csak aggregátumot.
+- Tesztek: k-anonimitás kapu (4 cég → nincs cella, 5 cég → van), blended fallback,
+  stub-provider determinisztikus válasza. CI: API-kulcs nélkül zöld.
+
+### Bekötési sorrend (függőségek)
+
+```
+shared kontraktus + flag
+        ↓
+Prisma modell + migráció + seed
+        ↓
+baseline provider port (stub) ──► külső adapter (opcionális, env)
+        ↓
+aggregáló scheduler (k-anonimitás)
+        ↓
+insights read-time összevetés (blended)
+        ↓
+web UI + i18n + flag-gate
+        ↓
+SECURITY.md + tesztek
+```
+
+**Becsült méret:** közepes (≈ egy 5/B-hez hasonló epik). A kritikus pont nem a
+mennyiség, hanem a k-anonimitás és a GDPR-megfogalmazás pontossága.
