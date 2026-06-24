@@ -9,6 +9,7 @@ export * from './categories';
 export * from './segments';
 export * from './major-components';
 export * from './durability';
+export * from './rankings';
 export * from './reminders';
 export * from './insights';
 export * from './benchmark';
