@@ -1145,6 +1145,25 @@
       "PAST_DUE": "Past due",
       "CANCELED": "Canceled"
     },
+    "billing": {
+      "title": "Billing / transfer details",
+      "subtitle": "The system sends these in the subscription request email. Empty fields fall back to the server (env) setting.",
+      "loading": "Loading…",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "error": "Save failed.",
+      "fields": {
+        "companyName": "Issuer (company name)",
+        "taxNumber": "Tax number",
+        "address": "Address",
+        "beneficiary": "Beneficiary",
+        "iban": "IBAN / Account",
+        "bankName": "Bank",
+        "swift": "SWIFT",
+        "notifyEmail": "Notification email (new request)"
+      }
+    },
     "subscription": {
       "title": "Subscription",
       "plan": "Plan",

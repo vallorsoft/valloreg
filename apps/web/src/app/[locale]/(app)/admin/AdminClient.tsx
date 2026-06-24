@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { adminApi, ApiError, type AdminTenantListItem } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
+import { BillingSettingsCard } from '@/components/app/BillingSettingsCard';
 
 export function AdminClient() {
   const t = useTranslations('admin');
@@ -46,6 +47,8 @@ export function AdminClient() {
   return (
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
+
+      <BillingSettingsCard />
 
       <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">
