@@ -293,6 +293,9 @@ model Vehicle {
   // semi_trailer / trailer / other). Alapból null → a szegmenst a forgalmiból
   // vezetjük le (`fleetSegmentOf`). Csak akkor töltsd, ha az auto-besorolás téved.
   fleetSegment      String?
+  // Opcionális bevétel/km (a felhasználó adja meg) a VALÓS rentabilitás
+  // (nyereség/km = bevétel/km − költség/km) ranglistához. Null = nincs megadva.
+  revenuePerKm      Decimal?
   fuelType          String? // P.3 – üzemanyag
   engineCm3         Int? // P.1 – hengerűrtartalom (cm³)
   powerKw           Int? // P.2 – teljesítmény (kW)

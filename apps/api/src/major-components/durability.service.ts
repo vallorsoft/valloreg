@@ -124,6 +124,46 @@ export class DurabilityService {
     return result;
   }
 
+  /**
+   * Esedékes/lejárt nagy alkatrészek száma járművenként (bulk, egy lekérdezésből).
+   * A `odometerByVehicle` a járművek aktuális km-állása; a tartósság az empirikus
+   * (vagy seed) élettartamból dől el. A ranglista és a csere-tanácsadó használja.
+   */
+  async dueCountsByVehicle(
+    odometerByVehicle: Map<string, number | null>,
+  ): Promise<Map<string, number>> {
+    const events = await this.loadEvents();
+    const intervals = this.intervalsByComponent(events);
+
+    // Járművenként a fődarab legutóbbi cserekori km-állása.
+    const lastByVehicleComponent = new Map<string, number>();
+    for (const e of events) {
+      if (e.odometerKm == null) continue;
+      const key = `${e.vehicleId}::${e.component}`;
+      const prev = lastByVehicleComponent.get(key);
+      if (prev == null || e.odometerKm > prev) {
+        lastByVehicleComponent.set(key, e.odometerKm);
+      }
+    }
+
+    const due = new Map<string, number>();
+    for (const [key, lastKm] of lastByVehicleComponent) {
+      const [vehicleId, component] = key.split('::') as [string, string];
+      const odo = odometerByVehicle.get(vehicleId);
+      if (odo == null) continue;
+      if (!isMajorComponent(component)) continue;
+      const { expectedKm } = this.expectedFor(
+        component,
+        intervals.get(component) ?? [],
+      );
+      const status = durabilityStatusOf(Math.max(0, odo - lastKm), expectedKm);
+      if (status === DurabilityStatus.DUE || status === DurabilityStatus.OVERDUE) {
+        due.set(vehicleId, (due.get(vehicleId) ?? 0) + 1);
+      }
+    }
+    return due;
+  }
+
   // ── segédek ────────────────────────────────────────────────────────────────
 
   private async loadEvents(): Promise<EventLite[]> {

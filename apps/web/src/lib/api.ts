@@ -615,6 +615,42 @@ export const durabilityApi = {
   },
 };
 
+// ── Ranglista ────────────────────────────────────────────────────────────────
+
+export interface VehicleRanking {
+  vehicleId: string;
+  label: string;
+  segment: string;
+  makeModel: string;
+  currency: string | null;
+  totalSpent: string;
+  odometerKm: number | null;
+  costPerKm: string | null;
+  revenuePerKm: string | null;
+  profitPerKm: string | null;
+  majorEventCount: number;
+  bigPartsDue: number;
+  economyScore: number;
+  replaceAdvice: boolean;
+  badges: string[];
+}
+
+export interface RankingGroup {
+  key: string;
+  vehicles: VehicleRanking[];
+}
+
+export interface RankingsResult {
+  bySegment: RankingGroup[];
+  byModel: RankingGroup[];
+}
+
+export const rankingsApi = {
+  get() {
+    return apiRequest<RankingsResult>(`/rankings`);
+  },
+};
+
 // ── Vehicles ──────────────────────────────────────────────────────────────────
 
 /** Egy jármű-fél szerepe és típusa. */
@@ -654,6 +690,8 @@ export interface Vehicle {
   category: string | null;
   /** Flotta-szegmens KÉZI felülírása; ha null, a forgalmiból vezetjük le. */
   fleetSegment: string | null;
+  /** Opcionális bevétel/km a valós rentabilitás ranglistához. */
+  revenuePerKm: string | null;
   fuelType: string | null;
   engineCm3: number | null;
   powerKw: number | null;
@@ -679,6 +717,7 @@ export interface CreateVehiclePayload {
   firstRegistration?: string;
   category?: string;
   fleetSegment?: string;
+  revenuePerKm?: number;
   fuelType?: string;
   engineCm3?: number;
   powerKw?: number;

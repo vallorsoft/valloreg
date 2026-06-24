@@ -341,6 +341,7 @@
       "reminders": "Emlékeztetők",
       "reports": "Riportok",
       "insights": "Anomáliák",
+      "rankings": "Ranglista",
       "team": "Csapat",
       "billing": "Előfizetés",
       "admin": "Super Admin",
@@ -475,6 +476,7 @@
       "category": "Jármű-kategória (J)",
       "fleetSegment": "Flotta-szegmens",
       "fleetSegmentAuto": "Automatikus (forgalmiból)",
+      "revenuePerKm": "Bevétel/km (opcionális)",
       "fuelType": "Üzemanyag",
       "engineCm3": "Hengerűrtartalom (cm³)",
       "powerKw": "Teljesítmény (kW)",
@@ -1041,6 +1043,42 @@
       "expectedKm": "Várható élettartam",
       "source": "Forrás",
       "samples": "Minták"
+    }
+  },
+  "rankings": {
+    "title": "Ranglista",
+    "subtitle": "Jármű-rangsor költséghatékonyság és megbízhatóság alapján, szegmensenként és márka/modellenként.",
+    "loading": "Betöltés…",
+    "unavailable": "Ez a funkció a csomagodban nem érhető el.",
+    "empty": "Még nincs elég adat a ranglistához.",
+    "exportCsv": "CSV export",
+    "exportPdf": "PDF / Nyomtatás",
+    "replaceAdvice": "Cserére érdemes",
+    "tabs": { "segment": "Szegmensek szerint", "model": "Márka/modell szerint" },
+    "table": {
+      "vehicle": "Jármű",
+      "score": "Pontszám",
+      "costPerKm": "Költség/km",
+      "profitPerKm": "Nyereség/km",
+      "bigPartsDue": "Esedékes nagy rész",
+      "badges": "Jelvények"
+    },
+    "badges": {
+      "segment_champion": "Szegmens-bajnok",
+      "model_champion": "Modell-bajnok",
+      "lowest_cost_km": "Legolcsóbb km",
+      "most_reliable": "Legmegbízhatóbb"
+    },
+    "csv": {
+      "group": "Csoport",
+      "vehicle": "Jármű",
+      "score": "Pontszám",
+      "costPerKm": "Költség/km",
+      "revenuePerKm": "Bevétel/km",
+      "profitPerKm": "Nyereség/km",
+      "majorEvents": "Nagy események",
+      "bigPartsDue": "Esedékes nagy rész",
+      "replaceAdvice": "Cserére érdemes"
     }
   },
   "admin": {
