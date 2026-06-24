@@ -162,6 +162,9 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Build-idő: kikapcsolt telemetria (kicsivel kevesebb memória/zaj a buildben).
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
       # A build-időben beépül a bundle-be; igazítsd, ha más az API URL:
       - key: NEXT_PUBLIC_API_URL
         value: https://valloreg-api.onrender.com/api
