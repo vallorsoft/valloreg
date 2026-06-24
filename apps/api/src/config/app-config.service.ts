@@ -57,6 +57,24 @@ export class AppConfigService {
     return url.replace(/\/+$/, '');
   }
 
+  /**
+   * A refresh token httpOnly cookie beállításai. Production-ben (HTTPS, külön
+   * web/api domain) `SameSite=None; Secure` kell, hogy a böngésző cross-site
+   * elküldje; helyi fejlesztésben (http, azonos site) `Lax` Secure nélkül.
+   * A cookie csak az auth-útvonalakra megy (`/<prefix>/auth`).
+   */
+  get refreshCookie(): {
+    secure: boolean;
+    sameSite: 'lax' | 'none';
+    path: string;
+  } {
+    return {
+      secure: this.isProduction,
+      sameSite: this.isProduction ? 'none' : 'lax',
+      path: `/${this.apiGlobalPrefix}/auth`,
+    };
+  }
+
   /** Jelszó-visszaállító token élettartama másodpercben. */
   get passwordResetTtl(): number {
     return this.get('PASSWORD_RESET_TTL');

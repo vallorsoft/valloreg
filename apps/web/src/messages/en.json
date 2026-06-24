@@ -257,7 +257,8 @@
       "submit": "Log in",
       "noAccount": "Don't have an account?",
       "registerLink": "Sign up",
-      "forgotPassword": "Forgot password?"
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Stay logged in"
     },
     "register": {
       "title": "Sign up",

@@ -75,6 +75,7 @@ export function RegisterForm() {
 
     setSubmitting(true);
     try {
+      // Regisztrációnál alapból bejelentkezve maradunk az eszközön (remember me).
       const res = await authApi.register({
         companyName: values.companyName.trim(),
         taxId: values.taxId.trim(),
@@ -82,8 +83,9 @@ export function RegisterForm() {
         email: values.email.trim(),
         phone: values.phone.trim(),
         password: values.password,
+        rememberMe: true,
       });
-      storeAuth(res);
+      storeAuth(res, true);
       router.push('/dashboard');
     } catch (err) {
       // A nyers hibát a böngésző konzoljába is kiírjuk (státusz, URL) a könnyebb
