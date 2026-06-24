@@ -82,6 +82,10 @@ model Tenant {
   contactName String?
   email       String?
   phone       String?
+  // Hozzájárul-e a cég az anonimizált flotta-benchmarkhoz (alapból igen).
+  // A benchmark CSAK aggregátum, k-anonimitási küszöbbel; kikapcsolva nem
+  // számít bele az aggregátumba (de továbbra is láthatja a piaci összevetést).
+  benchmarkOptIn Boolean @default(true)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -633,4 +637,29 @@ model VehicleVerification {
 
   @@index([tenantId])
   @@map("vehicle_verifications")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Flotta-benchmark („Európai trendek") – ANONIMIZÁLT, AGGREGÁLT piaci medián.
+// SZÁNDÉKOSAN nincs tenantId: ez nem üzleti rekord, hanem több cég adatából
+// k-anonimitási küszöbbel képzett aggregátum. Heti háttér-job tölti (system
+// klienssel); a tenant-scope kiterjesztés NEM vonatkozik rá.
+// ──────────────────────────────────────────────────────────────────────────
+model FleetBenchmark {
+  id              String   @id @default(uuid())
+  // Dimenziók (a cella kulcsa):
+  makeModel       String // normalizált „márka modell"
+  itemCategory    String // alkatrésztípus vagy normalizált tételnév
+  kmBucket        Int // km-sáv alsó határa; -1 = ismeretlen
+  currency        String
+  // Mértékek (aggregátum – egyetlen cég sem fejthető vissza):
+  medianUnitPrice Decimal
+  p25             Decimal
+  p75             Decimal
+  sampleTenants   Int // hány különböző cég adta (>= küszöb)
+  sampleVehicles  Int // hány különböző jármű (>= küszöb)
+  updatedAt       DateTime @updatedAt
+
+  @@unique([makeModel, itemCategory, kmBucket, currency])
+  @@map("fleet_benchmarks")
 }

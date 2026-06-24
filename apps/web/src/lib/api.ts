@@ -1018,6 +1018,43 @@ export const insightsApi = {
   },
 };
 
+// ── Benchmark („Európai trendek") ────────────────────────────────────────────
+
+export type BenchmarkPositionValue = 'below' | 'within' | 'above';
+
+export interface BenchmarkComparison {
+  makeModel: string;
+  itemCategory: string;
+  kmBucket: number;
+  currency: string;
+  tenantMedian: string;
+  benchmarkMedian: string;
+  deltaPct: number;
+  position: BenchmarkPositionValue;
+  sampleTenants: number;
+  sampleVehicles: number;
+}
+
+export interface VehicleRecall {
+  reference: string;
+  makeModel: string;
+  yearFrom: number | null;
+  yearTo: number | null;
+  hazard: string;
+  remedy: string | null;
+  source: string;
+  publishedAt: string | null;
+}
+
+export const benchmarkApi = {
+  getComparison() {
+    return apiRequest<BenchmarkComparison[]>('/benchmark');
+  },
+  getRecalls() {
+    return apiRequest<VehicleRecall[]>('/benchmark/recalls');
+  },
+};
+
 // ── Team / users ────────────────────────────────────────────────────────────
 
 export interface TeamMember {
