@@ -8,12 +8,12 @@ import { BenchmarkService } from './benchmark.service';
 
 /**
  * „Európai trendek" végpontok: anonimizált flotta-benchmark összevetés és
- * jármű-visszahívások. A REPORTS feature mögött (ugyanaz a szint, mint az
+ * jármű-visszahívások. A ANALYTICS feature mögött (ugyanaz a szint, mint az
  * insights/riportok). Tenant-scope a scoped kliensben.
  */
 @Controller('benchmark')
 @UseGuards(JwtAuthGuard, TenantGuard, FeatureGuard)
-@RequireFeature(FeatureKey.REPORTS)
+@RequireFeature(FeatureKey.ANALYTICS)
 export class BenchmarkController {
   constructor(private readonly benchmark: BenchmarkService) {}
 

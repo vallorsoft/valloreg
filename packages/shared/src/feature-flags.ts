@@ -11,6 +11,13 @@ export const FeatureKey = {
   EXPORT: 'EXPORT',
   REMINDERS: 'REMINDERS',
   DOCUMENT_LIBRARY: 'DOCUMENT_LIBRARY',
+  /**
+   * Prémium flotta-analitika (Fleet csomag): Insights (anomáliák/TCO/benchmark),
+   * tanuló tartósság-felmérés + előrejelzés, ranglista + jelvények + csere-
+   * tanácsadó, beszállító-minőség. A nagy alkatrész ESEMÉNYEK (rögzítés/idővonal)
+   * a REPORTS-hoz tartoznak (Pro), az ezekből számított ANALITIKA viszont ide.
+   */
+  ANALYTICS: 'ANALYTICS',
 } as const;
 
 export type FeatureKey = (typeof FeatureKey)[keyof typeof FeatureKey];
