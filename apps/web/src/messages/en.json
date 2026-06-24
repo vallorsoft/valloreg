@@ -1054,7 +1054,15 @@
     "exportCsv": "Export CSV",
     "exportPdf": "PDF / Print",
     "replaceAdvice": "Replace advised",
-    "tabs": { "segment": "By segment", "model": "By make/model" },
+    "tabs": { "segment": "By segment", "model": "By make/model", "suppliers": "Suppliers" },
+    "suppliers": {
+      "empty": "No supplier-linked major component data yet.",
+      "supplier": "Supplier",
+      "component": "Component",
+      "medianCost": "Median cost",
+      "medianLife": "Median life",
+      "events": "Events"
+    },
     "table": {
       "vehicle": "Vehicle",
       "score": "Score",

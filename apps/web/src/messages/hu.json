@@ -1054,7 +1054,15 @@
     "exportCsv": "CSV export",
     "exportPdf": "PDF / Nyomtatás",
     "replaceAdvice": "Cserére érdemes",
-    "tabs": { "segment": "Szegmensek szerint", "model": "Márka/modell szerint" },
+    "tabs": { "segment": "Szegmensek szerint", "model": "Márka/modell szerint", "suppliers": "Beszállítók" },
+    "suppliers": {
+      "empty": "Még nincs beszállítóhoz köthető nagy alkatrész adat.",
+      "supplier": "Beszállító",
+      "component": "Alkatrész",
+      "medianCost": "Medián költség",
+      "medianLife": "Medián élettartam",
+      "events": "Események"
+    },
     "table": {
       "vehicle": "Jármű",
       "score": "Pontszám",

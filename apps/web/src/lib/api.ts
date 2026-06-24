@@ -645,9 +645,23 @@ export interface RankingsResult {
   byModel: RankingGroup[];
 }
 
+export interface SupplierQualityRow {
+  supplierId: string;
+  supplierName: string;
+  component: string;
+  eventCount: number;
+  medianCost: string | null;
+  currency: string | null;
+  medianIntervalKm: number | null;
+  intervalSamples: number;
+}
+
 export const rankingsApi = {
   get() {
     return apiRequest<RankingsResult>(`/rankings`);
+  },
+  suppliers() {
+    return apiRequest<SupplierQualityRow[]>(`/rankings/suppliers`);
   },
 };
 
