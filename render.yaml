@@ -88,7 +88,7 @@ services:
       # cookie SameSite=Lax (first-party). EGYÜTT kell bekapcsolni a web
       # NEXT_PUBLIC_SAME_ORIGIN_AUTH-tal. Alap: false (cross-site, SameSite=None).
       - key: SAME_ORIGIN_FRONTEND
-        value: "false"
+        value: "true"
       # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
       - key: S3_ENDPOINT
         sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
@@ -172,7 +172,7 @@ services:
       # "true"). Build-időben épül be, ezért váltás után újra kell deployolni a
       # webet. Alap: false (a mostani cross-site működés marad).
       - key: NEXT_PUBLIC_SAME_ORIGIN_AUTH
-        value: "false"
+        value: "true"
       - key: NEXT_PUBLIC_APP_NAME
         value: Valloreg
       - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY
