@@ -228,11 +228,12 @@ export class AppConfigService {
     return this.get('INTEGRATION_ENC_KEY');
   }
 
-  get mail(): { apiKey: string; sender: string; from: string } {
+  get mail(): { apiKey: string; sender: string; from: string; fromName: string } {
     return {
       apiKey: this.get('BREVO_API_KEY'),
       sender: this.get('BREVO_SENDER'),
       from: this.get('MAIL_FROM'),
+      fromName: this.get('MAIL_FROM_NAME'),
     };
   }
 

@@ -1162,6 +1162,14 @@
         "bankName": "Bancă",
         "swift": "SWIFT",
         "notifyEmail": "E-mail de notificare (solicitare nouă)"
+      },
+      "test": {
+        "title": "E-mail de test (verificare configurare Brevo)",
+        "placeholder": "Adresa de e-mail destinație",
+        "send": "Trimite test",
+        "sending": "Se trimite…",
+        "ok": "Trimis către {to}. Dacă nu ajunge, verifică expeditorul validat în Brevo.",
+        "fail": "Eșuat: {error}. Verifică cheia API Brevo și expeditorul validat."
       }
     },
     "subscription": {

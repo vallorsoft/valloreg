@@ -41,6 +41,9 @@ export function BillingSettingsCard() {
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [testTo, setTestTo] = useState('');
+  const [testing, setTesting] = useState(false);
+  const [testResult, setTestResult] = useState<string | null>(null);
 
   useEffect(() => {
     adminApi
@@ -65,6 +68,25 @@ export function BillingSettingsCard() {
       setError(err instanceof ApiError ? err.message : t('error'));
     } finally {
       setSaving(false);
+    }
+  }
+
+  async function handleTest() {
+    const to = (testTo || form.notifyEmail).trim();
+    if (!to) return;
+    setTesting(true);
+    setTestResult(null);
+    try {
+      const res = await adminApi.sendTestEmail(to);
+      setTestResult(
+        res.ok
+          ? t('test.ok', { to })
+          : t('test.fail', { error: res.error ?? `${res.status ?? ''}` }),
+      );
+    } catch (err) {
+      setTestResult(err instanceof ApiError ? err.message : t('test.fail', { error: '' }));
+    } finally {
+      setTesting(false);
     }
   }
 
@@ -99,6 +121,24 @@ export function BillingSettingsCard() {
             <Button size="sm" onClick={() => void handleSave()} disabled={saving}>
               {saving ? t('saving') : t('save')}
             </Button>
+          </div>
+
+          {/* Teszt-email: Brevo-konfiguráció ellenőrzése */}
+          <div className="mt-4 border-t border-anthracite-100 pt-4">
+            <p className="mb-2 text-xs font-medium text-anthracite-600">{t('test.title')}</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <input
+                type="email"
+                value={testTo}
+                onChange={(e) => setTestTo(e.target.value)}
+                placeholder={form.notifyEmail || t('test.placeholder')}
+                className="h-10 min-w-[220px] flex-1 rounded-lg border border-anthracite-200 bg-white px-3 text-sm text-anthracite-900"
+              />
+              <Button size="sm" variant="outline" onClick={() => void handleTest()} disabled={testing}>
+                {testing ? t('test.sending') : t('test.send')}
+              </Button>
+            </div>
+            {testResult && <p className="mt-2 text-xs text-anthracite-600">{testResult}</p>}
           </div>
         </>
       )}

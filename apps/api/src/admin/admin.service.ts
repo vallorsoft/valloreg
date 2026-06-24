@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { PlanTier as DbPlanTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { MailerService } from '../storage/mailer.service';
 import { BillingSettingsService } from '../billing/billing-settings.service';
 import { AppException } from '../common/exceptions/app.exception';
 import type { SetSubscriptionDto } from './dto/set-subscription.dto';
@@ -21,6 +22,7 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly mailer: MailerService,
     private readonly billingSettings: BillingSettingsService,
   ) {}
 
@@ -137,6 +139,28 @@ export class AdminService {
   /** Számla-/utalási adatok lekérése (effektív: DB ∪ env-tartalék). */
   getBillingSettings() {
     return this.billingSettings.getEffective();
+  }
+
+  /**
+   * Teszt-email a Brevo-konfiguráció ellenőrzéséhez. Visszaadja a küldés
+   * eredményét (ok/hiba), hogy a Super Admin lássa, jó-e a kulcs + feladó.
+   */
+  async sendTestEmail(actorUserId: string, to: string) {
+    const result = await this.mailer.send({
+      to,
+      subject: 'Valloreg – teszt e-mail (Brevo)',
+      text:
+        'Ez egy teszt e-mail a Valloreg rendszerből (Brevo).\n\n' +
+        'Ha ezt megkaptad, a rendszer-emailek kézbesítése működik.',
+    });
+    await this.audit.log({
+      userId: actorUserId,
+      action: 'admin.test_email_sent',
+      resourceType: 'Mailer',
+      resourceId: to,
+      metadata: { ok: result.ok, status: result.status ?? null },
+    });
+    return result;
   }
 
   /** Számla-/utalási adatok mentése (csak Super Admin). */
