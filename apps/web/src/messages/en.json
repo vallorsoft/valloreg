@@ -743,6 +743,47 @@
       "orDelete": "or delete this upload with the Delete button above."
     }
   },
+  "majorComponents": {
+    "title": "Major components",
+    "subtitle": "Timeline of major component replacements and overhauls.",
+    "add": "Add",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "loading": "Loading…",
+    "empty": "No major component events recorded yet.",
+    "delete": "Delete",
+    "confirmDelete": "Delete this event?",
+    "addError": "Failed to record the event.",
+    "deleteError": "Failed to delete.",
+    "component": "Component",
+    "kind": "Kind",
+    "titleField": "Name",
+    "titlePlaceholder": "e.g. Gearbox overhaul",
+    "odometerKm": "Odometer (at replacement)",
+    "date": "Date",
+    "partsCost": "Parts cost",
+    "laborCost": "Labor cost",
+    "notes": "Notes",
+    "kinds": {
+      "replacement": "Replacement",
+      "refurbishment": "Overhaul"
+    },
+    "components": {
+      "turbo": "Turbocharger",
+      "engine_overhaul": "Engine overhaul",
+      "injection": "Injection",
+      "clutch": "Clutch",
+      "driveshaft": "Driveshaft",
+      "gearbox_overhaul": "Gearbox overhaul",
+      "differential": "Differential",
+      "dpf_egr": "DPF / EGR",
+      "air_compressor": "Air compressor",
+      "steering": "Steering",
+      "cooling": "Cooling system",
+      "other": "Other"
+    }
+  },
   "reminders": {
     "title": "Reminders",
     "subtitle": "Proactive maintenance and expiry deadlines per vehicle.",

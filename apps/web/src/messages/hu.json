@@ -743,6 +743,47 @@
       "orDelete": "vagy törölje ezt a feltöltést a fenti Törlés gombbal."
     }
   },
+  "majorComponents": {
+    "title": "Nagy alkatrészek",
+    "subtitle": "Fődarab cserék és felújítások idővonala.",
+    "add": "Hozzáadás",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "saving": "Mentés…",
+    "loading": "Betöltés…",
+    "empty": "Még nincs rögzített nagy alkatrész esemény.",
+    "delete": "Törlés",
+    "confirmDelete": "Biztosan törlöd ezt az eseményt?",
+    "addError": "A rögzítés sikertelen.",
+    "deleteError": "A törlés sikertelen.",
+    "component": "Alkatrész",
+    "kind": "Jelleg",
+    "titleField": "Megnevezés",
+    "titlePlaceholder": "pl. Sebességváltó-felújítás",
+    "odometerKm": "Km-óra (cserekor)",
+    "date": "Dátum",
+    "partsCost": "Alkatrész költség",
+    "laborCost": "Munkadíj",
+    "notes": "Megjegyzés",
+    "kinds": {
+      "replacement": "Csere",
+      "refurbishment": "Felújítás"
+    },
+    "components": {
+      "turbo": "Turbó",
+      "engine_overhaul": "Motorfelújítás",
+      "injection": "Befecskendezés",
+      "clutch": "Kuplung",
+      "driveshaft": "Kardán",
+      "gearbox_overhaul": "Sebességváltó-felújítás",
+      "differential": "Differenciálmű",
+      "dpf_egr": "DPF / EGR",
+      "air_compressor": "Légkompresszor",
+      "steering": "Kormánymű",
+      "cooling": "Hűtőrendszer",
+      "other": "Egyéb"
+    }
+  },
   "reminders": {
     "title": "Emlékeztetők",
     "subtitle": "Proaktív karbantartás és lejárati határidők járművenként.",

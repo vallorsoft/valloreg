@@ -743,6 +743,47 @@
       "orDelete": "sau ștergeți această încărcare cu butonul Ștergere de mai sus."
     }
   },
+  "majorComponents": {
+    "title": "Componente majore",
+    "subtitle": "Cronologia înlocuirilor și reviziilor de ansambluri mari.",
+    "add": "Adaugă",
+    "cancel": "Anulează",
+    "save": "Salvează",
+    "saving": "Se salvează…",
+    "loading": "Se încarcă…",
+    "empty": "Încă nu există evenimente de componente majore.",
+    "delete": "Șterge",
+    "confirmDelete": "Sigur ștergi acest eveniment?",
+    "addError": "Înregistrarea a eșuat.",
+    "deleteError": "Ștergerea a eșuat.",
+    "component": "Componentă",
+    "kind": "Tip",
+    "titleField": "Denumire",
+    "titlePlaceholder": "ex. Revizie cutie de viteze",
+    "odometerKm": "Kilometraj (la înlocuire)",
+    "date": "Dată",
+    "partsCost": "Cost piese",
+    "laborCost": "Manoperă",
+    "notes": "Observații",
+    "kinds": {
+      "replacement": "Înlocuire",
+      "refurbishment": "Revizie"
+    },
+    "components": {
+      "turbo": "Turbosuflantă",
+      "engine_overhaul": "Revizie motor",
+      "injection": "Injecție",
+      "clutch": "Ambreiaj",
+      "driveshaft": "Cardan",
+      "gearbox_overhaul": "Revizie cutie de viteze",
+      "differential": "Diferențial",
+      "dpf_egr": "DPF / EGR",
+      "air_compressor": "Compresor de aer",
+      "steering": "Casetă de direcție",
+      "cooling": "Sistem de răcire",
+      "other": "Altele"
+    }
+  },
   "reminders": {
     "title": "Mementouri",
     "subtitle": "Întreținere proactivă și termene de expirare per vehicul.",
