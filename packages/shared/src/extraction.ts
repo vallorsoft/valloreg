@@ -50,7 +50,7 @@ export const ExtractedInvoiceSchema = z.object({
   /** ISO dátum (YYYY-MM-DD), ha értelmezhető. */
   date: z.string().default(''),
   invoiceNumber: z.string().default(''),
-  /** ISO 4217 pénznem (pl. HUF, RON, EUR). */
+  /** ISO 4217 pénznem (pl. RON, EUR). */
   currency: z.string().default(''),
   /** Kilométeróra-állás, ha szerepel a számlán. */
   odometerKm: z.number().int().nonnegative().nullable().default(null),

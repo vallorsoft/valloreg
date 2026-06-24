@@ -375,8 +375,8 @@
       "automationRate": "Automation"
     },
     "units": {
-      "currency": "HUF",
-      "perKm": "HUF/km",
+      "currency": "RON",
+      "perKm": "RON/km",
       "items": "pcs",
       "events": "events"
     },
@@ -1052,7 +1052,7 @@
     "unavailable": "This feature is not available on your plan.",
     "empty": "Not enough data for the ranking yet.",
     "exportCsv": "Export CSV",
-    "exportPdf": "PDF / Print",
+    "exportPdf": "PDF",
     "replaceAdvice": "Replace advised",
     "tabs": { "segment": "By segment", "model": "By make/model", "suppliers": "Suppliers" },
     "suppliers": {

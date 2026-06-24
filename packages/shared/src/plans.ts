@@ -79,13 +79,14 @@ export function isWithinLimit(current: number, limit: number): boolean {
  * Csomag-árak (havi, nettó) az utalásos előfizetéshez. A `PLAN_CURRENCY` a
  * pénznem. Ezek alapértelmezett értékek – az üzemeltető igazíthatja.
  */
-export const PLAN_CURRENCY = 'HUF';
+export const PLAN_CURRENCY = 'RON';
 
+// Havi nettó árak LEJ-ben (RON). Ajánlott alapértékek – az üzemeltető igazíthatja.
 export const PLAN_PRICES: Record<PlanTier, number> = {
-  [PlanTier.STARTER]: 9900,
-  [PlanTier.STANDARD]: 19900,
-  [PlanTier.PROFESSIONAL]: 39900,
-  [PlanTier.BUSINESS]: 79900,
+  [PlanTier.STARTER]: 49,
+  [PlanTier.STANDARD]: 99,
+  [PlanTier.PROFESSIONAL]: 199,
+  [PlanTier.BUSINESS]: 399,
 };
 
 /** A próbaidőszak hossza napokban (a regisztráció ennyit ad ingyen). */
