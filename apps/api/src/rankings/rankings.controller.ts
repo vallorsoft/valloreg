@@ -9,12 +9,12 @@ import { RankingsService } from './rankings.service';
 import { SupplierQualityService } from './supplier-quality.service';
 
 /**
- * Jármű-ranglista API. A REPORTS feature flag mögött (mint az insights/
+ * Jármű-ranglista API. A ANALYTICS feature flag mögött (mint az insights/
  * benchmark/major-components). Olvasás minden tagnak.
  */
 @Controller('rankings')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)
-@RequireFeature(FeatureKey.REPORTS)
+@RequireFeature(FeatureKey.ANALYTICS)
 export class RankingsController {
   constructor(
     private readonly rankings: RankingsService,

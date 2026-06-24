@@ -47,14 +47,19 @@ export class MajorComponentsController {
     return this.service.listForVehicle(vehicleId);
   }
 
-  /** Egy jármű fődarab-előrejelzése (esedékesség + becsült költség). */
+  /**
+   * Egy jármű fődarab-előrejelzése (esedékesség + becsült költség).
+   * Prémium analitika → ANALYTICS (Fleet), felülírja az osztály REPORTS-át.
+   */
   @Get('vehicles/:vehicleId/durability')
+  @RequireFeature(FeatureKey.ANALYTICS)
   forecast(@Param('vehicleId') vehicleId: string) {
     return this.durability.forecastForVehicle(vehicleId);
   }
 
-  /** Flotta-szintű tartósság-felmérés (tanult/seed élettartam per fődarab). */
+  /** Flotta-szintű tartósság-felmérés (tanult/seed élettartam) – ANALYTICS. */
   @Get('durability/survey')
+  @RequireFeature(FeatureKey.ANALYTICS)
   survey() {
     return this.durability.survey();
   }
