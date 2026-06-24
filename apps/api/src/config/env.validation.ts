@@ -49,7 +49,9 @@ export const envSchema = z.object({
   JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET kötelező'),
   JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET kötelező'),
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
-  JWT_REFRESH_TTL: z.coerce.number().int().positive().default(1209600),
+  // Refresh token élettartama (alap: 90 nap). A kliens minden használatkor
+  // rotálja/gördíti előre, így az eszközön aktív felhasználó bejelentkezve marad.
+  JWT_REFRESH_TTL: z.coerce.number().int().positive().default(7776000),
   // Jelszó-visszaállító token élettartama másodpercben (alap: 1 óra).
   PASSWORD_RESET_TTL: z.coerce.number().int().positive().default(3600),
 
