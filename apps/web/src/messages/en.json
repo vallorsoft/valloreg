@@ -1281,8 +1281,9 @@
       "documents": "Documents (this month)",
       "storage": "Storage",
       "includesExtra": "includes {gb} GB extra",
-      "storageNote": "Storage is total capacity (does not reset monthly). Extra storage can be purchased – contact us.",
-      "storagePacks": "Extra storage (monthly): {list}"
+      "storageNote": "Storage is total capacity (does not reset monthly).",
+      "storagePacks": "Extra storage (monthly): {list}",
+      "buyStorageTitle": "Buy extra storage (monthly, by bank transfer):"
     },
     "features": {
       "title": "Available features",

@@ -33,10 +33,10 @@ export class NotificationsController {
     return this.notifications.subscribe(user.userId, tenant.tenantId, dto);
   }
 
-  /** Leiratkozás endpoint alapján. */
+  /** Leiratkozás endpoint alapján (csak a saját feliratkozás). */
   @Post('unsubscribe')
   @UseGuards(JwtAuthGuard)
-  unsubscribe(@Body() dto: UnsubscribePushDto) {
-    return this.notifications.unsubscribe(dto.endpoint);
+  unsubscribe(@CurrentUser() user: AuthUser, @Body() dto: UnsubscribePushDto) {
+    return this.notifications.unsubscribe(user.userId, dto.endpoint);
   }
 }

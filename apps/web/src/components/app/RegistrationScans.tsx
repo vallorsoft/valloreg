@@ -133,7 +133,6 @@ export function RegistrationScans({ onConfirmed }: Props) {
           ref={inputRef}
           type="file"
           accept={ACCEPT}
-          capture="environment"
           multiple
           className="sr-only"
           onChange={(e) => void handleFiles(e.target.files)}

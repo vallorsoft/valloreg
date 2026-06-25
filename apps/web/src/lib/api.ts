@@ -1481,6 +1481,13 @@ export const billingApi = {
       json: { planTier, interval },
     });
   },
+  /** Extra tárhely igénylése (a `bytes` egy STORAGE_PACKS csomag mérete). */
+  requestStorage(bytes: number) {
+    return apiRequest<SubscriptionRequestResult>('/billing/request-storage', {
+      method: 'POST',
+      json: { bytes },
+    });
+  },
 };
 
 // ── Notifications (Web Push) ────────────────────────────────────────────────

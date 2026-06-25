@@ -47,7 +47,12 @@ export class UsersController {
     @CurrentUser() user: AuthUser,
     @Body() dto: InviteUserDto,
   ) {
-    return this.usersService.invite(tenant.tenantId, user.userId, dto);
+    return this.usersService.invite(
+      tenant.tenantId,
+      user.userId,
+      tenant.role,
+      dto,
+    );
   }
 
   /** Függőben lévő meghívók listája (OWNER, ADMIN). */
@@ -98,6 +103,7 @@ export class UsersController {
     return this.usersService.changeMemberRole(
       tenant.tenantId,
       user.userId,
+      tenant.role,
       membershipId,
       dto.role,
     );
@@ -116,6 +122,7 @@ export class UsersController {
     await this.usersService.removeMember(
       tenant.tenantId,
       user.userId,
+      tenant.role,
       membershipId,
     );
   }

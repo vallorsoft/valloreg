@@ -98,7 +98,6 @@ export function ComplianceScanModal({
                 ref={inputRef}
                 type="file"
                 accept={ACCEPT}
-                capture="environment"
                 className="sr-only"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />

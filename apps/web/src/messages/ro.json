@@ -1281,8 +1281,9 @@
       "documents": "Documente (luna aceasta)",
       "storage": "Stocare",
       "includesExtra": "include {gb} GB extra",
-      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar). Se poate cumpăra stocare suplimentară – scrie-ne.",
-      "storagePacks": "Stocare suplimentară (lunar): {list}"
+      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar).",
+      "storagePacks": "Stocare suplimentară (lunar): {list}",
+      "buyStorageTitle": "Cumpără stocare suplimentară (lunar, prin transfer):"
     },
     "features": {
       "title": "Funcții disponibile",

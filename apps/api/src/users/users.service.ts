@@ -6,6 +6,7 @@ import {
   PLAN_LIMITS,
   PlanTier,
   TenantRole,
+  TENANT_ROLE_RANK,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
@@ -47,7 +48,15 @@ export class UsersService {
    * Felhasználó meghívása. Ellenőrzi a csomag user-limitjét (tagok + függőben
    * lévő meghívók), létrehoz egy Invitation rekordot, és emailt küld (stub).
    */
-  async invite(tenantId: string, inviterUserId: string, dto: InviteUserDto) {
+  async invite(
+    tenantId: string,
+    inviterUserId: string,
+    inviterRole: TenantRole,
+    dto: InviteUserDto,
+  ) {
+    // Jogosultság-eszkaláció ellen: ne lehessen a sajátnál magasabb (vagy OWNER)
+    // szerepkörre meghívni.
+    this.assertCanAssignRole(inviterRole, dto.role);
     await this.assertUserLimit(tenantId);
 
     const email = dto.email.toLowerCase().trim();
@@ -228,6 +237,7 @@ export class UsersService {
   async changeMemberRole(
     tenantId: string,
     actorUserId: string,
+    actorRole: TenantRole,
     membershipId: string,
     role: TenantRole,
   ) {
@@ -237,6 +247,12 @@ export class UsersService {
     if (!membership) {
       throw AppException.notFound('A tag nem található.');
     }
+
+    // Jogosultság-eszkaláció ellen: csak a sajátnál nem magasabb rangú tagot
+    // lehet kezelni, és csak a sajátnál nem magasabb (OWNER esetén csak OWNER)
+    // szerepkört lehet adni.
+    this.assertCanManageMember(actorRole, membership.role);
+    this.assertCanAssignRole(actorRole, role);
 
     // Az utolsó OWNER nem fokozható le (cég ne maradjon tulajdonos nélkül).
     if (membership.role === TenantRole.OWNER && role !== TenantRole.OWNER) {
@@ -264,6 +280,7 @@ export class UsersService {
   async removeMember(
     tenantId: string,
     actorUserId: string,
+    actorRole: TenantRole,
     membershipId: string,
   ): Promise<void> {
     const membership = await this.prisma.scoped.membership.findFirst({
@@ -272,6 +289,10 @@ export class UsersService {
     if (!membership) {
       throw AppException.notFound('A tag nem található.');
     }
+
+    // Jogosultság-eszkaláció ellen: nálad magasabb rangú (vagy OWNER) tagot nem
+    // távolíthatsz el.
+    this.assertCanManageMember(actorRole, membership.role);
 
     if (membership.role === TenantRole.OWNER) {
       await this.assertNotLastOwner(tenantId, membershipId);
@@ -291,6 +312,43 @@ export class UsersService {
   }
 
   // ── Belső segédek ───────────────────────────────────────────────────────
+
+  /**
+   * Nem adható (meghívóval vagy módosítással) a sajátnál magasabb rangú
+   * szerepkör, és OWNER szerepkört csak OWNER oszthat – jogosultság-eszkaláció
+   * ellen (pl. ADMIN ne tehessen senkit, magát se, OWNER-ré).
+   */
+  private assertCanAssignRole(
+    actorRole: TenantRole,
+    targetRole: TenantRole,
+  ): void {
+    if (targetRole === TenantRole.OWNER && actorRole !== TenantRole.OWNER) {
+      throw AppException.forbidden('Tulajdonosi szerepkört csak tulajdonos adhat.');
+    }
+    if (TENANT_ROLE_RANK[targetRole] > TENANT_ROLE_RANK[actorRole]) {
+      throw AppException.forbidden(
+        'Nem adhatsz a sajátodnál magasabb szerepkört.',
+      );
+    }
+  }
+
+  /**
+   * Nem kezelhető (módosítható/törölhető) a sajátnál magasabb rangú tag, és
+   * OWNER tagot csak OWNER kezelhet.
+   */
+  private assertCanManageMember(
+    actorRole: TenantRole,
+    memberRole: TenantRole,
+  ): void {
+    if (memberRole === TenantRole.OWNER && actorRole !== TenantRole.OWNER) {
+      throw AppException.forbidden('Tulajdonost csak tulajdonos kezelhet.');
+    }
+    if (TENANT_ROLE_RANK[memberRole] > TENANT_ROLE_RANK[actorRole]) {
+      throw AppException.forbidden(
+        'Nem kezelhetsz a sajátodnál magasabb rangú tagot.',
+      );
+    }
+  }
 
   /** Csomag user-limit ellenőrzése (aktív tagok + függő meghívók). */
   private async assertUserLimit(tenantId: string): Promise<void> {

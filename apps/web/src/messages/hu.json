@@ -1281,8 +1281,9 @@
       "documents": "Dokumentumok (ez a hónap)",
       "storage": "Tárhely",
       "includesExtra": "tartalmaz {gb} GB extrát",
-      "storageNote": "A tárhely teljes kapacitás (nem nullázódik havonta). Extra tárhely vásárolható – írj nekünk.",
-      "storagePacks": "Vásárolható extra tárhely (havi díj): {list}"
+      "storageNote": "A tárhely teljes kapacitás (nem nullázódik havonta).",
+      "storagePacks": "Vásárolható extra tárhely (havi díj): {list}",
+      "buyStorageTitle": "Extra tárhely vásárlása (havi díj, utalással):"
     },
     "features": {
       "title": "Elérhető funkciók",
