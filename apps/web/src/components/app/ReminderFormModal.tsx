@@ -9,6 +9,7 @@ import {
 } from '@valloreg/shared';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useModalA11y } from '@/components/app/useModalA11y';
 import {
   remindersApi,
   ApiError,
@@ -55,6 +56,7 @@ export function ReminderFormModal({
   onSaved,
 }: Props) {
   const t = useTranslations('reminders');
+  const dialogRef = useModalA11y(onClose);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<FormState>({
@@ -135,8 +137,15 @@ export function ReminderFormModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-card-hover">
-        <h2 className="mb-6 text-lg font-semibold text-anthracite-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="reminder-form-title"
+        tabIndex={-1}
+        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-card-hover focus:outline-none"
+      >
+        <h2 id="reminder-form-title" className="mb-6 text-lg font-semibold text-anthracite-900">
           {reminder ? t('form.editTitle') : t('form.addTitle')}
         </h2>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">

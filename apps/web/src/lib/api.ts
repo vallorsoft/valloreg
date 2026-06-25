@@ -1263,6 +1263,17 @@ export const usersApi = {
       json: payload,
     });
   },
+  /**
+   * Meghívó elfogadása a tokennel. @Public végpont (a felhasználó még nem tag):
+   * anonim hívás, nem fűzünk hozzá Authorization fejlécet. Új fiókhoz `name` +
+   * `password` kell; meglévő fióknál ezek elhagyhatók.
+   */
+  acceptInvite(payload: { token: string; name?: string; password?: string }) {
+    return apiRequest<{ tenantId: string; userId: string; role: string }>(
+      '/users/accept-invite',
+      { method: 'POST', json: payload, anonymous: true },
+    );
+  },
   listInvitations() {
     return apiRequest<PendingInvitation[]>('/users/invitations');
   },

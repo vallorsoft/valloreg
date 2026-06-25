@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
 import { randomBytes } from 'node:crypto';
 import {
+  DEFAULT_LOCALE,
   isWithinLimit,
   PLAN_LIMITS,
   PlanTier,
@@ -10,6 +11,7 @@ import {
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { AppConfigService } from '../config/app-config.service';
 import { MailerService } from '../storage/mailer.service';
 import { AppException } from '../common/exceptions/app.exception';
 import type { InviteUserDto } from './dto/invite-user.dto';
@@ -23,6 +25,7 @@ export class UsersService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly mailer: MailerService,
+    private readonly config: AppConfigService,
   ) {}
 
   /** Az aktív cég tagjai (membership + felhasználó). Tenant-scope-olt olvasás. */
@@ -94,12 +97,18 @@ export class UsersService {
       },
     });
 
+    // A meghívó-link a web-app accept-invite oldalára mutat (a jelszó-visszaállító
+    // e-mail link-felépítését tükrözve: webAppUrl + locale + útvonal + token).
+    const lang = DEFAULT_LOCALE.toLowerCase();
+    const acceptLink = `${this.config.webAppUrl}/${lang}/accept-invite?token=${token}`;
+
     await this.mailer.send({
       to: email,
       subject: 'Meghívó – Valloreg',
       text:
         `Meghívást kaptál egy Valloreg céghez.\n` +
-        `Fogadd el ezzel a tokennel: ${token}\n` +
+        `Fogadd el a meghívót ezen a linken: ${acceptLink}\n` +
+        `(Vagy add meg ezt a tokent kézzel: ${token})\n` +
         `Lejárat: ${expiresAt.toISOString()}`,
     });
 

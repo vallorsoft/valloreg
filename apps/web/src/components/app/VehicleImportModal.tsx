@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
+import { useModalA11y } from '@/components/app/useModalA11y';
 
 interface Props {
   onClose: () => void;
@@ -28,6 +29,7 @@ const TEMPLATE =
 
 export function VehicleImportModal({ onClose, onDone }: Props) {
   const t = useTranslations('vehicles.import');
+  const dialogRef = useModalA11y(onClose);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -79,8 +81,15 @@ export function VehicleImportModal({ onClose, onDone }: Props) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover">
-        <h2 className="mb-1 text-lg font-semibold text-anthracite-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vehicle-import-title"
+        tabIndex={-1}
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover focus:outline-none"
+      >
+        <h2 id="vehicle-import-title" className="mb-1 text-lg font-semibold text-anthracite-900">
           {t('title')}
         </h2>
         <p className="mb-4 text-sm text-anthracite-500">{t('subtitle')}</p>

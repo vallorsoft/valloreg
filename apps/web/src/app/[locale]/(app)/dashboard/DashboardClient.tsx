@@ -18,6 +18,7 @@ import { PageHeading } from '@/components/app/PageHeading';
 import { PushOptIn } from '@/components/app/PushOptIn';
 import { UploadZone } from '@/components/app/UploadZone';
 import { ReminderRow } from '@/components/app/ReminderRow';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 function StatCard({ label, value, unit }: { label: string; value: string | number; unit?: string }) {
   return (
@@ -40,13 +41,23 @@ export function DashboardClient() {
   const [loading, setLoading] = useState(true);
   const [reminders, setReminders] = useState<Reminder[]>([]);
   const [anomalies, setAnomalies] = useState<AnomalySummary | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const loadStats = useCallback(() => {
+    setLoadError(false);
     return statsApi
       .getDashboard()
       .then(setStats)
-      .catch(() => {});
+      .catch((err) => {
+        // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+        if (isRealLoadError(err)) setLoadError(true);
+      });
   }, []);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    loadStats().finally(() => setLoading(false));
+  }, [loadStats]);
 
   useEffect(() => {
     loadStats().finally(() => setLoading(false));
@@ -148,6 +159,8 @@ export function DashboardClient() {
 
       {loading ? (
         <div className="py-10 text-center text-sm text-anthracite-500">{t('loading')}</div>
+      ) : loadError ? (
+        <LoadErrorState onRetry={reload} />
       ) : !stats ? (
         <p className="text-sm text-anthracite-500">{t('noData')}</p>
       ) : (

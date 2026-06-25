@@ -18,6 +18,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { FeatureGuard } from '../common/guards/feature.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RequireFeature } from '../common/decorators/require-feature.decorator';
 import { CurrentTenant } from '../common/decorators/current-tenant.decorator';
@@ -42,6 +43,7 @@ export class DocumentsController {
    */
   @Post()
   @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
+  @UseGuards(SubscriptionGuard)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   @UseInterceptors(
     FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),

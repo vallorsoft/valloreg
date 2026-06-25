@@ -10,6 +10,7 @@ import {
 } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useModalA11y } from '@/components/app/useModalA11y';
 import {
   VehicleDetailsFields,
   emptyExtraState,
@@ -42,6 +43,7 @@ interface FormState {
  */
 export function VehicleScanReviewModal({ scanId, onClose, onSaved }: Props) {
   const t = useTranslations('vehicles.scan');
+  const dialogRef = useModalA11y(onClose);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -130,8 +132,15 @@ export function VehicleScanReviewModal({ scanId, onClose, onSaved }: Props) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-anthracite-900/50" onClick={onClose} aria-hidden="true" />
-      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover">
-        <h2 className="mb-1 text-lg font-semibold text-anthracite-900">{t('title')}</h2>
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vehicle-scan-title"
+        tabIndex={-1}
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover focus:outline-none"
+      >
+        <h2 id="vehicle-scan-title" className="mb-1 text-lg font-semibold text-anthracite-900">{t('title')}</h2>
         <p className="mb-5 text-sm text-anthracite-500">{t('subtitle')}</p>
 
         {loading ? (

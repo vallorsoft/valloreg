@@ -12,6 +12,7 @@ import { SubscribePushDto } from './dto/subscribe-push.dto';
 import { UnsubscribePushDto } from './dto/unsubscribe-push.dto';
 
 @Controller('notifications')
+@UseGuards(JwtAuthGuard)
 export class NotificationsController {
   constructor(private readonly notifications: NotificationsService) {}
 

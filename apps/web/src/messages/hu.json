@@ -37,7 +37,8 @@
       "terms": "Felhasználási feltételek",
       "about": "Rólunk",
       "tagline": "Flottakezelés okosan – kevesebb adminisztráció, több átláthatóság."
-    }
+    },
+    "contactEmail": "vallorsoft@gmail.com"
   },
   "landing": {
     "hero": {
@@ -276,7 +277,10 @@
       "message": "Üzenet",
       "messagePlaceholder": "Miben segíthetünk?",
       "submit": "Üzenet küldése",
-      "note": "Hamarosan válaszolunk. Az űrlap bekötése későbbi fázisban érkezik."
+      "note": "Megnyitjuk az ön levelezőprogramját az előre kitöltött üzenettel. Hamarosan válaszolunk.",
+      "mailtoSubject": "Valloreg – kapcsolatfelvétel",
+      "success": "Megnyitottuk a levelezőprogramját az előre kitöltött üzenettel. Ha nem nyílt meg, írjon közvetlenül a {email} címre.",
+      "errorNoMessage": "Kérjük, írja be az üzenetét."
     }
   },
   "auth": {
@@ -364,6 +368,22 @@
       "success": "A jelszavát sikeresen módosítottuk. Most már bejelentkezhet az új jelszavával.",
       "goToLogin": "Bejelentkezés",
       "invalidLink": "A visszaállító link érvénytelen vagy hiányzik. Kérjen újat."
+    },
+    "acceptInvite": {
+      "title": "Meghívó elfogadása",
+      "subtitle": "Állítsa be a fiókját, hogy csatlakozhasson a céghez.",
+      "name": "Név",
+      "namePlaceholder": "Az Ön neve",
+      "password": "Jelszó",
+      "passwordPlaceholder": "Legalább 8 karakter",
+      "confirmPassword": "Jelszó megerősítése",
+      "confirmPasswordPlaceholder": "Írja be újra a jelszót",
+      "submit": "Meghívó elfogadása",
+      "backToLogin": "Vissza a bejelentkezéshez",
+      "success": "A meghívót elfogadta. Most már bejelentkezhet.",
+      "goToLogin": "Bejelentkezés",
+      "invalidLink": "A meghívó linkje érvénytelen vagy hiányzik. Kérjen újat a cégétől.",
+      "hint": "Ha már van fiókja ezzel az e-mail-címmel, a jelszó megadása nélkül is elfogadhatja a meghívót."
     }
   },
   "app": {
@@ -1300,5 +1320,61 @@
     "disable": "Kikapcsolás",
     "working": "Folyamatban…",
     "error": "Hiba történt, próbáld újra."
+  },
+  "legal": {
+    "lastUpdated": "Utolsó frissítés: 2025. június 1.",
+    "backToHome": "Vissza a főoldalra",
+    "privacy": {
+      "title": "Adatvédelmi tájékoztató",
+      "intro": "Ez a tájékoztató ismerteti, hogyan kezeli a Valloreg a szolgáltatás használata során megadott személyes adatokat. Az adatkezelés az Európai Unió általános adatvédelmi rendeletének (GDPR) megfelelően történik.",
+      "sections": [
+        {
+          "heading": "Az adatkezelő",
+          "body": "A szolgáltatást a Valloreg üzemelteti. Adatvédelmi kérdéseivel a {email} címen vehet fel velünk kapcsolatot."
+        },
+        {
+          "heading": "Milyen adatokat kezelünk",
+          "body": "Fiók- és kapcsolattartási adatokat (név, e-mail-cím, cégadatok), valamint a szolgáltatás használata során feltöltött dokumentumokat és jármű-adatokat. Az automatikus naplók technikai adatokat (IP-cím, böngészőtípus) tartalmazhatnak a biztonság és az üzemeltetés céljából."
+        },
+        {
+          "heading": "Az adatkezelés célja és jogalapja",
+          "body": "Az adatokat a szolgáltatás nyújtásához, a szerződés teljesítéséhez, a számlázáshoz és a jogszabályi kötelezettségek teljesítéséhez kezeljük. A jogalap a szerződés teljesítése, jogos érdek, illetve a jogi kötelezettség."
+        },
+        {
+          "heading": "Adattárolás és -továbbítás",
+          "body": "Az adatokat addig őrizzük, amíg a fiók aktív, illetve ameddig azt jogszabály előírja. Adatfeldolgozóként tárhely-, e-mail- és AI-szolgáltatókat veszünk igénybe, kizárólag a szolgáltatás működtetéséhez szükséges mértékben."
+        },
+        {
+          "heading": "Az Ön jogai",
+          "body": "Ön jogosult a személyes adataihoz való hozzáférésre, azok helyesbítésére, törlésére, a kezelés korlátozására, valamint az adathordozhatóságra. Kérelmét a {email} címen jelezheti."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Felhasználási feltételek",
+      "intro": "A Valloreg szolgáltatás használatával Ön elfogadja az alábbi feltételeket. Kérjük, használat előtt figyelmesen olvassa el őket.",
+      "sections": [
+        {
+          "heading": "A szolgáltatás",
+          "body": "A Valloreg flottakezelő szoftvert biztosít, amely OCR és mesterséges intelligencia segítségével dolgozza fel a feltöltött dokumentumokat és jármű-adatokat. A szolgáltatást a mindenkori előfizetési csomag feltételei szerint nyújtjuk."
+        },
+        {
+          "heading": "Fiók és felelősség",
+          "body": "Ön felel a fiókja hozzáférési adatainak biztonságos kezeléséért és a fiókján keresztül végzett tevékenységekért. A szolgáltatást kizárólag jogszerű célokra használhatja."
+        },
+        {
+          "heading": "Tartalom és adatok",
+          "body": "Az Ön által feltöltött tartalom az Ön tulajdona marad. Ön felel azért, hogy jogosult az adatok feltöltésére és kezelésére. Az AI-alapú feldolgozás eredménye tájékoztató jellegű, ezért javasoljuk a fontos adatok ellenőrzését."
+        },
+        {
+          "heading": "Felelősség korlátozása",
+          "body": "A szolgáltatást „ahogy van” alapon nyújtjuk. A jogszabályok által megengedett mértékben nem vállalunk felelősséget a szolgáltatás használatából eredő közvetett károkért."
+        },
+        {
+          "heading": "Kapcsolat",
+          "body": "A feltételekkel kapcsolatos kérdéseit a {email} címen várjuk."
+        }
+      ]
+    }
   }
 }
