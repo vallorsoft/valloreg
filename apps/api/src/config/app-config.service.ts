@@ -62,6 +62,23 @@ export class AppConfigService {
     return this.get('PASSWORD_RESET_TTL');
   }
 
+  /** Adat-megőrzési idők (napokban) az automatikus takarító jobhoz. */
+  get dataRetention(): {
+    auditLogDays: number;
+    refreshTokenDays: number;
+    passwordResetTokenDays: number;
+    invitationDays: number;
+    supportAccessDays: number;
+  } {
+    return {
+      auditLogDays: this.get('AUDIT_LOG_RETENTION_DAYS'),
+      refreshTokenDays: this.get('REFRESH_TOKEN_RETENTION_DAYS'),
+      passwordResetTokenDays: this.get('PASSWORD_RESET_TOKEN_RETENTION_DAYS'),
+      invitationDays: this.get('INVITATION_RETENTION_DAYS'),
+      supportAccessDays: this.get('SUPPORT_ACCESS_RETENTION_DAYS'),
+    };
+  }
+
   /**
    * Redis kapcsolat (BullMQ/ioredis). Ha REDIS_URL adott, abból parse-olunk
    * (rediss:// → TLS); különben a külön host/port/password mezőkből.

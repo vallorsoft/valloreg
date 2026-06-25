@@ -21,6 +21,11 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import {
+  ConfirmTwoFactorDto,
+  DisableTwoFactorDto,
+  VerifyTwoFactorLoginDto,
+} from './dto/two-factor.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -73,5 +78,56 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.authService.me(user.userId);
+  }
+
+  // ── 2FA (TOTP) ──────────────────────────────────────────────────────────
+
+  /** 2FA bekapcsolásának indítása: titok + otpauth URI (még nem tárolt). */
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/setup')
+  @HttpCode(HttpStatus.OK)
+  beginTwoFactorSetup(@CurrentUser() user: AuthUser) {
+    return this.authService.beginTwoFactorSetup(user.userId);
+  }
+
+  /** 2FA megerősítése: titok + kód → a titok tárolása. */
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/confirm')
+  @HttpCode(HttpStatus.OK)
+  confirmTwoFactor(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: ConfirmTwoFactorDto,
+  ) {
+    return this.authService.confirmTwoFactorSetup(
+      user.userId,
+      dto.secret,
+      dto.code,
+    );
+  }
+
+  /** 2FA kikapcsolása jelszó-megerősítéssel. */
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/disable')
+  @HttpCode(HttpStatus.OK)
+  disableTwoFactor(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: DisableTwoFactorDto,
+  ) {
+    return this.authService.disableTwoFactor(user.userId, dto.password);
+  }
+
+  /** 2FA bejelentkezés második lépése (challenge token + kód). */
+  @Public()
+  @Post('2fa/verify-login')
+  @HttpCode(HttpStatus.OK)
+  verifyTwoFactorLogin(
+    @Body() dto: VerifyTwoFactorLoginDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.authService.verifyTwoFactorLogin(
+      dto.sessionToken,
+      dto.code,
+      req.ip,
+    );
   }
 }

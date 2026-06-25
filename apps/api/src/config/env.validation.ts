@@ -116,6 +116,18 @@ export const envSchema = z.object({
     .int()
     .positive()
     .default(25 * 1024 * 1024),
+
+  // Adat-megőrzés / automatikus takarítás (napokban). A napi retenciós job
+  // ezek alapján törli a lejárt/feleslegessé vált technikai rekordokat.
+  AUDIT_LOG_RETENTION_DAYS: z.coerce.number().int().positive().default(365),
+  REFRESH_TOKEN_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
+  PASSWORD_RESET_TOKEN_RETENTION_DAYS: z.coerce
+    .number()
+    .int()
+    .positive()
+    .default(7),
+  INVITATION_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
+  SUPPORT_ACCESS_RETENTION_DAYS: z.coerce.number().int().positive().default(30),
 });
 
 export type AppEnv = z.infer<typeof envSchema>;

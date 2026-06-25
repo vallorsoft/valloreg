@@ -24,9 +24,10 @@ const securityMeasures: LegalDoc = {
       items: [
         'Parole stocate exclusiv ca hash Argon2 (niciodată în text clar).',
         'Autentificare cu token-uri JWT: access (durată scurtă, 15 minute) + refresh (14 zile), cu rotație și revocare; refresh token stocat ca hash.',
+        'Autentificare în doi pași (2FA) prin TOTP, opțională per utilizator.',
         'Token de resetare a parolei stocat ca hash, de unică folosință, cu expirare (1 oră).',
         'Control acces bazat pe roluri (RBAC): OWNER, FLEET_MANAGER, ADMIN, ACCOUNTANT, VIEWER (companie) și SUPER_ADMIN (platformă).',
-        'Autentificare în doi pași (2FA) – câmp pregătit în model; activarea completă este planificată (vezi nota).',
+        'Autentificare în doi pași (2FA) prin TOTP (aplicație de autentificare) – disponibilă opțional pentru utilizatori; la activare/dezactivare sesiunile se invalidează.',
       ],
     },
     { k: 'h', t: '2. Izolare multi-tenant' },
@@ -78,7 +79,7 @@ const securityMeasures: LegalDoc = {
     },
     {
       k: 'note',
-      t: '[DE REMEDIAT – urgent] Fișierul .env.example din repository conține o parolă reală de bază de date (Neon). Aceasta trebuie rotită imediat și eliminată din istoricul versiunilor. [DE COMPLETAT] Activarea efectivă a 2FA, politica de gestionare a vulnerabilităților dependențelor și testele automate de izolare cross-tenant trebuie finalizate/documentate.',
+      t: '[DE COMPLETAT] Politica de gestionare a vulnerabilităților dependențelor, testele automate de izolare cross-tenant și impunerea obligatorie a 2FA pentru rolurile privilegiate trebuie finalizate/documentate. (Notă istorică: o parolă de bază de date expusă anterior în .env.example a fost rotită și eliminată din ramurile active.)',
     },
   ],
 };

@@ -140,14 +140,30 @@ const terms: LegalDoc = {
       k: 'p',
       t: 'Rezultatul prelucrării bazate pe AI/OCR are caracter informativ și este propus spre verificare. Recomandăm verificarea datelor importante înainte de utilizarea lor în scopuri contabile, fiscale sau de mentenanță.',
     },
-    { k: 'h', t: '5. Disponibilitate și limitarea răspunderii' },
+    { k: 'h', t: '5. Natura serviciului și răspunderea' },
     {
       k: 'p',
-      t: 'Serviciul este furnizat „ca atare" și „așa cum este disponibil", pe bază de best-effort. În măsura permisă de lege, nu ne asumăm răspunderea pentru daune indirecte rezultate din utilizarea serviciului. Nivelul de disponibilitate este descris, dacă este cazul, separat.',
+      t: 'Valloreg pune la dispoziție EXCLUSIV un instrument software de facilitare și transparență (un „unealtă") pentru organizarea documentelor și a istoricului de service. Furnizorul își asumă răspunderea exclusiv pentru FUNCȚIONAREA tehnică a serviciului (disponibilitatea și operarea platformei conform planului de abonament), pe bază de best-effort.',
+    },
+    {
+      k: 'p',
+      t: 'Orice altă responsabilitate revine utilizatorului: corectitudinea, legalitatea și utilizarea datelor încărcate; verificarea rezultatelor generate de OCR/AI înainte de utilizarea lor (contabilă, fiscală, de mentenanță sau de orice altă natură); deciziile luate pe baza informațiilor din platformă; respectarea obligațiilor proprii (fiscale, de protecția datelor în calitate de operator al propriilor date, de conformitate a flotei etc.).',
+    },
+    {
+      k: 'p',
+      t: 'Serviciul este furnizat „ca atare" și „așa cum este disponibil", fără garanții de potrivire pentru un anumit scop. În măsura maximă permisă de lege, în relația B2B (între profesioniști), furnizorul nu acordă despăgubiri și nu răspunde pentru daune (directe sau indirecte), pierderi de date, de profit, de oportunitate sau întreruperi, rezultate din utilizarea ori imposibilitatea de utilizare a serviciului. Utilizatorul folosește serviciul pe propriul risc.',
+    },
+    {
+      k: 'p',
+      t: 'Plafon de răspundere: în orice situație, răspunderea totală cumulată a furnizorului față de client, indiferent de temei (contractual, delictual sau de altă natură), este limitată la valoarea totală a tarifelor contractuale (abonamentelor) efectiv plătite de client în ultimele 12 luni anterioare evenimentului care a generat prejudiciul. Această limitare nu se aplică în cazurile în care legea interzice limitarea sau excluderea răspunderii (de ex. dol, culpă gravă, vătămare corporală sau deces, răspunderea operatorului față de persoanele vizate conform art. 82 GDPR, garanțiile imperative).',
     },
     {
       k: 'note',
-      t: '[DE COMPLETAT de avocat] Clauze obligatorii suplimentare pentru un contract B2B: prețuri și modalități de plată, durata și încetarea, perioada de probă, politica de rambursare, proprietatea intelectuală, forța majoră, legea aplicabilă și instanța competentă, modalitatea de modificare a termenilor.',
+      t: '[DE VERIFICAT JURIDIC – esențial] Plafonul de răspundere (limitat la tarifele plătite în ultimele 12 luni) și exonerarea au LIMITE legale care nu pot fi înlăturate contractual nici în B2B: răspunderea pentru dol și culpă gravă, pentru vătămare corporală/deces, garanțiile imperative și răspunderea operatorului față de persoanele vizate conform GDPR (art. 82) nu pot fi excluse sau plafonate. Avocatul trebuie să confirme opozabilitatea clauzei și formularea excepțiilor. De asemenea, dacă serviciul devine accesibil persoanelor fizice (PFA/consumatori), se aplică reguli de protecția consumatorului.',
+    },
+    {
+      k: 'note',
+      t: '[DE COMPLETAT de avocat] Clauze contractuale B2B suplimentare: prețuri și plată, durata și încetarea, perioada de probă, politica de rambursare, proprietatea intelectuală, forța majoră, legea aplicabilă și instanța competentă, modalitatea de modificare a termenilor.',
     },
     { k: 'h', t: '6. Contact' },
     { k: 'p', t: `Pentru întrebări legate de acești termeni: ${COMPANY.email}.` },

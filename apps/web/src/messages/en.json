@@ -32,7 +32,8 @@
       "contact": "Contact",
       "login": "Log in",
       "register": "Sign up",
-      "dashboard": "Dashboard"
+      "dashboard": "Dashboard",
+      "legal": "Legal"
     },
     "actions": {
       "startTrial": "Start free trial",
@@ -272,6 +273,14 @@
     }
   },
   "auth": {
+    "twoFactor": {
+      "title": "Two-step verification",
+      "subtitle": "Enter the 6-digit code from your authenticator app.",
+      "codeLabel": "Code",
+      "verify": "Verify",
+      "invalid": "Invalid code. Please try again.",
+      "back": "Back to sign in"
+    },
     "login": {
       "title": "Log in",
       "subtitle": "Welcome back! Sign in to your account.",
@@ -367,6 +376,7 @@
       "insights": "Insights",
       "team": "Team",
       "billing": "Billing",
+      "account": "Account",
       "admin": "Super Admin",
       "logout": "Log out"
     },
@@ -1033,6 +1043,49 @@
       "none": "No features enabled."
     }
   },
+  "account": {
+    "title": "Account & security",
+    "twoFactor": {
+      "heading": "Two-factor authentication (2FA)",
+      "statusLabel": "Status",
+      "enabled": "Enabled",
+      "disabled": "Disabled",
+      "intro": "Add an extra layer of security with an authenticator app (Google Authenticator, Authy, etc.).",
+      "enable": "Enable 2FA",
+      "disable": "Disable 2FA",
+      "setupIntro": "Enter the key below (or open the otpauth link) in your authenticator app, then enter the 6-digit code.",
+      "secretLabel": "Key (manual entry)",
+      "uriLabel": "otpauth link",
+      "codeLabel": "Code from app",
+      "confirm": "Confirm enable",
+      "passwordLabel": "Your password",
+      "confirmDisable": "Confirm disable",
+      "successEnabled": "Two-factor authentication enabled.",
+      "successDisabled": "Two-factor authentication disabled.",
+      "invalid": "Invalid code. Please try again.",
+      "working": "Working…",
+      "cancel": "Cancel"
+    }
+  },
+  "dsr": {
+    "heading": "Your data (GDPR)",
+    "exportTitle": "Export data",
+    "exportDesc": "Download a JSON file with your account and company data (vehicles, documents, invoices, reminders, audit logs).",
+    "exportButton": "Download data (JSON)",
+    "exporting": "Preparing…",
+    "deleteAccountTitle": "Delete account",
+    "deleteAccountDesc": "Permanently deletes your personal account. This is irreversible.",
+    "deleteAccountButton": "Delete my account",
+    "deleteTenantTitle": "Delete company",
+    "deleteTenantDesc": "Permanently deletes the company and all its data (vehicles, invoices, documents). Owner (OWNER) only.",
+    "deleteTenantButton": "Delete company",
+    "passwordLabel": "Confirm with your password",
+    "confirm": "Confirm",
+    "cancel": "Cancel",
+    "working": "Working…",
+    "deleted": "Deleted. You will be signed out.",
+    "error": "The operation failed. Please try again."
+  },
   "notifications": {
     "title": "Push notifications",
     "description": "Get notified when a document finishes processing.",
@@ -1042,6 +1095,7 @@
     "enable": "Enable",
     "disable": "Disable",
     "working": "Working…",
-    "error": "Something went wrong, please try again."
+    "error": "Something went wrong, please try again.",
+    "consentRequired": "Enable marketing/notification consent first (cookie banner)."
   }
 }
