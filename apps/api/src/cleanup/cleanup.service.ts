@@ -27,6 +27,7 @@ export class CleanupService {
     refreshTokens: number;
     passwordResetTokens: number;
     vehicleScans: number;
+    supportAccessesExpired: number;
   }> {
     const now = Date.now();
     const auditCutoff = new Date(now - days('AUDIT_RETENTION_DAYS', 365) * DAY_MS);
@@ -67,14 +68,23 @@ export class CleanupService {
       },
     });
 
+    // Lejárt, de még ACTIVE support-hozzáférések EXPIRED-re billentése. Nem
+    // törlés (auditálható nyomként megtartjuk), csak állapot-konzisztencia: a
+    // tényleges hozzáférést a TenantGuard amúgy is lejárat szerint érvényesíti.
+    const supportAccesses = await this.prisma.system.supportAccess.updateMany({
+      where: { status: 'ACTIVE', expiresAt: { lt: new Date(now) } },
+      data: { status: 'EXPIRED' },
+    });
+
     const result = {
       auditLogs: auditLogs.count,
       refreshTokens: refreshTokens.count,
       passwordResetTokens: passwordResetTokens.count,
       vehicleScans: vehicleScans.count,
+      supportAccessesExpired: supportAccesses.count,
     };
     this.logger.log(
-      `Retenciós takarítás kész: audit=${result.auditLogs}, refresh=${result.refreshTokens}, reset=${result.passwordResetTokens}, scan=${result.vehicleScans}.`,
+      `Retenciós takarítás kész: audit=${result.auditLogs}, refresh=${result.refreshTokens}, reset=${result.passwordResetTokens}, scan=${result.vehicleScans}, support=${result.supportAccessesExpired}.`,
     );
     return result;
   }

@@ -25,6 +25,7 @@ import { InsightsModule } from './insights/insights.module';
 import { VerificationModule } from './verification/verification.module';
 import { BenchmarkModule } from './benchmark/benchmark.module';
 import { CleanupModule } from './cleanup/cleanup.module';
+import { SupportAccessModule } from './support-access/support-access.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -62,6 +63,7 @@ import { CleanupModule } from './cleanup/cleanup.module';
     VerificationModule,
     BenchmarkModule,
     CleanupModule,
+    SupportAccessModule,
   ],
 })
 export class AppModule implements NestModule {
