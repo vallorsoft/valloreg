@@ -1,9 +1,13 @@
+'use client';
+
+import { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import {
   ALL_FEATURE_KEYS,
+  BillingInterval,
   PLAN_LIMITS,
-  PLAN_PRICES,
   PLAN_CURRENCY,
+  planPrice,
   PlanTier,
   STORAGE_ADDONS,
   UNLIMITED,
@@ -27,6 +31,10 @@ const BYTES_PER_GB = 1024 * 1024 * 1024;
 
 export function Pricing() {
   const t = useTranslations('landing.pricing');
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>(
+    BillingInterval.MONTHLY,
+  );
+  const isYearly = billingInterval === BillingInterval.YEARLY;
 
   const fmtNum = (v: number) =>
     v === UNLIMITED ? '∞' : v.toLocaleString('hu-HU');
@@ -37,7 +45,9 @@ export function Pricing() {
       label: t('compare.price'),
       values: PLAN_ORDER.map(
         (tier) =>
-          `${PLAN_PRICES[tier].toLocaleString('hu-HU')} ${PLAN_CURRENCY}`,
+          `${planPrice(tier, billingInterval).toLocaleString('hu-HU')} ${PLAN_CURRENCY} ${
+            isYearly ? t('perYear') : t('perMonth')
+          }`,
       ),
     },
     {
@@ -70,7 +80,32 @@ export function Pricing() {
         <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-anthracite-500">
           {t('transferNote')}
         </p>
-        <div className="mt-12 grid gap-6 lg:grid-cols-3">
+
+        {/* Havi / Éves választó */}
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <div className="inline-flex rounded-full border border-anthracite-200 p-1">
+            {[BillingInterval.MONTHLY, BillingInterval.YEARLY].map((iv) => (
+              <button
+                key={iv}
+                type="button"
+                onClick={() => setBillingInterval(iv)}
+                className={cn(
+                  'rounded-full px-5 py-2 text-sm font-medium transition',
+                  billingInterval === iv
+                    ? 'bg-primary-600 text-white'
+                    : 'text-anthracite-600 hover:text-anthracite-900',
+                )}
+              >
+                {iv === BillingInterval.MONTHLY
+                  ? t('billingMonthly')
+                  : t('billingYearly')}
+              </button>
+            ))}
+          </div>
+          <p className="text-sm font-medium text-primary-700">{t('yearlyNote')}</p>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {PLAN_ORDER.map((tier) => {
             const limits = PLAN_LIMITS[tier];
             const highlighted = tier === HIGHLIGHTED;
@@ -114,12 +149,15 @@ export function Pricing() {
 
                 <p className="mt-4 flex items-baseline gap-1.5">
                   <span className="text-3xl font-bold text-anthracite-900">
-                    {PLAN_PRICES[tier].toLocaleString('hu-HU')} {PLAN_CURRENCY}
+                    {planPrice(tier, billingInterval).toLocaleString('hu-HU')}{' '}
+                    {PLAN_CURRENCY}
                   </span>
-                  <span className="text-sm text-anthracite-400">{t('perMonth')}</span>
+                  <span className="text-sm text-anthracite-400">
+                    {isYearly ? t('perYear') : t('perMonth')}
+                  </span>
                 </p>
                 <p className="mt-1 text-xs font-medium text-primary-700">
-                  {t('freeTrial')}
+                  {isYearly ? t('monthFree') : t('freeTrial')}
                 </p>
 
                 <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-anthracite-400">

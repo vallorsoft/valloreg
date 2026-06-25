@@ -228,7 +228,12 @@
         "users": "Users",
         "documents": "Documents / mo",
         "storage": "Storage"
-      }
+      },
+      "billingMonthly": "Monthly",
+      "billingYearly": "Yearly",
+      "perYear": "/ yr",
+      "yearlyNote": "Pay only 11 months instead of 12 — 1 month free.",
+      "monthFree": "1 month free"
     },
     "faq": {
       "title": "Frequently asked questions",
@@ -1008,7 +1013,12 @@
       "bank": "Bank",
       "swift": "SWIFT",
       "reference": "Reference",
-      "referenceHint": "Please include this reference: {reference}"
+      "referenceHint": "Please include this reference: {reference}",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "perYear": "/ yr",
+      "yearlyNote": "Pay only 11 months instead of 12 — 1 month free.",
+      "monthFree": "1 month free"
     },
     "plans": {
       "START": "Start",

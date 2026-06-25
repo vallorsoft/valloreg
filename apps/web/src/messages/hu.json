@@ -228,7 +228,12 @@
         "users": "Felhasználók",
         "documents": "Dokumentum / hó",
         "storage": "Tárhely"
-      }
+      },
+      "billingMonthly": "Havi",
+      "billingYearly": "Éves",
+      "perYear": "/ év",
+      "yearlyNote": "Éves fizetésnél 12 hónap helyett csak 11 havidíj – 1 hónap ingyen.",
+      "monthFree": "1 hónap ingyen"
     },
     "faq": {
       "title": "Gyakori kérdések",
@@ -1008,7 +1013,12 @@
       "bank": "Bank",
       "swift": "SWIFT",
       "reference": "Közlemény",
-      "referenceHint": "Kérjük, a közleménybe írd be: {reference}"
+      "referenceHint": "Kérjük, a közleménybe írd be: {reference}",
+      "monthly": "Havi",
+      "yearly": "Éves",
+      "perYear": "/ év",
+      "yearlyNote": "Éves fizetésnél 12 hónap helyett csak 11 havidíj – 1 hónap ingyen.",
+      "monthFree": "1 hónap ingyen"
     },
     "plans": {
       "START": "Start",

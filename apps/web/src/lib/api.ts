@@ -1053,6 +1053,7 @@ export interface BillingOverview {
 
 export interface SubscriptionRequestResult {
   plan: string;
+  interval: string;
   amount: number;
   currency: string;
   reference: string;
@@ -1073,10 +1074,10 @@ export const billingApi = {
   getOverview() {
     return apiRequest<BillingOverview>('/billing/overview');
   },
-  requestSubscription(planTier: string) {
+  requestSubscription(planTier: string, interval?: string) {
     return apiRequest<SubscriptionRequestResult>('/billing/request-subscription', {
       method: 'POST',
-      json: { planTier },
+      json: { planTier, interval },
     });
   },
   requestStorageAddon(extraGB: number) {

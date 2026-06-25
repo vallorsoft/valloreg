@@ -1,10 +1,12 @@
 import { Injectable } from '@nestjs/common';
 import {
+  ANNUAL_MONTHS_CHARGED,
+  BillingInterval,
   effectiveStorageBytes,
   isValidStorageAddonGB,
   PLAN_CURRENCY,
   PLAN_LIMITS,
-  PLAN_PRICES,
+  planPrice,
   PlanTier,
   storageAddonPrice,
 } from '@valloreg/shared';
@@ -109,32 +111,42 @@ export class BillingService {
     dto: RequestSubscriptionDto,
   ) {
     const planTier = dto.planTier;
-    const amount = PLAN_PRICES[planTier];
+    const interval = dto.interval ?? BillingInterval.MONTHLY;
+    const isYearly = interval === BillingInterval.YEARLY;
+    const amount = planPrice(planTier, interval);
     const currency = PLAN_CURRENCY;
     const bank = this.config.bankTransfer;
-    const reference = `VLR-${tenantId.slice(0, 8).toUpperCase()}-${planTier}`;
+    const reference = `VLR-${tenantId.slice(0, 8).toUpperCase()}-${planTier}-${
+      isYearly ? 'Y' : 'M'
+    }`;
 
     const { clientEmail, tenantName } = await this.loadBillingContacts(
       tenantId,
       userId,
     );
     const amountLabel = `${amount.toLocaleString('hu-HU')} ${currency}`;
+    const periodLabel = isYearly ? '/ év' : '/ hó';
+    const cycleLabel = isYearly ? 'éves' : 'havi';
 
     // 1) Kliens e-mail: utalási adatok.
     if (clientEmail) {
       await this.mailer.send({
         to: clientEmail,
-        subject: `Valloreg előfizetés – utalási adatok (${planTier})`,
+        subject: `Valloreg előfizetés – utalási adatok (${planTier}, ${cycleLabel})`,
         text: [
           `Köszönjük, hogy a Valloreg ${planTier} csomagot választottad!`,
           ``,
           `Az előfizetés aktiválásához kérjük, utald át a következő összeget:`,
           ``,
-          `Összeg:      ${amountLabel} / hó`,
+          `Csomag:      ${planTier} (${cycleLabel} számlázás)`,
+          `Összeg:      ${amountLabel} ${periodLabel}`,
+          isYearly
+            ? `Kedvezmény:  éves fizetésnél 12 hónap helyett csak ${ANNUAL_MONTHS_CHARGED} havidíj (1 hónap ingyen)`
+            : null,
           `Kedvezményezett: ${bank.beneficiary || '(beállítás alatt)'}`,
           `IBAN/Számla: ${bank.iban || '(beállítás alatt)'}`,
           `Bank:        ${bank.bank || '-'}`,
-          bank.swift ? `SWIFT:       ${bank.swift}` : ``,
+          bank.swift ? `SWIFT:       ${bank.swift}` : null,
           `Közlemény:   ${reference}`,
           ``,
           `Kérjük, a közleménybe MINDENKÉPP írd be a fenti azonosítót (${reference}),`,
@@ -146,7 +158,7 @@ export class BillingService {
           `Üdvözlettel,`,
           `Valloreg`,
         ]
-          .filter((line) => line !== undefined)
+          .filter((line) => line !== null)
           .join('\n'),
       });
     }
@@ -155,14 +167,15 @@ export class BillingService {
     if (bank.notifyEmail) {
       await this.mailer.send({
         to: bank.notifyEmail,
-        subject: `Új előfizetés-igénylés: ${tenantName ?? tenantId} – ${planTier}`,
+        subject: `Új előfizetés-igénylés: ${tenantName ?? tenantId} – ${planTier} (${cycleLabel})`,
         text: [
           `Új utalásos előfizetés-igénylés érkezett.`,
           ``,
           `Cég:       ${tenantName ?? tenantId}`,
           `Cég e-mail: ${clientEmail ?? '-'}`,
           `Csomag:    ${planTier}`,
-          `Összeg:    ${amountLabel} / hó`,
+          `Ciklus:    ${cycleLabel}`,
+          `Összeg:    ${amountLabel} ${periodLabel}`,
           `Közlemény: ${reference}`,
           ``,
           `Az utalás beérkezése után a Super Admin panelen állítsd a csomagot`,
@@ -174,7 +187,7 @@ export class BillingService {
     // 3) Push a platform adminoknak (ha van feliratkozásuk).
     await this.notifyPlatformAdmins(
       'Új előfizetés-igénylés',
-      `${tenantName ?? tenantId} – ${planTier} (${amountLabel})`,
+      `${tenantName ?? tenantId} – ${planTier} (${cycleLabel}, ${amountLabel})`,
     );
 
     // 4) Audit.
@@ -183,11 +196,12 @@ export class BillingService {
       userId,
       action: 'billing.subscription_requested',
       resourceType: 'Subscription',
-      metadata: { planTier, amount, currency, reference },
+      metadata: { planTier, interval, amount, currency, reference },
     });
 
     return {
       plan: planTier,
+      interval,
       amount,
       currency,
       reference,
@@ -240,7 +254,7 @@ export class BillingService {
           `Kedvezményezett: ${bank.beneficiary || '(beállítás alatt)'}`,
           `IBAN/Számla: ${bank.iban || '(beállítás alatt)'}`,
           `Bank:        ${bank.bank || '-'}`,
-          bank.swift ? `SWIFT:       ${bank.swift}` : ``,
+          bank.swift ? `SWIFT:       ${bank.swift}` : null,
           `Közlemény:   ${reference}`,
           ``,
           `Kérjük, a közleménybe MINDENKÉPP írd be a fenti azonosítót (${reference}).`,
@@ -249,7 +263,7 @@ export class BillingService {
           `Üdvözlettel,`,
           `Valloreg`,
         ]
-          .filter((line) => line !== undefined)
+          .filter((line) => line !== null)
           .join('\n'),
       });
     }

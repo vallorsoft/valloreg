@@ -26,6 +26,11 @@ funkció elérhető. A fizetés a próbaidő után **banki utalással** történ
 > mező tárolja, a tényleges tárhely-keret = csomag alap + megvásárolt extra, és a
 > feltöltésnél a backend ki is kényszeríti. Az igénylés utalásos (mint az
 > előfizetés), aktiválás Super Adminnal. Az árak pénzneme **RON**.
+>
+> **Számlázási ciklus:** havi vagy éves. **Éves előfizetésnél 12 hónap helyett
+> csak 11 havidíjat számlázunk (1 hónap ingyen), minden csomagnál.** Az árazó-oldalon
+> és az alkalmazás Előfizetés oldalán is választható; az utalási értesítés és a
+> közlemény-azonosító a ciklust is tartalmazza (`-Y` éves, `-M` havi).
 
 ## 2. Vásárolható extra tárhely
 
