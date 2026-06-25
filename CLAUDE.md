@@ -72,3 +72,34 @@
   ezt backoff-fal újrapróbálja (lásd `apps/web/src/lib/api.ts`), és egy
   keep-alive GitHub Action pingeli az API health-et.
 
+## Nyitott feladat – TOCTOU a limit-ellenőrzéseken (külön PR + teszt)
+
+**Mi a gond:** a csomag-limit ellenőrzések „count/aggregate → majd create" mintát
+követnek **tranzakció nélkül**, így két egyidejű kérés mindkettő átmehet az
+ellenőrzésen, mielőtt bármelyik létrehozná a rekordot → a keret túlléphető
+(jármű/felhasználó/dokumentum/tárhely). Render free (alacsony konkurrencia)
+mellett a kockázat alacsony, ezért tudatosan külön PR-be került.
+
+**Érintett helyek (mind ugyanaz a minta):**
+- `apps/api/src/documents/documents.service.ts` – `assertMonthlyDocumentLimit` +
+  `assertStorageLimit`, majd `document.create` / `vehicleDocument.create`.
+- `apps/api/src/vehicles/vehicles.service.ts` – `assertVehicleLimit`, majd `vehicle.create`
+  (és a scan-staging / `confirmScan` tárhely-ág).
+- `apps/api/src/users/users.service.ts` – `assertUserLimit`, majd `invitation.create` /
+  `membership.create` (invite + acceptInvite).
+
+**Mit kell csinálni:**
+1. A „count/sum → create" párokat **egyetlen `prisma.$transaction`-be** tenni
+   `isolationLevel: 'Serializable'` (vagy `RepeatableRead`) szinttel, és a
+   tranzakción **belül** újraszámolni a limitet közvetlenül a create előtt; túllépéskor
+   a meglévő `AppException.*LimitReached()`-et dobni (rollback).
+2. A serializable ütközést (Prisma `P2034` / serialization failure) elkapni és
+   **egyszer** újrapróbálni, különben a limit-hibát visszaadni.
+3. A tenant-scope-ot a tranzakción belül is megőrizni (a `prisma.scoped` / `system`
+   használat ne csorbuljon – a `$transaction` kliens is scope-olt legyen).
+
+**Tesztelés (ezért külön PR):** a typecheck/build CI **nem** fogja meg a
+tranzakció-szemantikát. Kell **integrációs teszt** valódi (vagy testcontainers)
+Postgres ellen: N párhuzamos create a limit körül → pontosan a limitig menjen át,
+a többi `*LimitReached`-et kapjon. E nélkül a fix ne kerüljön a `main`-re.
+
