@@ -257,7 +257,10 @@
       "submit": "Bejelentkezés",
       "noAccount": "Még nincs fiókja?",
       "registerLink": "Regisztráljon",
-      "forgotPassword": "Elfelejtett jelszó?"
+      "forgotPassword": "Elfelejtett jelszó?",
+      "twoFactorCode": "Ellenőrző kód",
+      "twoFactorCodeHint": "Add meg a hitelesítő app 6 jegyű kódját.",
+      "twoFactorSubmit": "Ellenőrzés"
     },
     "register": {
       "title": "Regisztráció",
@@ -307,7 +310,9 @@
       "VALIDATION_FAILED": "Az adatok ellenőrzése sikertelen.",
       "NOT_FOUND": "Az erőforrás nem található.",
       "INTERNAL_ERROR": "Váratlan hiba történt. Kérjük, próbálja újra.",
-      "NETWORK_ERROR": "Hálózati hiba. Ellenőrizze a kapcsolatot."
+      "NETWORK_ERROR": "Hálózati hiba. Ellenőrizze a kapcsolatot.",
+      "AUTH_2FA_INVALID": "Érvénytelen kétfaktoros kód.",
+      "AUTH_2FA_NOT_ENABLED": "A kétfaktoros hitelesítés nincs bekapcsolva."
     },
     "forgotPassword": {
       "title": "Elfelejtett jelszó",
@@ -343,7 +348,8 @@
       "team": "Csapat",
       "billing": "Előfizetés",
       "admin": "Super Admin",
-      "logout": "Kijelentkezés"
+      "logout": "Kijelentkezés",
+      "settings": "Beállítások"
     },
     "header": {
       "tenantLabel": "Aktív cég",
@@ -1088,6 +1094,28 @@
       "rights": "Jogod van a hozzáféréshez, helyesbítéshez, törléshez, korlátozáshoz, hordozhatósághoz és tiltakozáshoz, valamint panaszt tehetsz az ANSPDCP-nél (www.dataprotection.ro). A kérelmeket legfeljebb 30 napon belül teljesítjük.",
       "dataTitle": "Milyen adatokat kezelünk",
       "data": "Fiókadatok (e-mail, név, hash-elt jelszó), flottaadatok és az ügyfelek által feltöltött dokumentumok, audit naplók (IP-címmel együtt). Az ügyfelek dokumentumait adatfeldolgozóként kezeljük."
+    }
+  },
+  "settings": {
+    "title": "Beállítások",
+    "subtitle": "Fiókbiztonság és beállítások.",
+    "twoFactor": {
+      "title": "Kétfaktoros hitelesítés (2FA)",
+      "description": "Extra biztonsági réteg hitelesítő apppal (TOTP). Alapból kikapcsolva.",
+      "statusOn": "Bekapcsolva",
+      "statusOff": "Kikapcsolva",
+      "loading": "Betöltés…",
+      "working": "Folyamatban…",
+      "enableButton": "2FA bekapcsolása",
+      "setupInstructions": "Add hozzá az alábbi kulcsot a hitelesítő appodhoz (Google Authenticator, Authy stb.), majd írd be a generált kódot. Mobilon a linkre koppintva közvetlenül megnyithatod az appban.",
+      "secretLabel": "Kulcs (kézi bevitel)",
+      "openInApp": "Megnyitás a hitelesítő appban",
+      "codeLabel": "Kód az appból",
+      "confirmEnable": "Megerősítés és bekapcsolás",
+      "cancel": "Mégse",
+      "disableButton": "2FA kikapcsolása",
+      "disableInstructions": "Add meg egy érvényes kódot az appból a 2FA kikapcsolásához.",
+      "confirmDisable": "Kikapcsolás"
     }
   }
 }

@@ -7,7 +7,14 @@ import { Link, useRouter } from '@/i18n/routing';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
-import { authApi, storeAuth, resolveErrorKey, errorDebugSuffix } from '@/lib/api';
+import { ErrorCode } from '@valloreg/shared';
+import {
+  authApi,
+  storeAuth,
+  resolveErrorKey,
+  errorDebugSuffix,
+  ApiError,
+} from '@/lib/api';
 import { isValidEmail, isNonEmpty } from '@/lib/validation';
 
 interface FieldErrors {
@@ -23,6 +30,9 @@ export function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [totp, setTotp] = useState('');
+  // Ha a fiókon aktív a 2FA, a jelszó után egy második lépésben a TOTP kódot kérjük.
+  const [twoFactorStep, setTwoFactorStep] = useState(false);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -40,13 +50,27 @@ export function LoginForm() {
     e.preventDefault();
     setFormError(null);
     if (!validate()) return;
+    if (twoFactorStep && totp.trim().length !== 6) {
+      setFormError(t('twoFactorCodeHint'));
+      return;
+    }
 
     setSubmitting(true);
     try {
-      const res = await authApi.login({ email: email.trim(), password });
+      const res = await authApi.login({
+        email: email.trim(),
+        password,
+        ...(twoFactorStep ? { totp: totp.trim() } : {}),
+      });
       storeAuth(res);
       router.push('/dashboard');
     } catch (err) {
+      // 2FA szükséges → átváltunk a kód-bekérő lépésre (nem hibaként mutatjuk).
+      if (err instanceof ApiError && err.code === ErrorCode.AUTH_2FA_REQUIRED) {
+        setTwoFactorStep(true);
+        setFormError(null);
+        return;
+      }
       // A nyers hibát a böngésző konzoljába is kiírjuk (státusz, URL) a könnyebb
       // diagnózishoz; a felhasználónak fordított üzenetet mutatunk.
       console.error('[auth] login failed', err);
@@ -93,16 +117,38 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
-        <div className="-mt-2 text-right">
-          <Link
-            href="/forgot-password"
-            className="text-sm font-medium text-primary-700 hover:text-primary-800"
-          >
-            {t('forgotPassword')}
-          </Link>
-        </div>
+        {twoFactorStep && (
+          <div className="space-y-1.5">
+            <Input
+              name="totp"
+              inputMode="numeric"
+              autoComplete="one-time-code"
+              maxLength={6}
+              label={t('twoFactorCode')}
+              placeholder="123456"
+              value={totp}
+              onChange={(e) =>
+                setTotp(e.target.value.replace(/\D/g, '').slice(0, 6))
+              }
+              autoFocus
+            />
+            <p className="text-sm text-anthracite-500">
+              {t('twoFactorCodeHint')}
+            </p>
+          </div>
+        )}
+        {!twoFactorStep && (
+          <div className="-mt-2 text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm font-medium text-primary-700 hover:text-primary-800"
+            >
+              {t('forgotPassword')}
+            </Link>
+          </div>
+        )}
         <Button type="submit" fullWidth size="lg" disabled={submitting}>
-          {t('submit')}
+          {twoFactorStep ? t('twoFactorSubmit') : t('submit')}
         </Button>
       </form>
 

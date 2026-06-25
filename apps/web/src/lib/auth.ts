@@ -31,6 +31,8 @@ export interface CurrentUser {
   email: string;
   name: string | null;
   isPlatformAdmin: boolean;
+  /** Aktív-e a kétfaktoros hitelesítés (TOTP) ezen a fiókon. */
+  twoFactorEnabled: boolean;
 }
 
 /** The `/auth/me` (and login/register) session payload. */

@@ -257,7 +257,10 @@
       "submit": "Autentificare",
       "noAccount": "Nu aveți cont?",
       "registerLink": "Înregistrați-vă",
-      "forgotPassword": "Ați uitat parola?"
+      "forgotPassword": "Ați uitat parola?",
+      "twoFactorCode": "Cod de verificare",
+      "twoFactorCodeHint": "Introdu codul de 6 cifre din aplicația de autentificare.",
+      "twoFactorSubmit": "Verifică"
     },
     "register": {
       "title": "Înregistrare",
@@ -307,7 +310,9 @@
       "VALIDATION_FAILED": "Validarea datelor a eșuat.",
       "NOT_FOUND": "Resursa nu a fost găsită.",
       "INTERNAL_ERROR": "A apărut o eroare neașteptată. Vă rugăm să încercați din nou.",
-      "NETWORK_ERROR": "Eroare de rețea. Verificați conexiunea."
+      "NETWORK_ERROR": "Eroare de rețea. Verificați conexiunea.",
+      "AUTH_2FA_INVALID": "Cod de autentificare în doi pași invalid.",
+      "AUTH_2FA_NOT_ENABLED": "Autentificarea în doi pași nu este activă."
     },
     "forgotPassword": {
       "title": "Ați uitat parola",
@@ -343,7 +348,8 @@
       "team": "Echipă",
       "billing": "Abonament",
       "admin": "Super Admin",
-      "logout": "Deconectare"
+      "logout": "Deconectare",
+      "settings": "Setări"
     },
     "header": {
       "tenantLabel": "Compania activă",
@@ -1088,6 +1094,28 @@
       "rights": "Ai dreptul de acces, rectificare, ștergere, restricționare, portabilitate și opoziție, precum și dreptul de a depune o plângere la ANSPDCP (www.dataprotection.ro). Solicitările se soluționează în maximum 30 de zile.",
       "dataTitle": "Ce date prelucrăm",
       "data": "Date de cont (e-mail, nume, parolă stocată ca hash), date despre flotă și documente încărcate de clienți, jurnale de audit (inclusiv adresa IP). Documentele clienților sunt prelucrate de noi în calitate de persoană împuternicită."
+    }
+  },
+  "settings": {
+    "title": "Setări",
+    "subtitle": "Securitatea contului și preferințe.",
+    "twoFactor": {
+      "title": "Autentificare în doi pași (2FA)",
+      "description": "Un nivel suplimentar de securitate cu o aplicație de autentificare (TOTP). Implicit este dezactivată.",
+      "statusOn": "Activă",
+      "statusOff": "Inactivă",
+      "loading": "Se încarcă…",
+      "working": "Se procesează…",
+      "enableButton": "Activează 2FA",
+      "setupInstructions": "Adaugă cheia de mai jos în aplicația de autentificare (Google Authenticator, Authy etc.), apoi introdu codul generat. Pe mobil poți atinge linkul pentru a o deschide direct în aplicație.",
+      "secretLabel": "Cheie (introducere manuală)",
+      "openInApp": "Deschide în aplicația de autentificare",
+      "codeLabel": "Cod din aplicație",
+      "confirmEnable": "Confirmă și activează",
+      "cancel": "Anulează",
+      "disableButton": "Dezactivează 2FA",
+      "disableInstructions": "Introdu un cod valid din aplicație pentru a dezactiva 2FA.",
+      "confirmDisable": "Dezactivează"
     }
   }
 }

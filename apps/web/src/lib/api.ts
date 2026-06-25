@@ -204,6 +204,13 @@ export async function apiRequest<T>(
 export interface LoginPayload {
   email: string;
   password: string;
+  /** TOTP kód, ha a fiókon aktív a kétfaktoros hitelesítés. */
+  totp?: string;
+}
+
+export interface TwoFactorSetup {
+  secret: string;
+  otpauthUrl: string;
 }
 
 export interface RegisterPayload {
@@ -254,6 +261,24 @@ export const authApi = {
       method: 'POST',
       json: { token, password },
       anonymous: true,
+    });
+  },
+  /** 2FA beállítás indítása: secret + otpauth URL (a hitelesítő apphoz). */
+  setupTwoFactor(): Promise<TwoFactorSetup> {
+    return apiRequest<TwoFactorSetup>('/auth/2fa/setup', { method: 'POST' });
+  },
+  /** 2FA aktiválása a hitelesítő app kódjával. */
+  enableTwoFactor(code: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/2fa/enable', {
+      method: 'POST',
+      json: { code },
+    });
+  },
+  /** 2FA kikapcsolása érvényes kóddal. */
+  disableTwoFactor(code: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/2fa/disable', {
+      method: 'POST',
+      json: { code },
     });
   },
 };

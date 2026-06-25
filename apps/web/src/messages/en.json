@@ -257,7 +257,10 @@
       "submit": "Log in",
       "noAccount": "Don't have an account?",
       "registerLink": "Sign up",
-      "forgotPassword": "Forgot password?"
+      "forgotPassword": "Forgot password?",
+      "twoFactorCode": "Verification code",
+      "twoFactorCodeHint": "Enter the 6-digit code from your authenticator app.",
+      "twoFactorSubmit": "Verify"
     },
     "register": {
       "title": "Sign up",
@@ -307,7 +310,9 @@
       "VALIDATION_FAILED": "Data validation failed.",
       "NOT_FOUND": "Resource not found.",
       "INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
-      "NETWORK_ERROR": "Network error. Check your connection."
+      "NETWORK_ERROR": "Network error. Check your connection.",
+      "AUTH_2FA_INVALID": "Invalid two-factor code.",
+      "AUTH_2FA_NOT_ENABLED": "Two-factor authentication is not enabled."
     },
     "forgotPassword": {
       "title": "Forgot password",
@@ -343,7 +348,8 @@
       "team": "Team",
       "billing": "Billing",
       "admin": "Super Admin",
-      "logout": "Log out"
+      "logout": "Log out",
+      "settings": "Settings"
     },
     "header": {
       "tenantLabel": "Active company",
@@ -1088,6 +1094,28 @@
       "rights": "You have the right of access, rectification, erasure, restriction, portability and objection, and the right to lodge a complaint with ANSPDCP (www.dataprotection.ro). Requests are handled within 30 days.",
       "dataTitle": "What data we process",
       "data": "Account data (e-mail, name, password stored as a hash), fleet data and documents uploaded by customers, audit logs (including IP address). Customer documents are processed by us as a processor."
+    }
+  },
+  "settings": {
+    "title": "Settings",
+    "subtitle": "Account security and preferences.",
+    "twoFactor": {
+      "title": "Two-factor authentication (2FA)",
+      "description": "An extra layer of security using an authenticator app (TOTP). Off by default.",
+      "statusOn": "On",
+      "statusOff": "Off",
+      "loading": "Loading…",
+      "working": "Working…",
+      "enableButton": "Enable 2FA",
+      "setupInstructions": "Add the key below to your authenticator app (Google Authenticator, Authy, etc.), then enter the generated code. On mobile you can tap the link to open it directly in the app.",
+      "secretLabel": "Key (manual entry)",
+      "openInApp": "Open in authenticator app",
+      "codeLabel": "Code from app",
+      "confirmEnable": "Confirm and enable",
+      "cancel": "Cancel",
+      "disableButton": "Disable 2FA",
+      "disableInstructions": "Enter a valid code from your app to disable 2FA.",
+      "confirmDisable": "Disable"
     }
   }
 }
