@@ -111,11 +111,15 @@ export class AdminService {
 
     const planTier = DbPlanTier[dto.planTier];
     const status = dto.status;
+    const extra =
+      dto.extraStorageGB !== undefined
+        ? { extraStorageGB: dto.extraStorageGB }
+        : {};
 
     const subscription = await this.prisma.system.subscription.upsert({
       where: { tenantId },
-      create: { tenantId, planTier, status },
-      update: { planTier, status },
+      create: { tenantId, planTier, status, ...extra },
+      update: { planTier, status, ...extra },
     });
 
     await this.audit.log({
@@ -124,7 +128,11 @@ export class AdminService {
       action: 'admin.subscription_set',
       resourceType: 'Subscription',
       resourceId: subscription.id,
-      metadata: { planTier: dto.planTier, status: dto.status },
+      metadata: {
+        planTier: dto.planTier,
+        status: dto.status,
+        extraStorageGB: dto.extraStorageGB ?? null,
+      },
     });
 
     return subscription;

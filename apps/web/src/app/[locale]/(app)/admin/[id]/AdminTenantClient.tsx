@@ -32,8 +32,9 @@ export function AdminTenantClient({ id }: { id: string }) {
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
-  const [planTier, setPlanTier] = useState<string>(PlanTier.STARTER);
+  const [planTier, setPlanTier] = useState<string>(PlanTier.START);
   const [status, setStatus] = useState<string>('ACTIVE');
+  const [extraStorageGB, setExtraStorageGB] = useState<number>(0);
   const [savingSub, setSavingSub] = useState(false);
 
   useEffect(() => {
@@ -44,6 +45,7 @@ export function AdminTenantClient({ id }: { id: string }) {
         if (d.subscription) {
           setPlanTier(d.subscription.planTier);
           setStatus(d.subscription.status);
+          setExtraStorageGB(d.subscription.extraStorageGB ?? 0);
         }
       })
       .catch((err) => {
@@ -61,7 +63,11 @@ export function AdminTenantClient({ id }: { id: string }) {
     setError(null);
     setNotice(null);
     try {
-      const sub = await adminApi.setSubscription(id, { planTier, status });
+      const sub = await adminApi.setSubscription(id, {
+        planTier,
+        status,
+        extraStorageGB,
+      });
       setData((prev) => (prev ? { ...prev, subscription: { ...prev.subscription, ...sub } } : prev));
       setNotice(t('subscription.saved'));
     } catch (err) {
@@ -193,6 +199,19 @@ export function AdminTenantClient({ id }: { id: string }) {
                 </option>
               ))}
             </select>
+          </div>
+          <div>
+            <label className="mb-1 block text-xs text-anthracite-500">
+              {t('subscription.extraStorage')}
+            </label>
+            <input
+              type="number"
+              min={0}
+              step={5}
+              value={extraStorageGB}
+              onChange={(e) => setExtraStorageGB(Math.max(0, Number(e.target.value) || 0))}
+              className="w-28 rounded-lg border border-anthracite-200 bg-white px-3 py-2 text-sm text-anthracite-900"
+            />
           </div>
           <Button size="sm" onClick={() => void handleSaveSubscription()} disabled={savingSub}>
             {savingSub ? t('subscription.saving') : t('subscription.save')}

@@ -7,26 +7,30 @@ import {
   PLAN_PRICES,
   PLAN_CURRENCY,
   PlanTier,
+  STORAGE_ADDONS,
 } from '@valloreg/shared';
 import {
   billingApi,
   ApiError,
   type BillingOverview,
   type SubscriptionRequestResult,
+  type StorageAddonRequestResult,
 } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 
-const PLAN_ORDER = [
-  PlanTier.STARTER,
-  PlanTier.STANDARD,
-  PlanTier.PROFESSIONAL,
-  PlanTier.BUSINESS,
-] as const;
+const PLAN_ORDER = [PlanTier.START, PlanTier.PRO, PlanTier.FLEET] as const;
 
 function fmtLimit(value: number, locale: string): string {
   return value === UNLIMITED ? '∞' : value.toLocaleString(locale);
+}
+
+function fmtBytes(bytes: number): string {
+  const gb = bytes / (1024 * 1024 * 1024);
+  if (gb >= 1) return `${gb.toFixed(gb < 10 ? 1 : 0)} GB`;
+  const mb = bytes / (1024 * 1024);
+  return `${mb.toFixed(mb < 10 ? 1 : 0)} MB`;
 }
 
 function UsageBar({ used, limit }: { used: number; limit: number }) {
@@ -47,6 +51,8 @@ export function BillingClient() {
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState<string | null>(null);
   const [result, setResult] = useState<SubscriptionRequestResult | null>(null);
+  const [addonRequesting, setAddonRequesting] = useState<number | null>(null);
+  const [addonResult, setAddonResult] = useState<StorageAddonRequestResult | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,6 +75,19 @@ export function BillingClient() {
       setError(err instanceof ApiError ? err.message : t('subscribe.error'));
     } finally {
       setRequesting(null);
+    }
+  }
+
+  async function handleStorageAddon(extraGB: number) {
+    setAddonRequesting(extraGB);
+    setError(null);
+    setAddonResult(null);
+    try {
+      setAddonResult(await billingApi.requestStorageAddon(extraGB));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('storage.error'));
+    } finally {
+      setAddonRequesting(null);
     }
   }
 
@@ -229,7 +248,84 @@ export function BillingClient() {
               <UsageBar used={row.used} limit={row.limit} />
             </div>
           ))}
+
+          {/* Tárhely (byte-alapú) */}
+          <div>
+            <div className="flex items-center justify-between text-sm">
+              <span className="text-anthracite-700">{t('usage.storage')}</span>
+              <span className="font-medium text-anthracite-900">
+                {fmtBytes(data.usage.storageBytes)} / {fmtBytes(data.limits.maxStorageBytes)}
+              </span>
+            </div>
+            <UsageBar used={data.usage.storageBytes} limit={data.limits.maxStorageBytes} />
+            {data.extraStorageGB > 0 && (
+              <p className="mt-1 text-xs text-anthracite-400">
+                {t('usage.extraStorage', { gb: data.extraStorageGB })}
+              </p>
+            )}
+          </div>
         </div>
+      </Card>
+
+      {/* Extra tárhely vásárlása */}
+      <Card className="mb-6">
+        <h2 className="text-base font-semibold text-anthracite-900">{t('storage.title')}</h2>
+        <p className="mt-1 text-sm text-anthracite-500">{t('storage.intro')}</p>
+        <div className="mt-4 flex flex-wrap gap-3">
+          {STORAGE_ADDONS.map((addon) => (
+            <Button
+              key={addon.extraGB}
+              size="sm"
+              variant="outline"
+              disabled={addonRequesting !== null}
+              onClick={() => void handleStorageAddon(addon.extraGB)}
+            >
+              {addonRequesting === addon.extraGB
+                ? t('subscribe.requesting')
+                : t('storage.addOption', {
+                    gb: addon.extraGB,
+                    price: addon.pricePerMonth,
+                    currency: PLAN_CURRENCY,
+                  })}
+            </Button>
+          ))}
+        </div>
+
+        {addonResult && (
+          <div className="mt-4 rounded-2xl border border-primary-200 bg-primary-50/40 p-4">
+            <p className="text-sm text-anthracite-600">
+              {addonResult.emailedTo
+                ? t('subscribe.emailed', { email: addonResult.emailedTo })
+                : t('subscribe.emailedFallback')}
+            </p>
+            <dl className="mt-3 grid gap-x-6 gap-y-2 sm:grid-cols-2">
+              {(
+                [
+                  [
+                    'subscribe.amount',
+                    `${addonResult.amount.toLocaleString(locale)} ${addonResult.currency} ${t('subscribe.perMonth')}`,
+                  ],
+                  ['subscribe.beneficiary', addonResult.bank.beneficiary || '—'],
+                  ['subscribe.iban', addonResult.bank.iban || '—'],
+                  ['subscribe.bank', addonResult.bank.bank || '—'],
+                  ['subscribe.swift', addonResult.bank.swift || '—'],
+                  ['subscribe.reference', addonResult.reference],
+                ] as [string, string][]
+              ).map(([key, value]) => (
+                <div key={key}>
+                  <dt className="text-xs text-anthracite-500">
+                    {t(key as Parameters<typeof t>[0])}
+                  </dt>
+                  <dd className="font-medium text-anthracite-900">{value}</dd>
+                </div>
+              ))}
+            </dl>
+            <p className="mt-2 text-xs text-anthracite-500">
+              {t('subscribe.referenceHint', { reference: addonResult.reference })}
+            </p>
+          </div>
+        )}
+        <p className="mt-3 text-xs text-anthracite-400">{t('storage.note')}</p>
       </Card>
 
       {/* Funkciók */}

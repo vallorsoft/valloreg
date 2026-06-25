@@ -12,6 +12,7 @@ import type {
 } from '../common/types/request-context';
 import { BillingService } from './billing.service';
 import { RequestSubscriptionDto } from './dto/request-subscription.dto';
+import { RequestStorageAddonDto } from './dto/request-storage-addon.dto';
 
 /**
  * Előfizetés (billing) végpontok. Az áttekintés minden cégtagnak; az utalásos
@@ -36,6 +37,21 @@ export class BillingController {
     @Body() dto: RequestSubscriptionDto,
   ) {
     return this.billingService.requestSubscription(
+      tenant.tenantId,
+      user.userId,
+      dto,
+    );
+  }
+
+  /** Utalásos extra-tárhely igénylése (+5 / +10 / +25 GB). */
+  @Post('request-storage-addon')
+  @Roles(TenantRole.OWNER, TenantRole.ADMIN)
+  requestStorageAddon(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: RequestStorageAddonDto,
+  ) {
+    return this.billingService.requestStorageAddon(
       tenant.tenantId,
       user.userId,
       dto,

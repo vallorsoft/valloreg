@@ -6,7 +6,7 @@
  *  - egy platform super-admint (isPlatformAdmin),
  *  - egy "Demo Fuvar Kft." céget OWNER felhasználóval
  *    (demo@valloreg.local / Demo1234!),
- *  - PROFESSIONAL / ACTIVE előfizetést,
+ *  - PRO / ACTIVE előfizetést,
  *  - 2 járművet,
  *  - 1 minta Document + Invoice + tételek (AUTO_OK).
  *
@@ -76,10 +76,10 @@ async function main(): Promise<void> {
 
   await prisma.subscription.upsert({
     where: { tenantId: tenant.id },
-    update: { planTier: 'PROFESSIONAL', status: 'ACTIVE' },
+    update: { planTier: 'PRO', status: 'ACTIVE' },
     create: {
       tenantId: tenant.id,
-      planTier: 'PROFESSIONAL',
+      planTier: 'PRO',
       status: 'ACTIVE',
       currentPeriodEnd: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
     },

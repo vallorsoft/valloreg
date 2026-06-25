@@ -967,6 +967,7 @@ export interface AdminSubscription {
   id?: string;
   planTier: string;
   status: string;
+  extraStorageGB?: number;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
 }
@@ -1005,7 +1006,10 @@ export const adminApi = {
   getTenant(id: string) {
     return apiRequest<AdminTenantDetail>(`/admin/tenants/${id}`);
   },
-  setSubscription(id: string, payload: { planTier: string; status: string }) {
+  setSubscription(
+    id: string,
+    payload: { planTier: string; status: string; extraStorageGB?: number },
+  ) {
     return apiRequest<AdminSubscription>(`/admin/tenants/${id}/subscription`, {
       method: 'PUT',
       json: payload,
@@ -1031,18 +1035,33 @@ export interface BillingOverview {
   status: string | null;
   trialEndsAt: string | null;
   currentPeriodEnd: string | null;
+  extraStorageGB: number;
   limits: {
     maxVehicles: number;
     maxUsers: number;
     maxDocumentsPerMonth: number;
     maxStorageBytes: number;
   };
-  usage: { vehicles: number; users: number; documentsThisMonth: number };
+  usage: {
+    vehicles: number;
+    users: number;
+    documentsThisMonth: number;
+    storageBytes: number;
+  };
   features: string[];
 }
 
 export interface SubscriptionRequestResult {
   plan: string;
+  amount: number;
+  currency: string;
+  reference: string;
+  bank: { beneficiary: string; iban: string; bank: string; swift: string };
+  emailedTo: string | null;
+}
+
+export interface StorageAddonRequestResult {
+  extraGB: number;
   amount: number;
   currency: string;
   reference: string;
@@ -1058,6 +1077,12 @@ export const billingApi = {
     return apiRequest<SubscriptionRequestResult>('/billing/request-subscription', {
       method: 'POST',
       json: { planTier },
+    });
+  },
+  requestStorageAddon(extraGB: number) {
+    return apiRequest<StorageAddonRequestResult>('/billing/request-storage-addon', {
+      method: 'POST',
+      json: { extraGB },
     });
   },
 };

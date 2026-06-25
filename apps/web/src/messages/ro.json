@@ -187,19 +187,15 @@
       "mostPopular": "Cel mai popular",
       "cta": "Alege",
       "plans": {
-        "STARTER": {
+        "START": {
           "name": "Start",
           "description": "Pentru flote mici, pentru primii pași."
         },
-        "STANDARD": {
-          "name": "Standard",
-          "description": "Pentru flote în creștere, cu rapoarte și export."
-        },
-        "PROFESSIONAL": {
+        "PRO": {
           "name": "Pro",
           "description": "Pentru flote în creștere: rapoarte, export, memento-uri, service complex."
         },
-        "BUSINESS": {
+        "FLEET": {
           "name": "Fleet",
           "description": "Inteligență completă a flotei: clasament, durabilitate, calitatea furnizorilor."
         }
@@ -922,10 +918,9 @@
       "invoices": "Facturi"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
-      "BUSINESS": "Business"
+      "START": "Start",
+      "PRO": "Pro",
+      "FLEET": "Fleet"
     },
     "statuses": {
       "TRIALING": "Perioadă de probă",
@@ -940,7 +935,8 @@
       "save": "Salvare",
       "saving": "Se salvează…",
       "saved": "Abonamentul a fost salvat.",
-      "error": "Salvarea a eșuat."
+      "error": "Salvarea a eșuat.",
+      "extraStorage": "Stocare suplimentară (GB)"
     },
     "features": {
       "title": "Funcții (feature flags)",
@@ -990,10 +986,9 @@
       "referenceHint": "Vă rugăm includeți acest cod: {reference}"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
-      "BUSINESS": "Business"
+      "START": "Start",
+      "PRO": "Pro",
+      "FLEET": "Fleet"
     },
     "statuses": {
       "TRIALING": "Perioadă de probă",
@@ -1005,11 +1000,20 @@
       "title": "Utilizare",
       "vehicles": "Vehicule",
       "users": "Utilizatori",
-      "documents": "Documente (luna aceasta)"
+      "documents": "Documente (luna aceasta)",
+      "storage": "Stocare",
+      "extraStorage": "Include +{gb} GB stocare suplimentară achiziționată."
     },
     "features": {
       "title": "Funcții disponibile",
       "none": "Nicio funcție activată."
+    },
+    "storage": {
+      "title": "Stocare suplimentară",
+      "intro": "Achiziționează stocare suplimentară pentru orice plan. Capacitate totală, nu se resetează lunar. Plata prin transfer bancar.",
+      "addOption": "+{gb} GB — {price} {currency} / lună",
+      "note": "Activăm stocarea suplimentară după primirea transferului.",
+      "error": "Solicitarea a eșuat."
     }
   },
   "notifications": {

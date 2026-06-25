@@ -31,7 +31,7 @@ export class FeatureFlagsService {
       }),
     ]);
 
-    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const planTier = (subscription?.planTier ?? PlanTier.START) as PlanTier;
     const base = new Set<FeatureKey>(PLAN_LIMITS[planTier].features);
 
     for (const override of overrides) {

@@ -36,10 +36,9 @@ enum TenantRole {
 }
 
 enum PlanTier {
-  STARTER
-  STANDARD
-  PROFESSIONAL
-  BUSINESS
+  START
+  PRO
+  FLEET
 }
 
 enum DocumentStatus {
@@ -226,6 +225,8 @@ model Subscription {
   tenantId         String             @unique
   planTier         PlanTier
   status           SubscriptionStatus
+  // Megvásárolt extra tárhely GB-ban (a csomag alap-kerete fölött). 0 = nincs.
+  extraStorageGB   Int                @default(0)
   trialEndsAt      DateTime?
   currentPeriodEnd DateTime?
   createdAt        DateTime           @default(now())

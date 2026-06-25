@@ -108,6 +108,14 @@ export class AppException extends HttpException {
     );
   }
 
+  static storageLimitReached(): AppException {
+    return new AppException(
+      ErrorCode.LIMIT_STORAGE_REACHED,
+      'Elérted a tárhely csomag-limitjét. Vásárolj extra tárhelyet, vagy törölj dokumentumokat.',
+      HttpStatus.FORBIDDEN,
+    );
+  }
+
   // ── Feature flag ──────────────────────────────────────────────────────
   static featureDisabled(message = 'A funkció nincs engedélyezve a csomagodban.'): AppException {
     return new AppException(

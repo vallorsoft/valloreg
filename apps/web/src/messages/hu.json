@@ -187,19 +187,15 @@
       "mostPopular": "Legnépszerűbb",
       "cta": "Kiválasztom",
       "plans": {
-        "STARTER": {
+        "START": {
           "name": "Start",
           "description": "Kisebb flottáknak, az első lépésekhez."
         },
-        "STANDARD": {
-          "name": "Standard",
-          "description": "Növekvő flottáknak, riportokkal és exporttal."
-        },
-        "PROFESSIONAL": {
+        "PRO": {
           "name": "Pro",
           "description": "Növekvő flottáknak: riport, export, emlékeztető, komplex szerviz."
         },
-        "BUSINESS": {
+        "FLEET": {
           "name": "Fleet",
           "description": "Teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség."
         }
@@ -922,10 +918,9 @@
       "invoices": "Számlák"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
-      "BUSINESS": "Business"
+      "START": "Start",
+      "PRO": "Pro",
+      "FLEET": "Fleet"
     },
     "statuses": {
       "TRIALING": "Próbaidőszak",
@@ -940,7 +935,8 @@
       "save": "Mentés",
       "saving": "Mentés…",
       "saved": "Az előfizetés mentve.",
-      "error": "A mentés sikertelen."
+      "error": "A mentés sikertelen.",
+      "extraStorage": "Extra tárhely (GB)"
     },
     "features": {
       "title": "Funkciók (feature flag-ek)",
@@ -990,10 +986,9 @@
       "referenceHint": "Kérjük, a közleménybe írd be: {reference}"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
-      "BUSINESS": "Business"
+      "START": "Start",
+      "PRO": "Pro",
+      "FLEET": "Fleet"
     },
     "statuses": {
       "TRIALING": "Próbaidőszak",
@@ -1005,11 +1000,20 @@
       "title": "Használat",
       "vehicles": "Járművek",
       "users": "Felhasználók",
-      "documents": "Dokumentumok (ez a hónap)"
+      "documents": "Dokumentumok (ez a hónap)",
+      "storage": "Tárhely",
+      "extraStorage": "Tartalmazza a megvásárolt +{gb} GB extra tárhelyet."
     },
     "features": {
       "title": "Elérhető funkciók",
       "none": "Nincs engedélyezett funkció."
+    },
+    "storage": {
+      "title": "Extra tárhely",
+      "intro": "Vásárolj extra tárhelyet bármely csomaghoz. A tárhely teljes kapacitás, nem nullázódik havonta. Fizetés banki utalással.",
+      "addOption": "+{gb} GB — {price} {currency} / hó",
+      "note": "Az utalás beérkezése után aktiváljuk az extra tárhelyet.",
+      "error": "Az igénylés sikertelen."
     }
   },
   "notifications": {

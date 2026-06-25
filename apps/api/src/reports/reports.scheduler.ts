@@ -157,7 +157,7 @@ export class ReportsScheduler implements OnModuleInit, OnModuleDestroy {
         select: { key: true, enabled: true },
       }),
     ]);
-    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const planTier = (subscription?.planTier ?? PlanTier.START) as PlanTier;
     const features = new Set<string>(PLAN_LIMITS[planTier].features);
     for (const o of overrides) {
       if (!(ALL_FEATURE_KEYS as readonly string[]).includes(o.key)) continue;

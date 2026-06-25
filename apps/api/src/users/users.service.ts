@@ -298,7 +298,7 @@ export class UsersService {
       where: { tenantId },
       select: { planTier: true },
     });
-    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const planTier = (subscription?.planTier ?? PlanTier.START) as PlanTier;
     const limit = PLAN_LIMITS[planTier].maxUsers;
 
     const [members, pendingInvites] = await Promise.all([

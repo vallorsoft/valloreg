@@ -13,15 +13,14 @@ import { Link } from '@/i18n/routing';
 import { SectionHeading } from './SectionHeading';
 import { cn } from '@/lib/cn';
 
-// Megjelenített sávok (3): Start · Pro · Fleet. A STANDARD legacy, nem jelenik meg.
-// A „Pro" (PROFESSIONAL) a kiemelt, ajánlott csomag.
+// Megjelenített sávok (3): Start · Pro · Fleet. A „Pro" a kiemelt, ajánlott csomag.
 const PLAN_ORDER: PlanTier[] = [
-  PlanTier.STARTER,
-  PlanTier.PROFESSIONAL,
-  PlanTier.BUSINESS,
+  PlanTier.START,
+  PlanTier.PRO,
+  PlanTier.FLEET,
 ];
 
-const HIGHLIGHTED: PlanTier = PlanTier.PROFESSIONAL;
+const HIGHLIGHTED: PlanTier = PlanTier.PRO;
 
 const BYTES_PER_GB = 1024 * 1024 * 1024;
 

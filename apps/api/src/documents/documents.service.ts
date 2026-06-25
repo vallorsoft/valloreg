@@ -2,6 +2,7 @@ import { Injectable, Logger } from '@nestjs/common';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   DocumentStatus,
+  effectiveStorageBytes,
   isAllowedDocumentMimeType,
   isWithinLimit,
   PLAN_LIMITS,
@@ -83,6 +84,7 @@ export class DocumentsService {
     }
 
     await this.assertMonthlyDocumentLimit(tenantId);
+    await this.assertStorageLimit(tenantId, file.size);
 
     const documentId = randomUUID();
     const storageKey = this.storage.buildDocumentKey(
@@ -356,7 +358,7 @@ export class DocumentsService {
       where: { tenantId },
       select: { planTier: true },
     });
-    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const planTier = (subscription?.planTier ?? PlanTier.START) as PlanTier;
     const limit = PLAN_LIMITS[planTier].maxDocumentsPerMonth;
 
     const now = new Date();
@@ -368,6 +370,39 @@ export class DocumentsService {
 
     if (!isWithinLimit(count, limit)) {
       throw AppException.documentsLimitReached();
+    }
+  }
+
+  /**
+   * Tárhely-limit ellenőrzése: a meglévő dokumentum- és jármű-dokumentum méretek
+   * összege + az új fájl mérete nem lépheti túl a csomag alap-keretét + a
+   * megvásárolt extra tárhelyet.
+   */
+  private async assertStorageLimit(
+    tenantId: string,
+    addBytes: number,
+  ): Promise<void> {
+    const subscription = await this.prisma.system.subscription.findUnique({
+      where: { tenantId },
+      select: { planTier: true, extraStorageGB: true },
+    });
+    const planTier = (subscription?.planTier ?? PlanTier.START) as PlanTier;
+    const limitBytes = effectiveStorageBytes(
+      planTier,
+      subscription?.extraStorageGB ?? 0,
+    );
+
+    const [docAgg, vehDocAgg] = await Promise.all([
+      this.prisma.scoped.document.aggregate({ _sum: { sizeBytes: true } }),
+      this.prisma.scoped.vehicleDocument.aggregate({
+        _sum: { sizeBytes: true },
+      }),
+    ]);
+    const used =
+      (docAgg._sum.sizeBytes ?? 0) + (vehDocAgg._sum.sizeBytes ?? 0);
+
+    if (used + addBytes > limitBytes) {
+      throw AppException.storageLimitReached();
     }
   }
 }

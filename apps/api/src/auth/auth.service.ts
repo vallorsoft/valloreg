@@ -53,7 +53,7 @@ export class AuthService {
   ) {}
 
   /**
-   * Regisztráció: User + Tenant + Membership(OWNER) + Subscription(STARTER,
+   * Regisztráció: User + Tenant + Membership(OWNER) + Subscription(START,
    * TRIALING, +14 nap) egy tranzakcióban. Visszaad tokeneket + cég infót.
    */
   async register(dto: RegisterDto, ip?: string): Promise<AuthResult> {
@@ -103,7 +103,7 @@ export class AuthService {
         await tx.subscription.create({
           data: {
             tenantId: createdTenant.id,
-            planTier: PlanTier.STARTER,
+            planTier: PlanTier.START,
             status: SubscriptionStatus.TRIALING,
             trialEndsAt,
           },

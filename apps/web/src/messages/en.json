@@ -187,19 +187,15 @@
       "mostPopular": "Most popular",
       "cta": "Choose",
       "plans": {
-        "STARTER": {
+        "START": {
           "name": "Start",
           "description": "For smaller fleets, to get started."
         },
-        "STANDARD": {
-          "name": "Standard",
-          "description": "For growing fleets, with reports and export."
-        },
-        "PROFESSIONAL": {
+        "PRO": {
           "name": "Pro",
           "description": "For growing fleets: reports, export, reminders, complex servicing."
         },
-        "BUSINESS": {
+        "FLEET": {
           "name": "Fleet",
           "description": "Full fleet intelligence: ranking, durability, supplier quality."
         }
@@ -922,10 +918,9 @@
       "invoices": "Invoices"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
-      "BUSINESS": "Business"
+      "START": "Start",
+      "PRO": "Pro",
+      "FLEET": "Fleet"
     },
     "statuses": {
       "TRIALING": "Trial",
@@ -940,7 +935,8 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Subscription saved.",
-      "error": "Save failed."
+      "error": "Save failed.",
+      "extraStorage": "Extra storage (GB)"
     },
     "features": {
       "title": "Features (feature flags)",
@@ -990,10 +986,9 @@
       "referenceHint": "Please include this reference: {reference}"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
-      "BUSINESS": "Business"
+      "START": "Start",
+      "PRO": "Pro",
+      "FLEET": "Fleet"
     },
     "statuses": {
       "TRIALING": "Trial",
@@ -1005,11 +1000,20 @@
       "title": "Usage",
       "vehicles": "Vehicles",
       "users": "Users",
-      "documents": "Documents (this month)"
+      "documents": "Documents (this month)",
+      "storage": "Storage",
+      "extraStorage": "Includes purchased +{gb} GB extra storage."
     },
     "features": {
       "title": "Available features",
       "none": "No features enabled."
+    },
+    "storage": {
+      "title": "Extra storage",
+      "intro": "Buy extra storage for any plan. Total capacity, does not reset monthly. Payment by bank transfer.",
+      "addOption": "+{gb} GB — {price} {currency} / mo",
+      "note": "We activate the extra storage after the transfer arrives.",
+      "error": "The request failed."
     }
   },
   "notifications": {

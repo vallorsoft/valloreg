@@ -18,13 +18,14 @@ funkció elérhető. A fizetés a próbaidő után **banki utalással** történ
 | **Pro** (Legnépszerűbb) – növekvő flottáknak: riport, export, emlékeztető, komplex szerviz | **129** | 15 | 10 | 400 | 5 GB |
 | **Fleet** – teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség | **299** | korlátlan | korlátlan | korlátlan | 15 GB |
 
-> 📌 **KÓD ÁLLAPOT:** A forráskód (`packages/shared/src/plans.ts`, `Pricing.tsx`,
-> i18n) immár a fenti **3 sávos (Start/Pro/Fleet) RON** árazást jeleníti meg, és
-> tartalmazza az extra tárhely díjszabását. Műszaki megjegyzés: a belső Prisma
-> `PlanTier` enum változatlan maradt (DB-migráció elkerülése végett): a `STARTER`
-> jelenik meg „Start"-ként, a `PROFESSIONAL` „Pro"-ként, a `BUSINESS` „Fleet"-ként;
-> a `STANDARD` **rejtett legacy** sáv (a Pro-val egyenértékű, új regisztrációnál
-> nem választható). Az árak pénzneme **RON**.
+> 📌 **KÓD ÁLLAPOT:** A forráskód teljesen a fenti **3 sávos (Start/Pro/Fleet) RON**
+> ajánlatot tükrözi. A Prisma `PlanTier` enum is átállt 3 értékre
+> (`START`/`PRO`/`FLEET`) DB-migrációval (`20260625120000_plan_tier_3tier_storage`);
+> a korábbi értékek leképezése: STARTER→START, STANDARD/PROFESSIONAL→PRO,
+> BUSINESS→FLEET. Az **extra tárhely** is be van építve: a `Subscription.extraStorageGB`
+> mező tárolja, a tényleges tárhely-keret = csomag alap + megvásárolt extra, és a
+> feltöltésnél a backend ki is kényszeríti. Az igénylés utalásos (mint az
+> előfizetés), aktiválás Super Adminnal. Az árak pénzneme **RON**.
 
 ## 2. Vásárolható extra tárhely
 
