@@ -125,21 +125,23 @@ export class ReportsService {
         currency,
       },
       byVehicle: [...byVehicle.entries()]
+        // Decimal szerint rendezünk (a Number() float-ra váltás nagy összegeknél
+        // pontosságot veszítene / rossz sorrendet adna), majd stringre váltunk.
+        .sort(([, a], [, b]) => b.total.comparedTo(a.total))
         .map(([key, v]) => ({
           key,
           label: v.label,
           total: v.total.toString(),
           count: v.count,
-        }))
-        .sort((a, b) => Number(b.total) - Number(a.total)),
+        })),
       byCategory: [...byCategory.entries()]
+        .sort(([, a], [, b]) => b.total.comparedTo(a.total))
         .map(([key, c]) => ({
           key,
           label: key,
           total: c.total.toString(),
           count: c.count,
-        }))
-        .sort((a, b) => Number(b.total) - Number(a.total)),
+        })),
       byMonth: [...byMonth.entries()]
         .map(([month, total]) => ({ month, total: total.toString() }))
         .sort((a, b) => a.month.localeCompare(b.month)),

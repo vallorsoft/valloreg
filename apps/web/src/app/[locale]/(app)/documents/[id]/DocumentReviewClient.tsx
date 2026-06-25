@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { DocumentStatusBadge } from '@/components/app/DocumentStatusBadge';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const CONFIRMABLE = new Set<string>([DocumentStatus.AUTO_OK, DocumentStatus.NEEDS_REVIEW]);
 
@@ -64,6 +65,7 @@ export function DocumentReviewClient({ id }: { id: string }) {
   const [overwriting, setOverwriting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [itemError, setItemError] = useState<string | null>(null);
   // Kézi munkadíj-hozzáadás állapota.
@@ -73,13 +75,25 @@ export function DocumentReviewClient({ id }: { id: string }) {
   const [addingLabor, setAddingLabor] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
-  useEffect(() => {
-    documentsApi
-      .getById(id)
-      .then(setDoc)
-      .catch(() => setError(t('review.notFound')))
-      .finally(() => setLoading(false));
+  const loadDoc = useCallback(async () => {
+    setLoadError(false);
+    try {
+      setDoc(await documentsApi.getById(id));
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
+      else setError(t('review.notFound'));
+    } finally {
+      setLoading(false);
+    }
   }, [id, t]);
+
+  const reloadDoc = useCallback(() => {
+    setLoading(true);
+    void loadDoc();
+  }, [loadDoc]);
+
+  useEffect(() => { void loadDoc(); }, [loadDoc]);
 
   useEffect(() => {
     vehiclesApi
@@ -227,6 +241,14 @@ export function DocumentReviewClient({ id }: { id: string }) {
     return (
       <div className="flex items-center justify-center py-16 text-sm text-anthracite-500">
         {t('loading')}
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <LoadErrorState onRetry={reloadDoc} />
       </div>
     );
   }
