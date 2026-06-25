@@ -1,0 +1,59 @@
+name: ci
+
+# Minőségi kapu: minden push-on és PR-en lefuttatjuk a build + typecheck +
+# formátum-ellenőrzést. Ez fogja meg az olyan töréseket, mint a tsconfig /
+# TypeScript-verzió inkompatibilitás (a `pnpm build` korábban CI nélkül némán
+# tudott elromlani).
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+  workflow_dispatch: {}
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      # A telepítés a `@valloreg/api` postinstall-jában lefuttatja a `prisma
+      # generate`-et is (a CI-ben van hálózat az engine-letöltéshez).
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # A megosztott csomag dist-jét a többiek typecheck/build-je igényli
+      # (a turbo `^build` függőség is ezt biztosítja, de itt explicit is).
+      - name: Build shared
+        run: pnpm --filter @valloreg/shared build
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build
+
+      - name: Lint
+        run: pnpm lint
+
+      # Megjegyzés: a `pnpm format:check` szándékosan NEM kapu itt – a repó
+      # jelenleg nincs teljesen Prettier-formázva (lásd docs/AUDIT_FINDINGS.md).
+      # Egy egyszeri `pnpm format` futtatás után bekapcsolható.

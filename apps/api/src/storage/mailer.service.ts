@@ -25,10 +25,9 @@ export class MailerService {
     const { apiKey, sender, from } = this.config.mail;
 
     if (!apiKey) {
-      // Kulcs nélkül (dev/MailHog vagy CI): logoljuk, de nem dobunk.
-      this.logger.log(
-        `[MAIL stub] -> ${message.to} | ${message.subject}\n${message.text}`,
-      );
+      // Kulcs nélkül (dev/MailHog vagy CI): csak a címzettet és a tárgyat
+      // logoljuk – a törzs jelszó-reset tokent / PII-t tartalmazhat, ezért NEM.
+      this.logger.log(`[MAIL stub] -> ${message.to} | ${message.subject}`);
       return;
     }
 
@@ -47,6 +46,8 @@ export class MailerService {
           textContent: message.text,
           htmlContent: message.html,
         }),
+        // Ne lógjon be egy lassú upstream a hívót (queue/scheduler) blokkolva.
+        signal: AbortSignal.timeout(10_000),
       });
 
       if (!res.ok) {

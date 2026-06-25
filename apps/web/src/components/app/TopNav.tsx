@@ -1,15 +1,35 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from '@/i18n/routing';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { InstallButton } from '@/components/app/InstallButton';
 import { Button } from '@/components/ui/Button';
-import { clearTokens } from '@/lib/auth';
+import { clearTokens, resolveActiveTenant } from '@/lib/auth';
+import { authApi } from '@/lib/api';
 
 export function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
   const t = useTranslations('app');
   const router = useRouter();
+  const [tenantName, setTenantName] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    authApi
+      .me()
+      .then((session) => {
+        if (!active) return;
+        const membership = resolveActiveTenant(session.memberships);
+        setTenantName(membership?.tenantName ?? null);
+      })
+      .catch(() => {
+        // 401 → az AppShell kezeli az átirányítást; itt csak a nevet hagyjuk üresen.
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
 
   function onLogout() {
     clearTokens();
@@ -32,7 +52,7 @@ export function TopNav({ onMenuClick }: { onMenuClick: () => void }) {
         <p className="hidden text-sm text-anthracite-500 sm:block">
           {t('header.tenantLabel')}:{' '}
           <span className="font-medium text-anthracite-800">
-            {t('header.noTenant')}
+            {tenantName ?? t('header.noTenant')}
           </span>
         </p>
       </div>

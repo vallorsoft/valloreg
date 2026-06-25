@@ -20,16 +20,16 @@ modul ráépül. Itt dől el az adatizoláció, az auth és a feldolgozási pipe
 - [x] Monorepo (pnpm workspaces + Turbo): `apps/api` (NestJS), `apps/web` (Next.js PWA), `packages/shared`
 - [x] Infra: Docker Compose (PostgreSQL, Redis, MinIO/S3, MailHog)
 - [x] Megosztott szerződések (`packages/shared`): szerepkörök, csomag-limitek, feature flag kulcsok, **extraction JSON kontraktus** (zod)
-- [~] Adatmodell (Prisma): `Tenant`, `User`, `Membership`, `Vehicle`, `Document`, `Invoice`, `InvoiceItem`, `Supplier`, `AuditLog`, `FeatureFlag`, `Plan/Subscription`, `SupportAccess`, tanuló mapping táblák
-- [~] Tenant-izoláció: `tenant_id` minden üzleti rekordban + Prisma kiterjesztés a kötelező tenant-scope-ra
-- [~] Auth: JWT (access + refresh), regisztráció, login, jelszó-reset, RBAC guard
-- [~] RBAC: OWNER / FLEET_MANAGER / ADMIN / ACCOUNTANT / VIEWER + platform SUPER_ADMIN
-- [~] Audit log modul (minden érzékeny művelet naplózva)
-- [~] Async infrastruktúra: BullMQ + Redis queue modul, worker váz, idempotens job-kulcs
-- [~] Storage absztrakció: S3/MinIO adapter (presigned upload/download)
-- [~] OCR + Extraction **portok** (interface-ek) stub implementációval (Fázis 2 plugint vár)
-- [~] Frontend váz: Next.js App Router, Tailwind brand téma, i18n (hu/ro/en), PWA manifest + SW, app shell, auth + dashboard skeleton, landing skeleton
-- [ ] CI: lint + typecheck + build (GitHub Actions)
+- [x] Adatmodell (Prisma): `Tenant`, `User`, `Membership`, `Vehicle`, `Document`, `Invoice`, `InvoiceItem`, `Supplier`, `AuditLog`, `FeatureFlag`, `Plan/Subscription`, `SupportAccess`, tanuló mapping táblák
+- [x] Tenant-izoláció: `tenant_id` minden üzleti rekordban + Prisma kiterjesztés a kötelező tenant-scope-ra
+- [x] Auth: JWT (access + refresh), regisztráció, login, jelszó-reset, RBAC guard
+- [x] RBAC: OWNER / FLEET_MANAGER / ADMIN / ACCOUNTANT / VIEWER + platform SUPER_ADMIN
+- [x] Audit log modul (minden érzékeny művelet naplózva)
+- [x] Async infrastruktúra: BullMQ + Redis queue modul, worker váz, idempotens job-kulcs
+- [x] Storage absztrakció: S3/MinIO adapter (presigned upload/download)
+- [x] OCR + Extraction **portok** (interface-ek) stub implementációval (Fázis 2 plugint vár)
+- [x] Frontend váz: Next.js App Router, Tailwind brand téma, i18n (hu/ro/en), PWA manifest + SW, app shell, auth + dashboard skeleton, landing skeleton
+- [x] CI: lint + typecheck + build (GitHub Actions) – `.github/workflows/ci.yml`
 
 **Deliverable:** Futtatható monorepo. Egy cég regisztrálhat, beléphet, tenant-izolált
 adatokat lát; a dokumentum-feltöltés tárolásig eljut; a feldolgozó queue és a provider
@@ -46,14 +46,14 @@ super admin felület, riportok, push értesítések, natív appok.
 strukturált, validált adat lesz minimális emberi beavatkozással.
 
 **Implementálandó:**
-- [ ] OCR réteg: pluggable provider (Mistral OCR / Google Document AI), HU/RO/EN, szkennelt + digitális PDF, szöveg + layout kinyerés
-- [ ] Extraction réteg (AI/LLM): OCR szövegből a `packages/shared` **extraction JSON** előállítása (beszállító, dátum, számlaszám, pénznem, tételek, árak, adók, rendszám/VIN jelöltek, confidence)
-- [ ] Hiányos/hibás adat kezelés → `uncertainFields`
-- [ ] Intelligens kategorizálás: tétel besorolás (jármű / szerszám / általános / iroda) + alkatrésztípus felismerés (fék, motor, szűrő…)
-- [ ] Aszinkron pipeline: upload → OCR job → extraction job → kategorizálás → review-ready állapot (BullMQ)
-- [ ] Idempotencia (dokumentum-hash alapú), retry + dead-letter queue
-- [ ] Minden AI/OCR döntés audit-logba; nyers OCR és prompt/response megőrzése debughoz (tenant-izoláltan)
-- [ ] Confidence-alapú státusz: `AUTO_OK` vs `NEEDS_REVIEW`
+- [x] OCR réteg: pluggable provider (stub + Gemini OCR; Mistral/Google Document AI portként előkészítve), HU/RO/EN, szkennelt + digitális PDF, szöveg + layout kinyerés
+- [x] Extraction réteg (AI/LLM): OCR szövegből a `packages/shared` **extraction JSON** előállítása (beszállító, dátum, számlaszám, pénznem, tételek, árak, adók, rendszám/VIN jelöltek, confidence)
+- [x] Hiányos/hibás adat kezelés → `uncertainFields`
+- [x] Intelligens kategorizálás: tétel besorolás (jármű / szerszám / általános / iroda) + alkatrésztípus felismerés (fék, motor, szűrő…)
+- [x] Aszinkron pipeline: upload → OCR job → extraction job → kategorizálás → review-ready állapot (BullMQ)
+- [x] Idempotencia (dokumentum-hash alapú), retry + dead-letter queue
+- [x] Minden AI/OCR döntés audit-logba; nyers OCR és prompt/response megőrzése debughoz (tenant-izoláltan)
+- [x] Confidence-alapú státusz: `AUTO_OK` vs `NEEDS_REVIEW`
 
 **Deliverable:** Feltöltött számla a háttérben feldolgozódik és strukturált, kategorizált,
 review-re kész adattá válik. Mérhető pontosság teszt-számlákon.
@@ -69,13 +69,13 @@ tanulás (csak az adat gyűjtése indul), billing/admin.
 a nyers AI-kimenet megbízható, jóváhagyott szerviztörténetté.
 
 **Implementálandó:**
-- [ ] Jármű matching engine: rendszám / VIN / beszállítói minta / korábbi adatok alapján jelölt, bizonytalanságnál megerősítés
-- [ ] Review UI: jármű választás/módosítás/új jármű, tételenkénti hozzárendelés (1 jármű / több jármű / általános / szerszám / iroda)
-- [ ] Több jármű egy számlán: tételszintű szétosztás, csak a járműhöz rendelt tétel számít a jármű költségébe
-- [ ] Jármű digitális szervizkönyv: számlák, javítások, alkatrészek, munkadíjak, km-állások, dokumentum-archívum, idővonal
-- [ ] Tanuló rendszer: supplier→jármű és tétel→kategória mapping tárolás és javaslat, pontosság javulás
-- [ ] Dashboard: havi/éves költség, költség/jármű, költség/km, közelgő karbantartás, legdrágább járművek, doksi- és eseményszám
-- [ ] Dokumentumkezelés: drag&drop, tömeges feltöltés, előnézet, keresés, archiválás
+- [x] Jármű matching engine: rendszám / VIN / beszállítói minta / korábbi adatok alapján jelölt, bizonytalanságnál megerősítés
+- [x] Review UI: jármű választás/módosítás/új jármű, tételenkénti hozzárendelés (1 jármű / több jármű / általános / szerszám / iroda)
+- [x] Több jármű egy számlán: tételszintű szétosztás, csak a járműhöz rendelt tétel számít a jármű költségébe
+- [x] Jármű digitális szervizkönyv: számlák, javítások, alkatrészek, munkadíjak, km-állások, dokumentum-archívum, idővonal
+- [x] Tanuló rendszer: supplier→jármű és tétel→kategória mapping tárolás és javaslat, pontosság javulás
+- [x] Dashboard: havi/éves költség, költség/jármű, költség/km, közelgő karbantartás, legdrágább járművek, doksi- és eseményszám
+- [x] Dokumentumkezelés: drag&drop, tömeges feltöltés, előnézet, keresés, archiválás
 
 **Deliverable:** Teljes „feltölt → AI javasol → felhasználó jóváhagy → szervizkönyv frissül”
 ciklus, működő tanulással és dashboarddal.
@@ -89,15 +89,15 @@ ciklus, működő tanulással és dashboarddal.
 **Cél:** A termék eladható, üzemeltethető, skálázható SaaS-szá válik.
 
 **Implementálandó:**
-- [ ] Előfizetési csomagok + limit-érvényesítés (jármű/felhasználó/tárhely/dokumentum), Starter/Standard/Professional/Business
-- [ ] Számlázás integráció (Stripe vagy hasonló), próbaidőszak, állapotok
-- [ ] Super Admin panel: cégek, előfizetések, csomagok, limitek, funkciók, audit logok
-- [ ] Feature flag rendszer: cégenkénti engedélyezés (OCR, AI, Dashboard, Riportok, API, Export, Emlékeztetők, Dokumentumtár)
-- [ ] Adatvédelem: üzemeltető alapból NEM látja a számlák/dokumentumok/költségek tartalmát; csak rendszeradat, statisztika, hibák, audit
-- [ ] Support access: ideiglenes (1 óra / 24 óra / 7 nap), teljesen naplózva
-- [ ] Felhasználókezelés: email meghívás, szerepkörök, 2FA, opcionális Google login
-- [ ] Landing page teljes (10 szekció), lead/demo/trial; riportok + export; push értesítések
-- [ ] Megfigyelhetőség: metrikák, tracing, alerting; horizontálisan skálázott workerek
+- [x] Előfizetési csomagok + limit-érvényesítés (jármű/felhasználó/tárhely/dokumentum), Starter/Standard/Professional/Business
+- [x] Számlázás integráció: **utalásos** fizetés (bankszámla-adatok + fejlesztői értesítés), próbaidőszak, állapotok. *(Stripe-port a jövőre hagyva.)*
+- [x] Super Admin panel: cégek, előfizetések, csomagok, limitek, funkciók, audit logok
+- [x] Feature flag rendszer: cégenkénti engedélyezés (OCR, AI, Dashboard, Riportok, API, Export, Emlékeztetők, Dokumentumtár)
+- [x] Adatvédelem: üzemeltető alapból NEM látja a számlák/dokumentumok/költségek tartalmát; csak rendszeradat, statisztika, hibák, audit
+- [x] Support access: ideiglenes (1 óra / 24 óra / 7 nap), teljesen naplózva
+- [~] Felhasználókezelés: email meghívás + szerepkörök **kész**; **2FA** és **opcionális Google login** még nyitott
+- [x] Landing page teljes (10 szekció), lead/demo/trial; riportok + export; push értesítések
+- [~] Megfigyelhetőség: health-check + alap metrikák **kész**; tracing, alerting és a több-instance worker leader-election (lásd `docs/AUDIT_FINDINGS.md`) még nyitott
 
 **Deliverable:** Több száz cég, több ezer jármű, több százezer dokumentum kiszolgálására
 kész, fizetős, üzemeltethető SaaS.

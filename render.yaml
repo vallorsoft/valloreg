@@ -97,11 +97,13 @@ services:
         value: valloreg-documents
       - key: S3_FORCE_PATH_STYLE
         value: "true"
-      # AI / OCR – Fázis 1-ben stub; Fázis 2-ben állítsd `gemini`-re + add meg a kulcsot:
+      # AI / OCR – éles Gemini provider. A GEMINI_API_KEY-t a Render felületen add
+      # meg (sync:false). FONTOS: kulcs nélkül a provider stubra esik vissza, így
+      # üres kulccsal nem áll le, de valódi kiolvasás sem történik.
       - key: EXTRACTION_PROVIDER
-        value: stub
+        value: gemini
       - key: OCR_PROVIDER
-        value: stub
+        value: gemini
       - key: GEMINI_API_KEY
         sync: false
       # RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). Alap: stub (álladat).
