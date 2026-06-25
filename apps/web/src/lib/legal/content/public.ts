@@ -154,8 +154,12 @@ const terms: LegalDoc = {
       t: 'Serviciul este furnizat „ca atare" și „așa cum este disponibil", fără garanții de potrivire pentru un anumit scop. În măsura maximă permisă de lege, în relația B2B (între profesioniști), furnizorul nu acordă despăgubiri și nu răspunde pentru daune (directe sau indirecte), pierderi de date, de profit, de oportunitate sau întreruperi, rezultate din utilizarea ori imposibilitatea de utilizare a serviciului. Utilizatorul folosește serviciul pe propriul risc.',
     },
     {
+      k: 'p',
+      t: 'Plafon de răspundere: în orice situație, răspunderea totală cumulată a furnizorului față de client, indiferent de temei (contractual, delictual sau de altă natură), este limitată la valoarea totală a tarifelor contractuale (abonamentelor) efectiv plătite de client în ultimele 12 luni anterioare evenimentului care a generat prejudiciul. Această limitare nu se aplică în cazurile în care legea interzice limitarea sau excluderea răspunderii (de ex. dol, culpă gravă, vătămare corporală sau deces, răspunderea operatorului față de persoanele vizate conform art. 82 GDPR, garanțiile imperative).',
+    },
+    {
       k: 'note',
-      t: '[DE VERIFICAT JURIDIC – esențial] Limitarea/exonerarea de răspundere are LIMITE legale care nu pot fi înlăturate contractual nici în B2B: răspunderea pentru dol și culpă gravă, pentru vătămare corporală/deces, garanțiile imperative și răspunderea operatorului față de persoanele vizate conform GDPR (art. 82) nu pot fi excluse. Formularea „nu despăgubim pe nimeni cu nimic" NU este pe deplin opozabilă; avocatul trebuie să redacteze plafonul de răspundere (de regulă limitat la suma abonamentului) și excepțiile obligatorii. De asemenea, dacă serviciul devine accesibil persoanelor fizice (PFA/consumatori), se aplică reguli de protecția consumatorului.',
+      t: '[DE VERIFICAT JURIDIC – esențial] Plafonul de răspundere (limitat la tarifele plătite în ultimele 12 luni) și exonerarea au LIMITE legale care nu pot fi înlăturate contractual nici în B2B: răspunderea pentru dol și culpă gravă, pentru vătămare corporală/deces, garanțiile imperative și răspunderea operatorului față de persoanele vizate conform GDPR (art. 82) nu pot fi excluse sau plafonate. Avocatul trebuie să confirme opozabilitatea clauzei și formularea excepțiilor. De asemenea, dacă serviciul devine accesibil persoanelor fizice (PFA/consumatori), se aplică reguli de protecția consumatorului.',
     },
     {
       k: 'note',
