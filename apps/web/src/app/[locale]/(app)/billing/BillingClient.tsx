@@ -4,12 +4,14 @@ import { useState, useEffect } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import {
   UNLIMITED,
-  PLAN_PRICES,
   PLAN_CURRENCY,
   PlanTier,
   STORAGE_PACKS,
   BYTES_PER_GB,
+  BillingInterval,
+  planPrice,
 } from '@valloreg/shared';
+import { cn } from '@/lib/cn';
 
 // "+5 GB — 19 RON · +10 GB — 29 RON · +25 GB — 59 RON"
 const STORAGE_PACK_LIST = STORAGE_PACKS.map(
@@ -61,7 +63,11 @@ export function BillingClient() {
   const [loading, setLoading] = useState(true);
   const [requesting, setRequesting] = useState<string | null>(null);
   const [result, setResult] = useState<SubscriptionRequestResult | null>(null);
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>(
+    BillingInterval.MONTHLY,
+  );
   const [error, setError] = useState<string | null>(null);
+  const isYearly = billingInterval === BillingInterval.YEARLY;
 
   useEffect(() => {
     billingApi
@@ -78,7 +84,7 @@ export function BillingClient() {
     setError(null);
     setResult(null);
     try {
-      setResult(await billingApi.requestSubscription(planTier));
+      setResult(await billingApi.requestSubscription(planTier, billingInterval));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('subscribe.error'));
     } finally {
@@ -150,6 +156,34 @@ export function BillingClient() {
         </h2>
         <p className="mt-1 text-sm text-anthracite-500">{t('subscribe.intro')}</p>
 
+        {/* Havi / Éves választó */}
+        <div className="mt-4 flex flex-wrap items-center gap-3">
+          <div className="inline-flex rounded-full border border-anthracite-200 p-1">
+            {[BillingInterval.MONTHLY, BillingInterval.YEARLY].map((iv) => (
+              <button
+                key={iv}
+                type="button"
+                onClick={() => setBillingInterval(iv)}
+                className={cn(
+                  'rounded-full px-4 py-1.5 text-sm font-medium transition',
+                  billingInterval === iv
+                    ? 'bg-primary-600 text-white'
+                    : 'text-anthracite-600 hover:text-anthracite-900',
+                )}
+              >
+                {iv === BillingInterval.MONTHLY
+                  ? t('subscribe.monthly')
+                  : t('subscribe.yearly')}
+              </button>
+            ))}
+          </div>
+          {isYearly && (
+            <span className="text-sm font-medium text-primary-700">
+              {t('subscribe.yearlyNote')}
+            </span>
+          )}
+        </div>
+
         <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {PLAN_ORDER.map((tier) => {
             const isCurrent = data.plan === tier;
@@ -162,12 +196,17 @@ export function BillingClient() {
                   {t(`plans.${tier}` as Parameters<typeof t>[0])}
                 </p>
                 <p className="mt-1 text-lg font-bold text-anthracite-900">
-                  {fmtPrice(PLAN_PRICES[tier])}
+                  {fmtPrice(planPrice(tier, billingInterval))}
                   <span className="text-xs font-normal text-anthracite-400">
                     {' '}
-                    {t('subscribe.perMonth')}
+                    {isYearly ? t('subscribe.perYear') : t('subscribe.perMonth')}
                   </span>
                 </p>
+                {isYearly && (
+                  <p className="mt-0.5 text-xs font-medium text-primary-700">
+                    {t('subscribe.monthFree')}
+                  </p>
+                )}
                 <div className="mt-3">
                   <Button
                     size="sm"
@@ -206,7 +245,7 @@ export function BillingClient() {
           <dl className="mt-4 grid gap-x-6 gap-y-2 sm:grid-cols-2">
             {(
               [
-                ['subscribe.amount', `${result.amount.toLocaleString(locale)} ${result.currency} ${t('subscribe.perMonth')}`],
+                ['subscribe.amount', `${result.amount.toLocaleString(locale)} ${result.currency} ${result.interval === 'YEARLY' ? t('subscribe.perYear') : t('subscribe.perMonth')}`],
                 ['subscribe.beneficiary', result.bank.beneficiary || '—'],
                 ['subscribe.iban', result.bank.iban || '—'],
                 ['subscribe.bank', result.bank.bank || '—'],

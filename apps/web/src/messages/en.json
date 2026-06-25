@@ -205,7 +205,12 @@
           "name": "Business",
           "description": "For large fleets, with no limits."
         }
-      }
+      },
+      "billingMonthly": "Monthly",
+      "billingYearly": "Yearly",
+      "perYear": "/ yr",
+      "yearlyNote": "Pay only 11 months instead of 12 — 1 month free.",
+      "monthFree": "1 month free"
     },
     "compare": {
       "title": "Compare plans",
@@ -1078,7 +1083,11 @@
       "clear": "Clear",
       "loading": "Loading…",
       "saveError": "Save failed.",
-      "sources": { "manual": "manual", "empirical": "learned", "seed": "baseline" }
+      "sources": {
+        "manual": "manual",
+        "empirical": "learned",
+        "seed": "baseline"
+      }
     }
   },
   "rankings": {
@@ -1090,7 +1099,11 @@
     "exportCsv": "Export CSV",
     "exportPdf": "PDF",
     "replaceAdvice": "Replace advised",
-    "tabs": { "segment": "By segment", "model": "By make/model", "suppliers": "Suppliers" },
+    "tabs": {
+      "segment": "By segment",
+      "model": "By make/model",
+      "suppliers": "Suppliers"
+    },
     "suppliers": {
       "empty": "No supplier-linked complex service data yet.",
       "supplier": "Supplier",
@@ -1242,7 +1255,12 @@
       "bank": "Bank",
       "swift": "SWIFT",
       "reference": "Reference",
-      "referenceHint": "Please include this reference: {reference}"
+      "referenceHint": "Please include this reference: {reference}",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "perYear": "/ yr",
+      "yearlyNote": "Pay only 11 months instead of 12 — 1 month free.",
+      "monthFree": "1 month free"
     },
     "plans": {
       "STARTER": "Start",
