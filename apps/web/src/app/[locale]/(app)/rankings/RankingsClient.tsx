@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { isMajorComponent } from '@valloreg/shared';
 import {
@@ -15,6 +15,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { Badge } from '@/components/ui/Badge';
 import { PageHeading } from '@/components/app/PageHeading';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 type Tab = 'segment' | 'model' | 'suppliers';
 
@@ -27,14 +28,18 @@ export function RankingsClient() {
   const [suppliers, setSuppliers] = useState<SupplierQualityRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [tab, setTab] = useState<Tab>('segment');
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     rankingsApi
       .get()
       .then(setData)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 403) setAvailable(false);
+        else if (isRealLoadError(err)) setLoadError(true);
       })
       .finally(() => setLoading(false));
     rankingsApi
@@ -42,6 +47,10 @@ export function RankingsClient() {
       .then(setSuppliers)
       .catch(() => setSuppliers([]));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const compLabel = (c: string) =>
     isMajorComponent(c)
@@ -222,6 +231,8 @@ export function RankingsClient() {
 
       {loading ? (
         <p className="py-10 text-center text-sm text-anthracite-500">{t('loading')}</p>
+      ) : loadError ? (
+        <LoadErrorState onRetry={load} />
       ) : !available ? (
         <Card className="py-16">
           <p className="text-center text-sm text-anthracite-500">{t('unavailable')}</p>
