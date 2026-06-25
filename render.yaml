@@ -89,6 +89,12 @@ services:
       # NEXT_PUBLIC_SAME_ORIGIN_AUTH-tal. Alap: false (cross-site, SameSite=None).
       - key: SAME_ORIGIN_FRONTEND
         value: "true"
+      # Háttér-ütemezők (reminders/reports/verification/benchmark). 1 instance
+      # (Render free) esetén marad "true". Több instance-ra skálázva állítsd
+      # "false"-ra MINDEN instance-on, KIVÉVE egyet, hogy a jobok ne fussanak
+      # többször (duplikált e-mail/push).
+      - key: SCHEDULER_ENABLED
+        value: "true"
       # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
       - key: S3_ENDPOINT
         sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com

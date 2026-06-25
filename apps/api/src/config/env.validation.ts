@@ -38,6 +38,12 @@ export const envSchema = z.object({
   // NEXT_PUBLIC_SAME_ORIGIN_AUTH kapcsolót – a kettőt EGYÜTT kell bekapcsolni.
   SAME_ORIGIN_FRONTEND: booleanString(false),
 
+  // KAPCSOLÓ: a háttér-ütemezők (reminders/reports/verification/benchmark) CSAK
+  // akkor regisztrálnak workert + ismétlődő jobot, ha ez igaz. TÖBB API-instance
+  // esetén állítsd `true`-ra EGYETLEN instance-on, hogy a napi/heti jobok ne
+  // fussanak N-szer (duplikált e-mail/push). Render free (1 instance): marad `true`.
+  SCHEDULER_ENABLED: booleanString(true),
+
   // PostgreSQL – a DIRECT_URL opcionális (Neon-nál külön); ha nincs, a
   // PrismaService a DATABASE_URL-t használja a migrációkhoz is.
   DATABASE_URL: z.string().min(1, 'DATABASE_URL kötelező'),
