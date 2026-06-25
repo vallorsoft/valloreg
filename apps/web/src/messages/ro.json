@@ -1307,7 +1307,18 @@
     },
     "features": {
       "title": "Funcții disponibile",
-      "none": "Nicio funcție activată."
+      "none": "Nicio funcție activată.",
+      "keys": {
+        "OCR": "Recunoaștere text OCR",
+        "AI_PROCESSING": "Procesare AI",
+        "DASHBOARD": "Tablou de bord",
+        "REPORTS": "Rapoarte",
+        "API": "Acces API",
+        "EXPORT": "Export",
+        "REMINDERS": "Memento-uri",
+        "DOCUMENT_LIBRARY": "Bibliotecă documente",
+        "ANALYTICS": "Analitică premium"
+      }
     }
   },
   "notifications": {

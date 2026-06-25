@@ -341,14 +341,17 @@ export function BillingClient() {
           <p className="text-sm text-anthracite-500">{t('features.none')}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {data.features.map((f) => (
-              <span
-                key={f}
-                className="inline-flex items-center rounded-full bg-anthracite-50 px-3 py-1 text-xs font-medium text-anthracite-700"
-              >
-                {f}
-              </span>
-            ))}
+            {data.features.map((f) => {
+              const key = `features.keys.${f}` as Parameters<typeof t>[0];
+              return (
+                <span
+                  key={f}
+                  className="inline-flex items-center rounded-full bg-anthracite-50 px-3 py-1 text-xs font-medium text-anthracite-700"
+                >
+                  {t.has(key) ? t(key) : f}
+                </span>
+              );
+            })}
           </div>
         )}
       </Card>

@@ -1307,7 +1307,18 @@
     },
     "features": {
       "title": "Available features",
-      "none": "No features enabled."
+      "none": "No features enabled.",
+      "keys": {
+        "OCR": "OCR text recognition",
+        "AI_PROCESSING": "AI processing",
+        "DASHBOARD": "Dashboard",
+        "REPORTS": "Reports",
+        "API": "API access",
+        "EXPORT": "Export",
+        "REMINDERS": "Reminders",
+        "DOCUMENT_LIBRARY": "Document library",
+        "ANALYTICS": "Premium analytics"
+      }
     }
   },
   "notifications": {
