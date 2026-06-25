@@ -19,10 +19,10 @@ funkció elérhető. A fizetés a próbaidő után **banki utalással** történ
 | **Fleet** – teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség | **299** | korlátlan | korlátlan | korlátlan | 15 GB |
 
 > 📌 **KÓD ÁLLAPOT:** A forráskód teljesen a fenti **3 sávos (Start/Pro/Fleet) RON**
-> ajánlatot tükrözi. A Prisma `PlanTier` enum is átállt 3 értékre
-> (`START`/`PRO`/`FLEET`) DB-migrációval (`20260625120000_plan_tier_3tier_storage`);
-> a korábbi értékek leképezése: STARTER→START, STANDARD/PROFESSIONAL→PRO,
-> BUSINESS→FLEET. Az **extra tárhely** is be van építve: a `Subscription.extraStorageGB`
+> ajánlatot tükrözi. A Prisma `PlanTier` enum a **3 sávos** modellt használja
+> (`START`/`PRO`/`FLEET`); a korábbi (megszűnt) sávokat egy DB-migráció
+> (`20260625120000_plan_tier_3tier_storage`) vezette át, így az adatbázisban már
+> csak a három sáv létezik. Az **extra tárhely** is be van építve: a `Subscription.extraStorageGB`
 > mező tárolja, a tényleges tárhely-keret = csomag alap + megvásárolt extra, és a
 > feltöltésnél a backend ki is kényszeríti. Az igénylés utalásos (mint az
 > előfizetés), aktiválás Super Adminnal. Az árak pénzneme **RON**.
