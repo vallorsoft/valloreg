@@ -3,7 +3,7 @@ import { JwtService } from '@nestjs/jwt';
 import * as argon2 from 'argon2';
 import { createHash, randomBytes } from 'node:crypto';
 import { DEFAULT_LOCALE, PlanTier, TenantRole } from '@valloreg/shared';
-import { SubscriptionStatus } from '@prisma/client';
+import { Prisma, SubscriptionStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AppConfigService } from '../config/app-config.service';
 import { AuditService } from '../audit/audit.service';
@@ -111,7 +111,18 @@ export class AuthService {
 
         return { user: createdUser, tenant: createdTenant };
       },
-    );
+    ).catch((err) => {
+      // TOCTOU: két párhuzamos regisztráció ugyanazzal az emaillel átcsúszhat a
+      // fenti findUnique ellenőrzésen; ekkor a User.email @unique constraint dob
+      // (P2002). Ezt tiszta domain-hibára képezzük (500 helyett 409).
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        throw AppException.emailTaken();
+      }
+      throw err;
+    });
 
     await this.audit.log({
       tenantId: tenant.id,
@@ -263,13 +274,20 @@ export class AuthService {
     const passwordHash = await argon2.hash(newPassword);
 
     await this.prisma.system.$transaction(async (tx) => {
+      // A tokent ELŐSZÖR, FELTÉTELESEN jelöljük használtnak (TOCTOU / token-
+      // újrafelhasználás ellen): két párhuzamos kérés átjuthat a fenti usedAt
+      // ellenőrzésen, de a feltételes updateMany (usedAt: null) csak EGYET enged
+      // tovább; a vesztő count=0-t kap, és a tranzakció visszagördül.
+      const consumed = await tx.passwordResetToken.updateMany({
+        where: { id: record.id, usedAt: null },
+        data: { usedAt: new Date() },
+      });
+      if (consumed.count === 0) {
+        throw AppException.tokenInvalid();
+      }
       await tx.user.update({
         where: { id: record.userId },
         data: { passwordHash },
-      });
-      await tx.passwordResetToken.update({
-        where: { id: record.id },
-        data: { usedAt: new Date() },
       });
       // Minden aktív munkamenet érvénytelenítése (kijelentkeztetés mindenhol).
       await tx.refreshToken.updateMany({
@@ -332,11 +350,17 @@ export class AuthService {
       throw AppException.tokenExpired();
     }
 
-    // Rotáció: a régi tokent visszavonjuk.
-    await this.prisma.system.refreshToken.update({
-      where: { id: stored.id },
+    // Rotáció FELTÉTELES visszavonással (TOCTOU / double-spend ellen): ha két
+    // párhuzamos kérés ugyanazzal a refresh tokennel érkezik, mindkettő átjuthat
+    // a fenti ellenőrzésen. A feltételes updateMany (revokedAt: null) GARANTÁLJA,
+    // hogy csak EGY kérés tudja visszavonni-és-rotálni; a vesztes count=0-t kap.
+    const revoked = await this.prisma.system.refreshToken.updateMany({
+      where: { id: stored.id, revokedAt: null },
       data: { revokedAt: new Date() },
     });
+    if (revoked.count === 0) {
+      throw AppException.tokenExpired();
+    }
 
     const user = await this.prisma.system.user.findUnique({
       where: { id: payload.sub },

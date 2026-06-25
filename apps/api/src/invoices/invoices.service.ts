@@ -145,9 +145,26 @@ export class InvoicesService {
         data: { weight: { increment: 1 } },
       });
     } else {
-      await this.prisma.scoped.supplierVehicleMapping.create({
-        data: { tenantId, supplierId, vehicleId },
-      });
+      try {
+        await this.prisma.scoped.supplierVehicleMapping.create({
+          data: { tenantId, supplierId, vehicleId },
+        });
+      } catch (err) {
+        // TOCTOU: párhuzamos ág már létrehozta ugyanezt a párost
+        // (@@unique[tenantId,supplierId,vehicleId] → P2002). A vesztő ág a
+        // meglévő sor súlyát növeli, hogy a tanulás ne vesszen el.
+        if (
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === 'P2002'
+        ) {
+          await this.prisma.scoped.supplierVehicleMapping.updateMany({
+            where: { supplierId, vehicleId },
+            data: { weight: { increment: 1 } },
+          });
+        } else {
+          throw err;
+        }
+      }
     }
   }
 

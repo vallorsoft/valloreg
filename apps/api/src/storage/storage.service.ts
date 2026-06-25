@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -75,6 +77,9 @@ export class StorageService implements OnModuleInit {
         Key: key,
         Body: body,
         ContentType: contentType,
+        // Nyugalmi titkosítás EXPLICIT kérése. A Cloudflare R2 alapból titkosít,
+        // de bare S3-nál ez teszi kötelezővé (GDPR art. 32 – defense in depth).
+        ServerSideEncryption: 'AES256',
       }),
     );
   }
@@ -96,6 +101,48 @@ export class StorageService implements OnModuleInit {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
+  }
+
+  /**
+   * Egy prefix alatti ÖSSZES objektum törlése (lapozással). A cég (tenant) teljes
+   * törléséhez (GDPR art. 17): a `tenants/{tenantId}/` prefix minden fájlja.
+   * Visszaadja a törölt objektumok számát. Best-effort módon a hívó kezeli a hibát.
+   */
+  async deleteByPrefix(prefix: string): Promise<number> {
+    let deleted = 0;
+    let continuationToken: string | undefined;
+
+    do {
+      const listed = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      const keys = (listed.Contents ?? [])
+        .map((o) => o.Key)
+        .filter((k): k is string => Boolean(k));
+
+      if (keys.length > 0) {
+        // A DeleteObjects egy hívásban max. 1000 kulcsot fogad; a ListObjectsV2
+        // is max. 1000-et ad oldalanként, így egy oldal mindig belefér.
+        await this.client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucket,
+            Delete: { Objects: keys.map((Key) => ({ Key })) },
+          }),
+        );
+        deleted += keys.length;
+      }
+
+      continuationToken = listed.IsTruncated
+        ? listed.NextContinuationToken
+        : undefined;
+    } while (continuationToken);
+
+    return deleted;
   }
 
   /** Presigned GET URL letöltéshez. */

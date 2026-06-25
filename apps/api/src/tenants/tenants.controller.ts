@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Patch, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  HttpCode,
+  HttpStatus,
+  Patch,
+  UseGuards,
+} from '@nestjs/common';
 import { TenantRole } from '@valloreg/shared';
 import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
@@ -33,5 +42,19 @@ export class TenantsController {
     @Body() dto: UpdateTenantDto,
   ) {
     return this.tenantsService.update(tenant.tenantId, user.userId, dto);
+  }
+
+  /**
+   * Cég teljes törlése – GDPR art. 17 (jog a törléshez). Csak OWNER.
+   * Törli a tárolt fájlokat (R2/S3) és az összes kapcsolódó adatot (cascade).
+   */
+  @Delete('current')
+  @HttpCode(HttpStatus.OK)
+  @Roles(TenantRole.OWNER)
+  remove(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+  ) {
+    return this.tenantsService.deleteTenant(tenant.tenantId, user.userId);
   }
 }

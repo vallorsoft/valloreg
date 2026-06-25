@@ -92,4 +92,41 @@
 | 7 | Încadrare transfer AI înainte de activare (F8) | Juridic |
 
 ---
+
+## TOCTOU / Race conditions (verificate în cod și remediate)
+
+Audit de concurență „check-then-act" / time-of-check-to-time-of-use:
+
+| ID | Locație | Problemă | Severitate | Stare |
+|---|---|---|---|---|
+| TC1 | `auth.service.ts` `refresh` | Double-spend refresh token (revocare necondiționată după check) | 🔴 Critic | ✅ Reparat — `updateMany(revokedAt:null)` + check `count` |
+| TC2 | `auth.service.ts` `resetPassword` | Reutilizare token de resetare | 🔴 Critic | ✅ Reparat — consum condiționat în tranzacție |
+| TC3 | `auth.service.ts` `register` | P2002 negestionat la email duplicat concurent → 500 | 🟠 Ridicat | ✅ Reparat — catch P2002 → `emailTaken` |
+| TC4 | `documents.service.ts` `upload` | P2002 pe `(tenantId,sha256)` la upload concurent → 500 | 🟠 Ridicat | ✅ Reparat — catch P2002 → întoarce existentul |
+| TC5 | `users.service.ts` `acceptInvite` | Dublă acceptare invitație → 500 | 🟡 Mediu | ✅ Reparat — `updateMany(acceptedAt:null)` + catch P2002 |
+| TC6 | `invoices.service.ts` mapping furnizor-vehicul | P2002 la învățare concurentă | 🟡 Mediu | ✅ Reparat — catch P2002 → increment |
+| TC7 | `matching.service.ts` supplier dedup | Furnizori duplicați (lipsă unique constraint) | 🟡 Mediu | ⏳ Necesită migrare de schemă (dedup date existente) |
+| TC8 | `invoices.service.ts` mapping categorie tétel | Mapping-uri duplicate (lipsă unique constraint) | 🔵 Scăzut | ⏳ Necesită migrare de schemă |
+
+---
+
+## Stadiu remediere (actualizat 2026-06-25)
+
+| ID | Stare |
+|---|---|
+| F1 | ✅ `.env.example` redactat. ⚠️ **Rotația credențialelor Neon rămâne obligatorie** (sunt în istoricul git). |
+| F2 | ✅ Reparat — `RateLimitGuard` + `@RateLimit` pe endpoint-urile de auth (login/register/refresh/forgot/reset). |
+| F3 | ✅ Documentație corectată (2FA marcat roadmap). Implementarea TOTP rămâne decizie de produs. |
+| F4 | ✅ `ServerSideEncryption: 'AES256'` adăugat explicit la upload (R2 oricum criptează implicit). |
+| F5 | ✅ Reparat — `CleanupService` + scheduler zilnic (audit/token/scan staging), praguri env. |
+| F6 | ✅ Reparat — `DELETE /tenants/current` (OWNER) cu ștergere obiecte R2 (`deleteByPrefix`) + cascadă DB. |
+| F7 | ✅ Documentație corectată (SupportAccess marcat „modelat, API neimplementat"). Implementarea rămâne roadmap. |
+| F8 | ℹ️ Rămâne decizie juridică/contractuală (transfer AI activat doar la configurare). |
+
+> **Notă de verificare:** în mediul de generare, `prisma generate` și instalarea completă
+> a dependențelor nu au putut rula (restricție de rețea la descărcarea engine-urilor Prisma),
+> deci typecheck-ul complet al API-ului nu a fost executat aici. Modificările respectă
+> pattern-urile existente; a se rula `pnpm --filter @valloreg/api build` într-un mediu cu rețea.
+
+---
 *Raport intern de audit tehnic. A se corela cu pachetul de conformitate juridică.*

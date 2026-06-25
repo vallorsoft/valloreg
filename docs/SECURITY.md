@@ -15,7 +15,8 @@
 - Jelszavak `argon2`/`bcrypt` hash-sel, soha nem plaintextben.
 - **RBAC**: `OWNER`, `FLEET_MANAGER`, `ADMIN`, `ACCOUNTANT`, `VIEWER` (cég),
   `SUPER_ADMIN` (platform). A guard a `@valloreg/shared` szerepköreit használja.
-- **2FA** (Fázis 4) és opcionális Google login.
+- **2FA**: a séma tartalmaz `twoFactorSecret` mezőt, de a TOTP-folyamat (engedélyezés/
+  ellenőrzés) **még nincs implementálva** – tervezett (roadmap). Opcionális Google login szintén tervezett.
 - Felhasználók email meghívással kerülnek a céghez.
 
 ## Adatvédelem – az üzemeltető mit lát
@@ -27,6 +28,10 @@ A platform üzemeltetője (Super Admin) **alapértelmezés szerint NEM látja**:
 Csak ezeket látja: rendszeradatok, statisztikák, előfizetések, hibák, audit logok.
 
 ### Support access
+
+> **Megjegyzés (állapot):** a `SupportAccess` adatmodell létezik, de a kiszolgáló
+> API (kiadás/visszavonás) és a fogyasztó-oldali kényszerítés (guard) **még nincs
+> implementálva** – tervezett. Az alábbi a CÉLZOTT viselkedés.
 
 A cég adminisztrátora **ideiglenes** hozzáférést adhat support célra:
 `1 óra` / `24 óra` / `7 nap`. Minden ilyen hozzáférés:
@@ -51,7 +56,10 @@ ide kerülnek (Fázis 2), hogy a feldolgozás visszakövethető legyen.
 
 - Csomag-limitek (jármű/felhasználó/tárhely/dokumentum) szerver oldalon kényszerítve.
 - Feltöltés: MIME + méret ellenőrzés (PDF/JPG/PNG, max 25 MB).
-- Rate limiting és input-validáció (zod / class-validator) minden végponton.
+- Input-validáció (class-validator) minden végponton.
+- **Rate limiting** a hitelesítési végpontokon (login, register, refresh, forgot/reset
+  password) – memóriában tartott, per-process (`RateLimitGuard`). Több instance esetén
+  Redis-alapú számlálóra váltandó.
 
 ## Feature flag-ek
 

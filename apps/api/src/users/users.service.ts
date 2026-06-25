@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import * as argon2 from 'argon2';
 import { randomBytes } from 'node:crypto';
 import {
@@ -152,17 +153,35 @@ export class UsersService {
     }
 
     await this.prisma.system.$transaction(async (tx) => {
-      await tx.membership.create({
-        data: {
-          tenantId: invitation.tenantId,
-          userId: user!.id,
-          role: invitation.role,
-        },
-      });
-      await tx.invitation.update({
-        where: { id: invitation.id },
+      // TOCTOU: két párhuzamos elfogadás átcsúszhat a fenti acceptedAt
+      // ellenőrzésen. A feltételes updateMany (acceptedAt: null) garantálja, hogy
+      // csak EGY elfogadás megy tovább; a vesztő count=0-t kap.
+      const accepted = await tx.invitation.updateMany({
+        where: { id: invitation.id, acceptedAt: null },
         data: { acceptedAt: new Date() },
       });
+      if (accepted.count === 0) {
+        throw AppException.notFound('A meghívó érvénytelen vagy már elfogadott.');
+      }
+      try {
+        await tx.membership.create({
+          data: {
+            tenantId: invitation.tenantId,
+            userId: user!.id,
+            role: invitation.role,
+          },
+        });
+      } catch (err) {
+        // Ha már tagja a cégnek (@@unique[tenantId,userId]) – idempotens, nem hiba.
+        if (
+          !(
+            err instanceof Prisma.PrismaClientKnownRequestError &&
+            err.code === 'P2002'
+          )
+        ) {
+          throw err;
+        }
+      }
     });
 
     await this.audit.log({

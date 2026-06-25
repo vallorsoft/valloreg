@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { createHash, randomUUID } from 'node:crypto';
 import {
   DocumentStatus,
@@ -94,19 +95,40 @@ export class DocumentsService {
     // Előbb a tárhelyre töltünk; ha ez hibázik, nem jön létre árva DB-rekord.
     await this.storage.upload(storageKey, file.buffer, mimeType);
 
-    const document = await this.prisma.scoped.document.create({
-      // tenantId-t a scoped kliens is injektálja; explicit a típusbiztonságért.
-      data: {
-        tenantId,
-        uploadedById: userId,
-        fileName: file.originalname,
-        mimeType,
-        sizeBytes: file.size,
-        storageKey,
-        sha256,
-        status: DocumentStatus.QUEUED,
-      },
-    });
+    let document;
+    try {
+      document = await this.prisma.scoped.document.create({
+        // tenantId-t a scoped kliens is injektálja; explicit a típusbiztonságért.
+        data: {
+          tenantId,
+          uploadedById: userId,
+          fileName: file.originalname,
+          mimeType,
+          sizeBytes: file.size,
+          storageKey,
+          sha256,
+          status: DocumentStatus.QUEUED,
+        },
+      });
+    } catch (err) {
+      // TOCTOU: két párhuzamos feltöltés ugyanazzal a fájllal (sha256) átcsúszhat
+      // a fenti idempotencia-ellenőrzésen; a @@unique([tenantId, sha256]) ekkor
+      // P2002-t dob. Ilyenkor a vesztes ág idempotensen visszaadja a meglévő
+      // rekordot (ahogy a sima duplikátum-ág is tenné).
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        const winner = await this.prisma.scoped.document.findFirst({
+          where: { sha256 },
+        });
+        if (winner) {
+          await this.safeEnqueue(tenantId, winner.id, sha256);
+          return winner;
+        }
+      }
+      throw err;
+    }
 
     // A sorbavétel hibája NE bukassa el a feltöltést: a fájl már tárolva van,
     // a dokumentum létrejött. (Redis-kimaradás esetén egy újbóli feltöltés a
