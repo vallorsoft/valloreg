@@ -43,6 +43,12 @@ export function TwoFactorCard() {
     return v.replace(/\D/g, '').slice(0, 6);
   }
 
+  /** A kulcs 4-es csoportokban a könnyebb kézi bevitelhez (a szóközöket az
+   *  authenticator appok figyelmen kívül hagyják). */
+  function groupSecret(secret: string): string {
+    return secret.replace(/(.{4})/g, '$1 ').trim();
+  }
+
   async function startSetup() {
     setBusy(true);
     setError(null);
@@ -130,8 +136,8 @@ export function TwoFactorCard() {
             <p className="text-xs font-medium text-anthracite-500">
               {t('secretLabel')}
             </p>
-            <p className="mt-1 select-all break-all font-mono text-sm text-anthracite-900">
-              {setup.secret}
+            <p className="mt-1 select-all break-all font-mono text-sm tracking-wider text-anthracite-900">
+              {groupSecret(setup.secret)}
             </p>
             <a
               href={setup.otpauthUrl}
