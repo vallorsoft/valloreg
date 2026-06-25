@@ -45,8 +45,30 @@ export function MarketingFooter() {
           <p className="font-semibold text-anthracite-900">
             {t('footer.legal')}
           </p>
-          <span className="block text-anthracite-500">{t('footer.privacy')}</span>
-          <span className="block text-anthracite-500">{t('footer.terms')}</span>
+          <Link
+            href="/legal/confidentialitate"
+            className="block text-anthracite-500 hover:text-anthracite-900"
+          >
+            {t('footer.privacy')}
+          </Link>
+          <Link
+            href="/legal/termeni-si-conditii"
+            className="block text-anthracite-500 hover:text-anthracite-900"
+          >
+            {t('footer.terms')}
+          </Link>
+          <Link
+            href="/legal/cookie"
+            className="block text-anthracite-500 hover:text-anthracite-900"
+          >
+            {t('footer.cookies')}
+          </Link>
+          <Link
+            href="/legal"
+            className="block text-anthracite-500 hover:text-anthracite-900"
+          >
+            {t('footer.allLegal')}
+          </Link>
         </nav>
       </div>
 

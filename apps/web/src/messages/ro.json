@@ -1,4 +1,27 @@
 {
+  "consent": {
+    "title": "Confidențialitate și cookie-uri",
+    "description": "Folosim mecanisme strict necesare pentru funcționarea serviciului și, cu acordul dumneavoastră, categorii suplimentare. Puteți accepta toate categoriile, doar pe cele necesare sau să vă personalizați alegerea.",
+    "cookieLink": "Politica de cookie-uri",
+    "preferences": "Preferințe",
+    "saveChoices": "Salvează alegerile",
+    "rejectAll": "Doar necesare",
+    "acceptAll": "Acceptă toate",
+    "cat": {
+      "necessary": {
+        "title": "Strict necesare",
+        "desc": "Autentificare, securitate și păstrarea sesiunii. Nu pot fi dezactivate."
+      },
+      "functional": {
+        "title": "Funcționale",
+        "desc": "Rețin preferințele dumneavoastră pentru o experiență mai bună."
+      },
+      "marketing": {
+        "title": "Marketing / notificări",
+        "desc": "Notificări push și comunicări, doar pe bază de consimțământ."
+      }
+    }
+  },
   "common": {
     "appName": "Valloreg",
     "tagline": "Din factura de service la istoric digital – cu OCR și AI.",
@@ -35,6 +58,8 @@
       "legal": "Legal",
       "privacy": "Confidențialitate",
       "terms": "Termeni și condiții",
+      "cookies": "Cookie-uri",
+      "allLegal": "Toate documentele legale",
       "about": "Despre noi",
       "tagline": "Gestionarea flotei inteligent – mai puțină birocrație, mai multă transparență."
     }
