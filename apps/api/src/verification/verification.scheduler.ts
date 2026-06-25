@@ -27,6 +27,12 @@ export class VerificationScheduler implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    if (!this.config.schedulerEnabled) {
+      this.logger.log(
+        'Ütemező kikapcsolva (SCHEDULER_ENABLED=false) – nincs worker/job ezen az instance-on.',
+      );
+      return;
+    }
     try {
       const connection = this.config.redis;
 

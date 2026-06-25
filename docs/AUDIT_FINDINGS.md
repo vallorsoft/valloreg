@@ -1,89 +1,60 @@
 # Audit findings (main – deployolt app)
 
-> Átfogó, több-ügynökös kód-audit a `main` (deployolt) kódján: backend
-> biztonság/korrektség, frontend UX, i18n, billing/tárhely. A **Javítva** szekció
-> ebben az iterációban elkészült; a **Nyitott backlog** prioritás szerint rendezve.
+> Átfogó, több-ügynökös kód-audit a `main` (deployolt) kódján. A találatok
+> túlnyomó többsége **megoldva** (PR #62, #63, #64), mind CI-validálva
+> (typecheck + build + `prisma generate`). A végén már csak néhány tudatosan
+> **elfogadott / külön tervezést igénylő** tétel marad.
 
-## Javítva ebben az iterációban
+## Megoldva (PR #62 / #63 / #64)
 
 ### Build / CI
-- **TS build-törés (a main CI piros volt):** a TypeScript 5.9.3 + `moduleResolution: "Node"`
-  (TS5107) törte a `pnpm typecheck`/`build`-et. Javítva → `Node16` a shared+api
-  tsconfig-ban. **Tesztelve: shared build + web typecheck zöld.**
-- **Web typecheck (TS2882) a `globals.css` side-effect importon:** `apps/web/src/css.d.ts`
-  ambient `declare module '*.css'`.
-- **Friss-klón `pnpm dev` race:** a root `dev` előbb buildeli a `@valloreg/shared`-et.
+- TS 5.9.3 + `moduleResolution: "Node"` (TS5107) build-törés → `Node16`; ez tette zöldre
+  a `main` CI-t. Web `globals.css` (TS2882) → `css.d.ts`. Friss-klón `pnpm dev` race.
 
-### A felhasználó által jelzett konkrét hibák
-- **TopNav „Nincs kiválasztott cég":** a fejléc most a valós aktív cég nevét mutatja
-  (`authApi.me()` + `resolveActiveTenant`).
-- **Önkiszolgáló tárhely-vásárlás (eddig csak „írj nekünk"):** valódi igénylés-folyamat
-  beépítve – `POST /billing/request-storage` (utalásos: kliens e-mail + admin értesítés +
-  audit), shared `STORAGE_PACKS`-ból szerver-oldali árral; a billing oldalon a statikus
-  szöveg helyett **vásárlás-gombok** (5/10/25 GB), i18n hu/ro/en.
-- **Mobil feltöltés blokk:** a `capture="environment"` eltávolítva
-  (`RegistrationScans`, `ComplianceScanModal`) – mobilon újra választható meglévő fájl/PDF.
+### Felhasználó által jelzett hibák
+- **TopNav** valós cégnevet mutat. **Önkiszolgáló tárhely-vásárlás**
+  (`POST /billing/request-storage` + vásárlás-gombok). **Mobil feltöltés**: `capture` levéve.
 
-### Biztonság (backend)
-- **KRITIKUS tenant-izolációs szivárgás:** `MajorComponentEvent` és `DurabilityBaseline`
-  kimaradt a `TENANT_SCOPED_MODELS`-ból → cross-tenant olvasás/törlés (köztük egy
-  **destruktív** `clearBaseline`, ami MINDEN tenant baseline-ját törölte). Hozzáadva a
-  scope-hoz (9 szivárgás egyben bezárva).
-- **Push unsubscribe IDOR** → `userId`-scope.
-- **Jogosultság-eszkaláció** (invite/changeRole/removeMember) → rang-ellenőrzés.
-- **Kimenő HTTP timeout** a Gemini ×4 + mailer hívásokra.
-- **Gemini API-kulcs** query-stringből → `x-goog-api-key` header.
-- **Mailer PII** (jelszó-reset token) logolás megszüntetve.
+### Biztonság / hozzáférés-kontroll (backend)
+- **KRITIKUS tenant-izoláció:** `MajorComponentEvent` + `DurabilityBaseline` a tenant-scope-ba
+  (cross-tenant olvasás/destruktív törlés bezárva).
+- Push unsubscribe **IDOR** → userId-scope; **jogosultság-eszkaláció** rang-ellenőrzés.
+- **Refresh-token reuse-detektálás** (újrahasználatkor a teljes token-család visszavonva).
+- Gemini API-kulcs query→header; mailer PII-log megszüntetve; **kimenő HTTP timeoutok**.
+- **Külső JSON validáció + méret-korlát** (RO verify / recall: timeout, content-length cap,
+  dátum-validáció, sor-korlát).
+- **Feature-gating**: REPORTS/EXPORT (reports), DASHBOARD (stats); `/health/queues` admin-guard;
+  JWT secret `.min(32)`; notifications osztály-szintű guard.
+- **SubscriptionGuard** (lejárt trial / CANCELED / PAST_DUE) a write-végpontokon (document-upload,
+  vehicle create/scan).
+- **Tárhely-keret betartatás** a jármű-dokumentum és scan-staging feltöltéseknél.
+- **Meghívó-token hashelve** a DB-ben (raw csak a linkben).
+- **Per-instance scheduler duplikáció:** `SCHEDULER_ENABLED` env-kapu (4 scheduler) – több
+  instance esetén egyetlen instance futtatja a jobokat.
 
-## Nyitott backlog (prioritás szerint)
+### Korrektség (backend)
+- Fleet TCO pénz `Decimal`-lal; reports/stats **UTC** dátum-bucketek; pénz-sort komparátorok
+  `Prisma.Decimal.comparedTo`-val; rankings: ismeretlen megbízhatóság nem pontozódik legjobbként.
 
-### KRITIKUS / HIGH – backend
-- **Trial / subscription-státusz sehol nincs betartatva:** a `status`/`trialEndsAt` csak
-  kiírásra olvasott; lejárt trial / CANCELED / PAST_DUE után is teljes hozzáférés marad.
-  → `SubscriptionGuard` kell (status ∉ {ACTIVE,TRIALING} vagy lejárt trial → blokk).
-- **Tárhely-keret megkerülése:** a jármű-dokumentum (`confirmScan`, `confirmDocument`) és
-  a scan-staging feltöltések NEM hívják az `assertStorageLimit`-et, pedig beleszámítanak a
-  használatba. → közös limit-helper a `vehicleDocument.create` előtt.
-- **Refresh-token reuse nincs detektálva:** visszavont token replaykor nincs token-family
-  revoke. → session/family-id + kompromittáltság-kezelés.
-- **Feature-flag „eladva, de nincs kapuzva":** REPORTS (`reports.controller` csak Jwt+Tenant),
-  EXPORT (sehol nem kapuzott), DASHBOARD (`stats.controller`), OCR – az alacsonyabb csomag is
-  eléri. **Termékdöntést igényel** (kapuzni vagy a jelvényt levenni), ezért NEM állítottam be
-  vakon. API (publikus API-kulcs) nincs implementálva – vegyük le a hirdetésből, amíg nem kész.
+### Frontend (UX)
+- **Accept-invite** oldal + endpoint-bekötés + linkes meghívó e-mail (404 megszűnt).
+- **Contact-űrlap** valódi mailto-folyamatra kötve; **Privacy/Terms** oldalak + footer-linkek.
+- **Néma hibák → error+retry** (`LoadErrorState`) a lista- és részletező oldalakon.
+- **Modal a11y** (`useModalA11y`: role=dialog/Esc/fókusz) minden modálon.
+- **Stub megfelelőség-adat** jelölve; rossz mentés-hibaüzenet javítva.
+- **Nyers enum/kód → i18n** (DocumentReview kategória + „Bizonytalan", Insights itemCategory,
+  Admin role/feature, billing funkció-jelvények); landing Pricing aktív locale; **404-oldal** szöveg.
 
-### MEDIUM – backend
-- **`/health/queues` `@Public`** – BullMQ belső számokat szivárogtat; tegyük admin-guard mögé.
-- **JWT secret `.min(1)`** – emeljük `.min(32)`-re.
-- **Pénz-összeadás float-tal a Fleet TCO-ban** (`insights.service`) → `Prisma.Decimal.add`.
-- **Riport hónap-bucket helyi idő vs UTC** (`reports.service`, `stats.service`) → UTC határ.
-- **Per-instance scheduler duplikáció** (reminders/reports/verification/benchmark) elosztott
-  lock nélkül; havi riport retry újraküldhet mindenkinek; reminder notify-then-mark nem atomi.
-- **TOCTOU a limit-ellenőrzéseken** (count-then-create tranzakció nélkül).
-- **Külső JSON (RO verify / recall) validáció és méret-korlát nélkül** (SSRF/DoS, Invalid Date).
-- **`notifications` controllernek nincs osztály-szintű guard-ja** (fail-closed kellene).
-- **Rankings: ismeretlen megbízhatóságú jármű a legjobbként pontozódik** (`normRel=0`).
+> i18n kulcs-paritás végig fenntartva (hu/ro/en azonos kulcsok).
 
-### HIGH / MEDIUM – frontend (UX, a felhasználó által is érintett)
-- **Meghívó-folyamat halott:** nincs `/accept-invite` oldal → a meghívott e-mail-linkje 404.
-  Kell egy elfogadó oldal + `POST /users/accept-invite` + linkes e-mail.
-- **Landing Contact űrlap no-op** (`Contact.tsx`, „later phase") – némán eldobja az üzenetet.
-  → kösd valódi végpontra vagy `mailto:`-ra.
-- **Footer Privacy/Terms/About halott `<span>`, nincs oldal** – GDPR-termékhez kell.
-- **Néma hibakezelés mindenhol:** a `.catch(()=>{})` a 500/hálózati hibát „üres adatnak"
-  mutatja (dashboard, vehicles, documents, reminders, insights, billing→üres oldal, team,
-  admin, rankings). → 401/403 ↔ valódi hiba szétválasztás + retry-állapot.
-- **Stub megfelelőség-adat valódiként** (`VehicleVerification`) – kamu ITP/RCA dátumok.
-- **Nyers enum/kód kiírva a usernek:** kategóriák, feature-kulcsok, role-ok
-  (`DocumentReviewClient`, `InsightsClient`, `BillingClient` funkció-jelvények, `AdminTenantClient`).
-- **Hardcode-olt magyar tooltip** „Bizonytalan" (`DocumentReviewClient`); landing `Pricing`
-  `toLocaleString('hu-HU')`; nem-lokalizált oldal-metaadat; 404 oldal idegen kulcsokat használ.
-- **Modálok a11y:** nincs `role="dialog"`/Esc/fókusz-csapda.
-- **Vehicle save hibaüzenet rossz** (`actions.deleteError`); regisztráció nem validálja az adószámot;
-  rankings export figyelmen kívül hagyja az aktív fület; néma letöltés-hibák.
+## Nyitott / elfogadott (külön, megtervezett munka)
 
-### Tartalmi / launch-readiness
-- **Fake testimonials valódiként** a landingen; **PhaseNote „Demó nézet"** dead-code.
-- Landing Contact „az űrlap bekötése későbbi fázisban érkezik" – valós termékhez kösd be.
-
-> Megjegyzés: az i18n kulcs-paritás **tökéletes** (hu/ro/en × 963 kulcs, nulla eltérés).
-> A fenti i18n-tételek nyers-enum kiírások és néhány hardcode, nem hiányzó kulcsok.
+- **TOCTOU a limit-ellenőrzéseken** (count-then-create tranzakció nélkül): konkurens kérések
+  túlléphetik a keretet. Tranzakcionális (serializable) átírást igényel; a typecheck/build CI
+  nem fogná meg egy tranzakció-szemantika hibáját, ezért **integrációs teszttel, külön PR-ben**.
+  Render free (alacsony konkurrencia) mellett a kockázat alacsony.
+- **Re-enqueue `jobId` no-op** (latens): ma minden upload friss UUID-t kap, így nem éles;
+  egy jövőbeli „kézi újrafeldolgozás" funkció előtt kell rendezni.
+- **Apró frontend-polish:** regisztráció nem validálja az adószámot; rankings export az aktív
+  fül helyett mindig a szegmenst exportálja; landing fake testimonials + `PhaseNote` dead-code
+  (tartalmi/launch döntés).
