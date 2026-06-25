@@ -340,7 +340,7 @@ export function BillingClient() {
                 key={f}
                 className="inline-flex items-center rounded-full bg-anthracite-50 px-3 py-1 text-xs font-medium text-anthracite-700"
               >
-                {f}
+                {t(`featureLabels.${f}` as Parameters<typeof t>[0])}
               </span>
             ))}
           </div>

@@ -1,5 +1,6 @@
 import { useTranslations } from 'next-intl';
 import {
+  ALL_FEATURE_KEYS,
   PLAN_LIMITS,
   PLAN_PRICES,
   PLAN_CURRENCY,
@@ -86,7 +87,10 @@ export function Pricing() {
                   {t('freeTrial')}
                 </p>
 
-                <ul className="mt-6 flex-1 space-y-3 text-sm text-anthracite-700">
+                <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-anthracite-400">
+                  {t('limitsTitle')}
+                </p>
+                <ul className="mt-3 space-y-3 text-sm text-anthracite-700">
                   <li className="flex items-center gap-2">
                     <Check /> {vehicles}
                   </li>
@@ -99,6 +103,29 @@ export function Pricing() {
                   <li className="flex items-center gap-2">
                     <Check /> {storage}
                   </li>
+                </ul>
+
+                <p className="mt-6 text-xs font-semibold uppercase tracking-wide text-anthracite-400">
+                  {t('featuresTitle')}
+                </p>
+                <ul className="mt-3 flex-1 space-y-3 text-sm">
+                  {ALL_FEATURE_KEYS.map((key) => {
+                    const included = limits.features.includes(key);
+                    return (
+                      <li
+                        key={key}
+                        className={cn(
+                          'flex items-center gap-2',
+                          included ? 'text-anthracite-700' : 'text-anthracite-300',
+                        )}
+                      >
+                        {included ? <Check /> : <Cross />}
+                        <span className={included ? '' : 'line-through'}>
+                          {t(`features.${key}`)}
+                        </span>
+                      </li>
+                    );
+                  })}
                 </ul>
 
                 <Link href="/register" className="mt-6">
@@ -144,6 +171,17 @@ function Check() {
       className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary-100 text-xs font-bold text-primary-700"
     >
       ✓
+    </span>
+  );
+}
+
+function Cross() {
+  return (
+    <span
+      aria-hidden="true"
+      className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-anthracite-100 text-xs font-bold text-anthracite-400"
+    >
+      ✕
     </span>
   );
 }

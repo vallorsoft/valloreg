@@ -203,7 +203,19 @@
       "storage": "{count} GB tárhely",
       "addonsTitle": "Vásárolható extra tárhely",
       "addonsNote": "A tárhely teljes kapacitás (nem nullázódik havonta); bármely csomaghoz vehető.",
-      "addonItem": "+{gb} GB — {price} RON / hó"
+      "addonItem": "+{gb} GB — {price} RON / hó",
+      "featuresTitle": "Funkciók",
+      "limitsTitle": "Keretek",
+      "features": {
+        "OCR": "Automatikus OCR számlafelismerés",
+        "AI_PROCESSING": "AI adatkinyerés és kategorizálás",
+        "DASHBOARD": "Műszerfal és kimutatások",
+        "REPORTS": "Riportok és ütemezett jelentések",
+        "API": "API-hozzáférés és integrációk",
+        "EXPORT": "Adatexport (CSV/Excel)",
+        "REMINDERS": "Emlékeztetők (műszaki, biztosítás, szerviz)",
+        "DOCUMENT_LIBRARY": "Dokumentumtár"
+      }
     },
     "faq": {
       "title": "Gyakori kérdések",
@@ -1014,6 +1026,16 @@
       "addOption": "+{gb} GB — {price} {currency} / hó",
       "note": "Az utalás beérkezése után aktiváljuk az extra tárhelyet.",
       "error": "Az igénylés sikertelen."
+    },
+    "featureLabels": {
+      "OCR": "Automatikus OCR számlafelismerés",
+      "AI_PROCESSING": "AI adatkinyerés és kategorizálás",
+      "DASHBOARD": "Műszerfal és kimutatások",
+      "REPORTS": "Riportok és ütemezett jelentések",
+      "API": "API-hozzáférés és integrációk",
+      "EXPORT": "Adatexport (CSV/Excel)",
+      "REMINDERS": "Emlékeztetők (műszaki, biztosítás, szerviz)",
+      "DOCUMENT_LIBRARY": "Dokumentumtár"
     }
   },
   "notifications": {

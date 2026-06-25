@@ -203,7 +203,19 @@
       "storage": "{count} GB stocare",
       "addonsTitle": "Stocare suplimentară disponibilă",
       "addonsNote": "Stocarea este capacitate totală (nu se resetează lunar); disponibilă pentru orice plan.",
-      "addonItem": "+{gb} GB — {price} RON / lună"
+      "addonItem": "+{gb} GB — {price} RON / lună",
+      "featuresTitle": "Funcționalități",
+      "limitsTitle": "Limite",
+      "features": {
+        "OCR": "Recunoaștere OCR automată a facturilor",
+        "AI_PROCESSING": "Extragere și clasificare date cu AI",
+        "DASHBOARD": "Tablou de bord și statistici",
+        "REPORTS": "Rapoarte și raportări programate",
+        "API": "Acces API și integrări",
+        "EXPORT": "Export de date (CSV/Excel)",
+        "REMINDERS": "Memento-uri (ITP, asigurare, service)",
+        "DOCUMENT_LIBRARY": "Bibliotecă de documente"
+      }
     },
     "faq": {
       "title": "Întrebări frecvente",
@@ -1014,6 +1026,16 @@
       "addOption": "+{gb} GB — {price} {currency} / lună",
       "note": "Activăm stocarea suplimentară după primirea transferului.",
       "error": "Solicitarea a eșuat."
+    },
+    "featureLabels": {
+      "OCR": "Recunoaștere OCR automată a facturilor",
+      "AI_PROCESSING": "Extragere și clasificare date cu AI",
+      "DASHBOARD": "Tablou de bord și statistici",
+      "REPORTS": "Rapoarte și raportări programate",
+      "API": "Acces API și integrări",
+      "EXPORT": "Export de date (CSV/Excel)",
+      "REMINDERS": "Memento-uri (ITP, asigurare, service)",
+      "DOCUMENT_LIBRARY": "Bibliotecă de documente"
     }
   },
   "notifications": {

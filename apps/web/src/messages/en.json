@@ -203,7 +203,19 @@
       "storage": "{count} GB storage",
       "addonsTitle": "Extra storage available",
       "addonsNote": "Storage is total capacity (it does not reset monthly); available for any plan.",
-      "addonItem": "+{gb} GB — {price} RON / mo"
+      "addonItem": "+{gb} GB — {price} RON / mo",
+      "featuresTitle": "Features",
+      "limitsTitle": "Limits",
+      "features": {
+        "OCR": "Automatic OCR invoice recognition",
+        "AI_PROCESSING": "AI data extraction & categorization",
+        "DASHBOARD": "Dashboard & insights",
+        "REPORTS": "Reports & scheduled reporting",
+        "API": "API access & integrations",
+        "EXPORT": "Data export (CSV/Excel)",
+        "REMINDERS": "Reminders (inspection, insurance, service)",
+        "DOCUMENT_LIBRARY": "Document library"
+      }
     },
     "faq": {
       "title": "Frequently asked questions",
@@ -1014,6 +1026,16 @@
       "addOption": "+{gb} GB — {price} {currency} / mo",
       "note": "We activate the extra storage after the transfer arrives.",
       "error": "The request failed."
+    },
+    "featureLabels": {
+      "OCR": "Automatic OCR invoice recognition",
+      "AI_PROCESSING": "AI data extraction & categorization",
+      "DASHBOARD": "Dashboard & insights",
+      "REPORTS": "Reports & scheduled reporting",
+      "API": "API access & integrations",
+      "EXPORT": "Data export (CSV/Excel)",
+      "REMINDERS": "Reminders (inspection, insurance, service)",
+      "DOCUMENT_LIBRARY": "Document library"
     }
   },
   "notifications": {
