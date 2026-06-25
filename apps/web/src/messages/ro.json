@@ -205,7 +205,12 @@
           "name": "Business",
           "description": "Pentru flote mari, fără limite."
         }
-      }
+      },
+      "billingMonthly": "Lunar",
+      "billingYearly": "Anual",
+      "perYear": "/ an",
+      "yearlyNote": "La plata anuală plătești doar 11 luni în loc de 12 – o lună gratuit.",
+      "monthFree": "O lună gratuit"
     },
     "compare": {
       "title": "Compară pachetele",
@@ -1078,7 +1083,11 @@
       "clear": "Șterge",
       "loading": "Se încarcă…",
       "saveError": "Salvarea a eșuat.",
-      "sources": { "manual": "manual", "empirical": "învățat", "seed": "bază" }
+      "sources": {
+        "manual": "manual",
+        "empirical": "învățat",
+        "seed": "bază"
+      }
     }
   },
   "rankings": {
@@ -1090,7 +1099,11 @@
     "exportCsv": "Export CSV",
     "exportPdf": "PDF",
     "replaceAdvice": "De înlocuit",
-    "tabs": { "segment": "După segment", "model": "După marcă/model", "suppliers": "Furnizori" },
+    "tabs": {
+      "segment": "După segment",
+      "model": "După marcă/model",
+      "suppliers": "Furnizori"
+    },
     "suppliers": {
       "empty": "Încă nu există date de service complex legate de furnizori.",
       "supplier": "Furnizor",
@@ -1242,7 +1255,12 @@
       "bank": "Bancă",
       "swift": "SWIFT",
       "reference": "Detalii plată",
-      "referenceHint": "Vă rugăm includeți acest cod: {reference}"
+      "referenceHint": "Vă rugăm includeți acest cod: {reference}",
+      "monthly": "Lunar",
+      "yearly": "Anual",
+      "perYear": "/ an",
+      "yearlyNote": "La plata anuală plătești doar 11 luni în loc de 12 – o lună gratuit.",
+      "monthFree": "O lună gratuit"
     },
     "plans": {
       "STARTER": "Start",

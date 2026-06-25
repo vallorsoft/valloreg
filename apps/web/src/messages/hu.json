@@ -205,7 +205,12 @@
           "name": "Business",
           "description": "Nagy flottáknak, korlátok nélkül."
         }
-      }
+      },
+      "billingMonthly": "Havi",
+      "billingYearly": "Éves",
+      "perYear": "/ év",
+      "yearlyNote": "Éves fizetésnél 12 hónap helyett csak 11 havidíj – 1 hónap ingyen.",
+      "monthFree": "1 hónap ingyen"
     },
     "compare": {
       "title": "Csomagok összehasonlítása",
@@ -1078,7 +1083,11 @@
       "clear": "Töröl",
       "loading": "Betöltés…",
       "saveError": "A mentés sikertelen.",
-      "sources": { "manual": "kézi", "empirical": "tanult", "seed": "alap" }
+      "sources": {
+        "manual": "kézi",
+        "empirical": "tanult",
+        "seed": "alap"
+      }
     }
   },
   "rankings": {
@@ -1090,7 +1099,11 @@
     "exportCsv": "CSV export",
     "exportPdf": "PDF",
     "replaceAdvice": "Cserére érdemes",
-    "tabs": { "segment": "Szegmensek szerint", "model": "Márka/modell szerint", "suppliers": "Beszállítók" },
+    "tabs": {
+      "segment": "Szegmensek szerint",
+      "model": "Márka/modell szerint",
+      "suppliers": "Beszállítók"
+    },
     "suppliers": {
       "empty": "Még nincs beszállítóhoz köthető komplex szerviz adat.",
       "supplier": "Beszállító",
@@ -1242,7 +1255,12 @@
       "bank": "Bank",
       "swift": "SWIFT",
       "reference": "Közlemény",
-      "referenceHint": "Kérjük, a közleménybe írd be: {reference}"
+      "referenceHint": "Kérjük, a közleménybe írd be: {reference}",
+      "monthly": "Havi",
+      "yearly": "Éves",
+      "perYear": "/ év",
+      "yearlyNote": "Éves fizetésnél 12 hónap helyett csak 11 havidíj – 1 hónap ingyen.",
+      "monthFree": "1 hónap ingyen"
     },
     "plans": {
       "STARTER": "Start",
