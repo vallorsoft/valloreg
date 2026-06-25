@@ -35,6 +35,12 @@ export class RemindersScheduler implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    if (!this.config.schedulerEnabled) {
+      this.logger.log(
+        'Ütemező kikapcsolva (SCHEDULER_ENABLED=false) – nincs worker/job ezen az instance-on.',
+      );
+      return;
+    }
     // FONTOS: a háttér-ütemező SOHA nem buktathatja meg az API bootját. Ha a
     // Redis a deploy pillanatában még nem elérhető, csak logolunk és továbblépünk;
     // a workerek ioredis-retry-vel maguktól csatlakoznak, az ismétlődő job pedig

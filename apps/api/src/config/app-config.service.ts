@@ -22,6 +22,11 @@ export class AppConfigService {
     return this.nodeEnv === 'production';
   }
 
+  /** Igaz, ha ez az instance futtatja a háttér-ütemezőket (több-instance dedup). */
+  get schedulerEnabled(): boolean {
+    return this.get('SCHEDULER_ENABLED');
+  }
+
   get apiPort(): number {
     return this.get('API_PORT');
   }

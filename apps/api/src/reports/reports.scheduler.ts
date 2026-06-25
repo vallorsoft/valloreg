@@ -44,6 +44,12 @@ export class ReportsScheduler implements OnModuleInit, OnModuleDestroy {
   ) {}
 
   async onModuleInit(): Promise<void> {
+    if (!this.config.schedulerEnabled) {
+      this.logger.log(
+        'Ütemező kikapcsolva (SCHEDULER_ENABLED=false) – nincs worker/job ezen az instance-on.',
+      );
+      return;
+    }
     // FONTOS: a háttér-ütemező SOHA nem buktathatja meg az API bootját
     // (lásd RemindersScheduler). Hiba esetén csak logolunk és továbblépünk.
     try {
