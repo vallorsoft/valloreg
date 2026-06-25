@@ -33,7 +33,11 @@ export class StatsService {
 
   async getDashboardStats(): Promise<DashboardStats> {
     const now = new Date();
-    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    // A hónap kezdete UTC-ben: a createdAt UTC-ben tárolt, így a helyi
+    // new Date(év, hó, 1) a szerver időzónájában eltolhatná a határt.
+    const monthStart = new Date(
+      Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1),
+    );
 
     const PROCESSING_STATUSES = [
       DocumentStatus.QUEUED,

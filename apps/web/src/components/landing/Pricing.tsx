@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useTranslations } from 'next-intl';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   PLAN_LIMITS,
   PLAN_CURRENCY,
@@ -29,6 +29,7 @@ const GB = 1024 * 1024 * 1024;
 
 export function Pricing() {
   const t = useTranslations('landing.pricing');
+  const locale = useLocale();
   const [billingInterval, setBillingInterval] = useState<BillingInterval>(
     BillingInterval.MONTHLY,
   );
@@ -108,7 +109,7 @@ export function Pricing() {
 
                 <p className="mt-4 flex items-baseline gap-1.5">
                   <span className="text-3xl font-bold text-anthracite-900">
-                    {planPrice(tier, billingInterval).toLocaleString('hu-HU')}{' '}
+                    {planPrice(tier, billingInterval).toLocaleString(locale)}{' '}
                     {PLAN_CURRENCY}
                   </span>
                   <span className="text-sm text-anthracite-400">

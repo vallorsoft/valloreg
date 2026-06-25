@@ -37,6 +37,11 @@
       "terms": "Termeni și condiții",
       "about": "Despre noi",
       "tagline": "Gestionarea flotei inteligent – mai puțină birocrație, mai multă transparență."
+    },
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "Pagina căutată nu a fost găsită.",
+      "backHome": "Înapoi la pagina principală"
     }
   },
   "landing": {
@@ -276,7 +281,10 @@
       "message": "Mesaj",
       "messagePlaceholder": "Cu ce vă putem ajuta?",
       "submit": "Trimite mesajul",
-      "note": "Vă răspundem în curând. Conectarea formularului va veni într-o fază ulterioară."
+      "note": "Vom deschide aplicația dumneavoastră de e-mail cu mesajul precompletat. Vă răspundem în curând.",
+      "mailtoSubject": "Valloreg – cerere de contact",
+      "success": "Am deschis aplicația dumneavoastră de e-mail cu mesajul precompletat. Dacă nu s-a deschis, scrieți direct la {email}.",
+      "errorNoMessage": "Vă rugăm să introduceți mesajul."
     }
   },
   "auth": {
@@ -364,6 +372,22 @@
       "success": "Parola a fost schimbată cu succes. Acum vă puteți autentifica cu noua parolă.",
       "goToLogin": "Autentificare",
       "invalidLink": "Linkul de resetare este invalid sau lipsește. Solicitați unul nou."
+    },
+    "acceptInvite": {
+      "title": "Acceptați invitația",
+      "subtitle": "Configurați-vă contul pentru a vă alătura companiei.",
+      "name": "Nume",
+      "namePlaceholder": "Numele dumneavoastră",
+      "password": "Parolă",
+      "passwordPlaceholder": "Cel puțin 8 caractere",
+      "confirmPassword": "Confirmați parola",
+      "confirmPasswordPlaceholder": "Introduceți din nou parola",
+      "submit": "Acceptă invitația",
+      "backToLogin": "Înapoi la autentificare",
+      "success": "Invitația a fost acceptată. Acum vă puteți autentifica.",
+      "goToLogin": "Autentificare",
+      "invalidLink": "Linkul invitației este invalid sau lipsește. Solicitați unul nou de la compania dumneavoastră.",
+      "hint": "Dacă aveți deja un cont cu această adresă de e-mail, puteți accepta invitația fără a introduce o parolă."
     }
   },
   "app": {
@@ -747,7 +771,8 @@
         "delete": "Șterge",
         "deleting": "Se șterge…",
         "deleteError": "Ștergerea liniei a eșuat.",
-        "confirmDelete": "Sigur ștergi această linie?"
+        "confirmDelete": "Sigur ștergi această linie?",
+        "uncertain": "Nesigur"
       }
     },
     "actions": {
@@ -1070,6 +1095,21 @@
       "subtitle": "Notificări publice de rechemare pentru vehiculele flotei tale (din sursă gratuită).",
       "remedy": "De făcut"
     },
+    "itemCategories": {
+      "brakes": "Frâne",
+      "engine": "Motor",
+      "filters": "Filtre",
+      "tires": "Anvelope",
+      "suspension": "Suspensie",
+      "electrical": "Electric",
+      "transmission": "Transmisie",
+      "body": "Caroserie",
+      "fluids": "Lichide",
+      "brake_pads": "Plăcuțe de frână",
+      "timing_belt": "Curea de distribuție",
+      "oil_change": "Schimb de ulei",
+      "other": "Altele"
+    },
     "durability": {
       "title": "Studiu de durabilitate (pe segment)",
       "subtitle": "Durata de viață diferă pe categorie (furgonetă vs. cap tractor vs. remorcă). Valoarea estimată poate fi setată și manual, pe lângă cea implicită (învățată/de bază).",
@@ -1222,6 +1262,24 @@
       "forceOff": "Oprit",
       "error": "Actualizarea a eșuat."
     },
+    "featureKeys": {
+      "OCR": "Recunoaștere text OCR",
+      "AI_PROCESSING": "Procesare AI",
+      "DASHBOARD": "Tablou de bord",
+      "REPORTS": "Rapoarte",
+      "API": "Acces API",
+      "EXPORT": "Export",
+      "REMINDERS": "Memento-uri",
+      "DOCUMENT_LIBRARY": "Bibliotecă documente",
+      "ANALYTICS": "Analitică premium"
+    },
+    "roles": {
+      "OWNER": "Proprietar",
+      "FLEET_MANAGER": "Manager de flotă",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Contabil",
+      "VIEWER": "Vizualizator"
+    },
     "members": {
       "title": "Membri",
       "name": "Nume",
@@ -1281,12 +1339,24 @@
       "documents": "Documente (luna aceasta)",
       "storage": "Stocare",
       "includesExtra": "include {gb} GB extra",
-      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar). Se poate cumpăra stocare suplimentară – scrie-ne.",
-      "storagePacks": "Stocare suplimentară (lunar): {list}"
+      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar).",
+      "storagePacks": "Stocare suplimentară (lunar): {list}",
+      "buyStorageTitle": "Cumpără stocare suplimentară (lunar, prin transfer):"
     },
     "features": {
       "title": "Funcții disponibile",
-      "none": "Nicio funcție activată."
+      "none": "Nicio funcție activată.",
+      "keys": {
+        "OCR": "Recunoaștere text OCR",
+        "AI_PROCESSING": "Procesare AI",
+        "DASHBOARD": "Tablou de bord",
+        "REPORTS": "Rapoarte",
+        "API": "Acces API",
+        "EXPORT": "Export",
+        "REMINDERS": "Memento-uri",
+        "DOCUMENT_LIBRARY": "Bibliotecă documente",
+        "ANALYTICS": "Analitică premium"
+      }
     }
   },
   "notifications": {
@@ -1299,5 +1369,61 @@
     "disable": "Dezactivare",
     "working": "Se procesează…",
     "error": "A apărut o eroare, încercați din nou."
+  },
+  "legal": {
+    "lastUpdated": "Ultima actualizare: 1 iunie 2025",
+    "backToHome": "Înapoi la pagina principală",
+    "privacy": {
+      "title": "Politica de confidențialitate",
+      "intro": "Această politică descrie modul în care Valloreg prelucrează datele cu caracter personal furnizate în timpul utilizării serviciului. Prelucrarea se realizează în conformitate cu Regulamentul general privind protecția datelor (GDPR) al Uniunii Europene.",
+      "sections": [
+        {
+          "heading": "Operatorul de date",
+          "body": "Serviciul este operat de Valloreg. Pentru întrebări privind confidențialitatea, ne puteți contacta la {email}."
+        },
+        {
+          "heading": "Ce date prelucrăm",
+          "body": "Date de cont și de contact (nume, adresă de e-mail, date ale companiei), precum și documentele și datele despre vehicule încărcate în timpul utilizării serviciului. Jurnalele automate pot conține date tehnice (adresă IP, tip de browser) în scop de securitate și operare."
+        },
+        {
+          "heading": "Scopul și temeiul prelucrării",
+          "body": "Prelucrăm datele pentru furnizarea serviciului, executarea contractului, facturare și îndeplinirea obligațiilor legale. Temeiul juridic îl constituie executarea contractului, interesul legitim sau obligația legală."
+        },
+        {
+          "heading": "Stocarea și transferul datelor",
+          "body": "Păstrăm datele atât timp cât contul este activ sau cât prevede legea. În calitate de persoane împuternicite, folosim furnizori de găzduire, e-mail și AI, doar în măsura necesară pentru funcționarea serviciului."
+        },
+        {
+          "heading": "Drepturile dumneavoastră",
+          "body": "Aveți dreptul de acces, rectificare, ștergere, restricționare a prelucrării și de portabilitate a datelor personale. Cererea o puteți transmite la {email}."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Termeni și condiții",
+      "intro": "Prin utilizarea serviciului Valloreg acceptați următorii termeni. Vă rugăm să îi citiți cu atenție înainte de utilizare.",
+      "sections": [
+        {
+          "heading": "Serviciul",
+          "body": "Valloreg oferă un software de gestionare a flotei care prelucrează documentele și datele despre vehicule încărcate cu ajutorul OCR și al inteligenței artificiale. Serviciul este furnizat conform condițiilor planului de abonament în vigoare."
+        },
+        {
+          "heading": "Contul și responsabilitatea",
+          "body": "Sunteți responsabil pentru păstrarea în siguranță a datelor de acces și pentru activitățile desfășurate prin contul dumneavoastră. Serviciul poate fi utilizat exclusiv în scopuri legale."
+        },
+        {
+          "heading": "Conținut și date",
+          "body": "Conținutul încărcat de dumneavoastră rămâne proprietatea dumneavoastră. Sunteți responsabil să dețineți dreptul de a încărca și prelucra datele. Rezultatul prelucrării bazate pe AI are caracter informativ, de aceea recomandăm verificarea datelor importante."
+        },
+        {
+          "heading": "Limitarea răspunderii",
+          "body": "Serviciul este furnizat „ca atare”. În măsura permisă de lege, nu ne asumăm răspunderea pentru daune indirecte rezultate din utilizarea serviciului."
+        },
+        {
+          "heading": "Contact",
+          "body": "Pentru întrebări legate de acești termeni, ne puteți scrie la {email}."
+        }
+      ]
+    }
   }
 }

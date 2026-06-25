@@ -1263,6 +1263,17 @@ export const usersApi = {
       json: payload,
     });
   },
+  /**
+   * Meghívó elfogadása a tokennel. @Public végpont (a felhasználó még nem tag):
+   * anonim hívás, nem fűzünk hozzá Authorization fejlécet. Új fiókhoz `name` +
+   * `password` kell; meglévő fióknál ezek elhagyhatók.
+   */
+  acceptInvite(payload: { token: string; name?: string; password?: string }) {
+    return apiRequest<{ tenantId: string; userId: string; role: string }>(
+      '/users/accept-invite',
+      { method: 'POST', json: payload, anonymous: true },
+    );
+  },
   listInvitations() {
     return apiRequest<PendingInvitation[]>('/users/invitations');
   },
@@ -1479,6 +1490,13 @@ export const billingApi = {
     return apiRequest<SubscriptionRequestResult>('/billing/request-subscription', {
       method: 'POST',
       json: { planTier, interval },
+    });
+  },
+  /** Extra tárhely igénylése (a `bytes` egy STORAGE_PACKS csomag mérete). */
+  requestStorage(bytes: number) {
+    return apiRequest<SubscriptionRequestResult>('/billing/request-storage', {
+      method: 'POST',
+      json: { bytes },
     });
   },
 };

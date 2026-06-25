@@ -15,6 +15,7 @@ import { PageHeading } from '@/components/app/PageHeading';
 import { VehicleFormModal } from '@/components/app/VehicleFormModal';
 import { RegistrationScans } from '@/components/app/RegistrationScans';
 import { VehicleImportModal } from '@/components/app/VehicleImportModal';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 export function VehiclesClient() {
   const t = useTranslations('vehicles');
@@ -28,17 +29,25 @@ export function VehiclesClient() {
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [segmentFilter, setSegmentFilter] = useState<FleetSegment | 'all'>('all');
 
   const refresh = useCallback(async () => {
+    setLoadError(false);
     try {
       setVehicles(await vehiclesApi.list());
-    } catch {
-      // 401 → AppShell redirect
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -165,6 +174,12 @@ export function VehiclesClient() {
                 <tr>
                   <td colSpan={COLUMNS.length} className="px-4 py-10 text-center text-sm text-anthracite-500">
                     {t('loading')}
+                  </td>
+                </tr>
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={COLUMNS.length} className="px-4 py-6">
+                    <LoadErrorState onRetry={reload} />
                   </td>
                 </tr>
               ) : visibleVehicles.length === 0 ? (

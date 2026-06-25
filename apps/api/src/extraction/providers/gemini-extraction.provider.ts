@@ -81,10 +81,11 @@ export class GeminiExtractionProvider implements ExtractionProvider {
     prompt: string,
     apiKey: string,
   ): Promise<unknown> {
-    const url = `${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+    const url = `${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      signal: AbortSignal.timeout(30_000),
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {

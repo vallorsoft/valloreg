@@ -9,6 +9,7 @@ import {
 } from '@/lib/api';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useModalA11y } from '@/components/app/useModalA11y';
 
 interface Props {
   vehicleId: string;
@@ -29,6 +30,7 @@ export function ComplianceScanModal({
   onDone,
 }: Props) {
   const t = useTranslations('vehicles.verification.scan');
+  const dialogRef = useModalA11y(onClose);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [file, setFile] = useState<File | null>(null);
@@ -77,8 +79,15 @@ export function ComplianceScanModal({
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-card-hover">
-        <h2 className="mb-1 text-lg font-semibold text-anthracite-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="compliance-scan-title"
+        tabIndex={-1}
+        className="relative w-full max-w-md rounded-2xl bg-white p-6 shadow-card-hover focus:outline-none"
+      >
+        <h2 id="compliance-scan-title" className="mb-1 text-lg font-semibold text-anthracite-900">
           {t('title', { type: typeLabel })}
         </h2>
         <p className="mb-4 text-sm text-anthracite-500">{t('subtitle')}</p>
@@ -98,7 +107,6 @@ export function ComplianceScanModal({
                 ref={inputRef}
                 type="file"
                 accept={ACCEPT}
-                capture="environment"
                 className="sr-only"
                 onChange={(e) => setFile(e.target.files?.[0] ?? null)}
               />

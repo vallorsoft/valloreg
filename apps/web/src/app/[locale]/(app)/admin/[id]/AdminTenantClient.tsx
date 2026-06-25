@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +17,7 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
+import { LoadErrorState } from '@/components/app/LoadErrorState';
 
 // A jelenleg árusított csomagok (Start / Pro / Fleet). A BUSINESS már nem
 // választható újként, de ha egy cég még azon van, a select megtartja.
@@ -35,6 +36,7 @@ export function AdminTenantClient({ id }: { id: string }) {
   const [data, setData] = useState<AdminTenantDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -44,7 +46,11 @@ export function AdminTenantClient({ id }: { id: string }) {
   const [extraStorageGb, setExtraStorageGb] = useState<string>('0');
   const [savingStorage, setSavingStorage] = useState(false);
 
-  useEffect(() => {
+  const loadTenant = useCallback(() => {
+    setLoading(true);
+    setForbidden(false);
+    setLoadError(false);
+    setError(null);
     adminApi
       .getTenant(id)
       .then((d) => {
@@ -56,14 +62,21 @@ export function AdminTenantClient({ id }: { id: string }) {
         }
       })
       .catch((err) => {
+        // 401 → AppShell redirect; 403 → tiltott; 404 → nem található; egyéb → hibaállapot.
         if (err instanceof ApiError && (err.status === 403 || err.status === 401)) {
           setForbidden(true);
-        } else {
+        } else if (err instanceof ApiError && err.status === 404) {
           setError(t('notFound'));
+        } else {
+          setLoadError(true);
         }
       })
       .finally(() => setLoading(false));
   }, [id, t]);
+
+  useEffect(() => {
+    loadTenant();
+  }, [loadTenant]);
 
   async function handleSaveSubscription() {
     setSavingSub(true);
@@ -95,6 +108,16 @@ export function AdminTenantClient({ id }: { id: string }) {
     } finally {
       setSavingStorage(false);
     }
+  }
+
+  function featureKeyLabel(key: string): string {
+    const k = `featureKeys.${key}` as Parameters<typeof t>[0];
+    return t.has(k) ? t(k) : key;
+  }
+
+  function roleLabel(role: string): string {
+    const k = `roles.${role}` as Parameters<typeof t>[0];
+    return t.has(k) ? t(k) : role;
   }
 
   function overrideState(key: string): 'default' | 'on' | 'off' {
@@ -137,6 +160,10 @@ export function AdminTenantClient({ id }: { id: string }) {
 
   if (forbidden) {
     return <div className="py-16 text-center text-sm text-anthracite-600">{t('forbidden')}</div>;
+  }
+
+  if (loadError) {
+    return <LoadErrorState onRetry={loadTenant} />;
   }
 
   if (!data) {
@@ -268,7 +295,7 @@ export function AdminTenantClient({ id }: { id: string }) {
           <tbody className="divide-y divide-anthracite-100">
             {ALL_FEATURE_KEYS.map((key) => (
               <tr key={key}>
-                <td className="px-4 py-3 font-medium text-anthracite-900">{key}</td>
+                <td className="px-4 py-3 font-medium text-anthracite-900">{featureKeyLabel(key)}</td>
                 <td className="px-4 py-3 text-anthracite-600">
                   {planDefault(key) ? t('features.enabled') : t('features.disabled')}
                 </td>
@@ -309,7 +336,7 @@ export function AdminTenantClient({ id }: { id: string }) {
               <tr key={m.membershipId}>
                 <td className="px-4 py-3 font-medium text-anthracite-900">{m.user.name ?? '-'}</td>
                 <td className="px-4 py-3 text-anthracite-600">{m.user.email}</td>
-                <td className="px-4 py-3 text-anthracite-600">{m.role}</td>
+                <td className="px-4 py-3 text-anthracite-600">{roleLabel(m.role)}</td>
               </tr>
             ))}
           </tbody>

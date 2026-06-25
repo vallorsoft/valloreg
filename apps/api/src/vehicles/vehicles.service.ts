@@ -2,11 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import {
+  effectiveStorageBytes,
   isAllowedDocumentMimeType,
   isWithinLimit,
   MAX_DOCUMENT_SIZE_BYTES,
   PLAN_LIMITS,
   PlanTier,
+  UNLIMITED,
   VehicleScanStatus,
   type VehicleRegistrationResult,
 } from '@valloreg/shared';
@@ -379,11 +381,10 @@ export class VehiclesService {
       throw AppException.validation('Hiányzik a beolvasandó fájl.');
     }
 
-    const scanId = randomUUID();
-    const staged: ScanFileRef[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]!;
+    // MIME + méret validáció a tárhely-keret ellenőrzése ELŐTT (a beolvasott
+    // fájlok VehicleDocument-ként számítanak a tárhely-használatba a confirm
+    // után, és már a staging is tárhelyet foglal).
+    for (const file of files) {
       const mimeType = file.mimetype || 'application/octet-stream';
       if (!isAllowedDocumentMimeType(mimeType)) {
         throw AppException.unsupportedDocumentType();
@@ -391,7 +392,16 @@ export class VehiclesService {
       if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
         throw AppException.documentTooLarge();
       }
+    }
+    const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+    await this.assertStorageLimit(tenantId, totalBytes);
 
+    const scanId = randomUUID();
+    const staged: ScanFileRef[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const mimeType = file.mimetype || 'application/octet-stream';
       const storageKey = `tenants/${tenantId}/${SCAN_PREFIX}/${scanId}/${i}`;
       await this.storage.upload(storageKey, file.buffer, mimeType);
       staged.push({
@@ -546,6 +556,10 @@ export class VehiclesService {
       : await this.create(tenantId, userId, fields);
 
     if (dto.files && dto.files.length > 0) {
+      // A jármű-dokumentumok mérete a tárhely-használatba számít – a keret-
+      // ellenőrzés a sorok létrehozása ELŐTT (a számla-feltöltési úttal azonos).
+      const totalBytes = dto.files.reduce((sum, f) => sum + f.sizeBytes, 0);
+      await this.assertStorageLimit(tenantId, totalBytes);
       await this.prisma.scoped.vehicleDocument.createMany({
         data: dto.files.map((f) => ({
           tenantId,
@@ -818,6 +832,47 @@ export class VehiclesService {
     const count = await this.prisma.scoped.vehicle.count();
     if (!isWithinLimit(count, limit)) {
       throw AppException.vehiclesLimitReached();
+    }
+  }
+
+  /**
+   * Tárhely-keret ellenőrzése jármű-dokumentum (forgalmi-beolvasás) feltöltése
+   * előtt. Az effektív keret = csomag-tárhely + vásárolt extra
+   * (Tenant.extraStorageGb). A használat a tárolt dokumentumok és jármű-
+   * dokumentumok méretének összege (tenant-scope). A számla-feltöltési úttal
+   * (DocumentsService.assertStorageLimit) azonos számítás, hogy a jármű-
+   * dokumentumok ne kerülhessék meg a keretet.
+   */
+  private async assertStorageLimit(
+    tenantId: string,
+    additionalBytes: number,
+  ): Promise<void> {
+    const [subscription, tenant] = await Promise.all([
+      this.prisma.system.subscription.findUnique({
+        where: { tenantId },
+        select: { planTier: true },
+      }),
+      this.prisma.system.tenant.findUnique({
+        where: { id: tenantId },
+        select: { extraStorageGb: true },
+      }),
+    ]);
+    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const effective = effectiveStorageBytes(
+      PLAN_LIMITS[planTier].maxStorageBytes,
+      tenant?.extraStorageGb ?? 0,
+    );
+    if (effective === UNLIMITED) return;
+
+    const [docSize, vehicleDocSize] = await Promise.all([
+      this.prisma.scoped.document.aggregate({ _sum: { sizeBytes: true } }),
+      this.prisma.scoped.vehicleDocument.aggregate({ _sum: { sizeBytes: true } }),
+    ]);
+    const used =
+      (docSize._sum.sizeBytes ?? 0) + (vehicleDocSize._sum.sizeBytes ?? 0);
+
+    if (used + additionalBytes > effective) {
+      throw AppException.storageLimitReached();
     }
   }
 }

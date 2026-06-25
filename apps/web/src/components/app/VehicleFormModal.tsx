@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { useModalA11y } from '@/components/app/useModalA11y';
 import { vehiclesApi, ApiError, type Vehicle, type CreateVehiclePayload } from '@/lib/api';
 import {
   VehicleDetailsFields,
@@ -21,6 +22,10 @@ interface Props {
 
 export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
   const t = useTranslations('vehicles');
+  // Generic save/error message (NOT the delete-error copy). Reuses an existing key.
+  // TODO i18n: needs a dedicated vehicles.form.saveError key.
+  const tn = useTranslations('notifications');
+  const dialogRef = useModalA11y(onClose);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [form, setForm] = useState<CreateVehiclePayload>({
@@ -74,7 +79,7 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
         : await vehiclesApi.create(payload);
       onSaved(saved);
     } catch (err) {
-      setError(err instanceof ApiError ? err.message : t('actions.deleteError'));
+      setError(err instanceof ApiError ? err.message : tn('error'));
     } finally {
       setSaving(false);
     }
@@ -87,8 +92,15 @@ export function VehicleFormModal({ vehicle, onClose, onSaved }: Props) {
         onClick={onClose}
         aria-hidden="true"
       />
-      <div className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover">
-        <h2 className="mb-6 text-lg font-semibold text-anthracite-900">
+      <div
+        ref={dialogRef}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="vehicle-form-title"
+        tabIndex={-1}
+        className="relative max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-white p-6 shadow-card-hover focus:outline-none"
+      >
+        <h2 id="vehicle-form-title" className="mb-6 text-lg font-semibold text-anthracite-900">
           {vehicle ? t('form.editTitle') : t('form.addTitle')}
         </h2>
         <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">

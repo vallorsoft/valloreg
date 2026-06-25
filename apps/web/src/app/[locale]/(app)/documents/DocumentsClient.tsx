@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
 import { UploadZone } from '@/components/app/UploadZone';
 import { DocumentStatusBadge } from '@/components/app/DocumentStatusBadge';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const PROCESSING = new Set<string>([
   DocumentStatus.QUEUED,
@@ -25,16 +26,24 @@ export function DocumentsClient() {
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const refresh = useCallback(async () => {
+    setLoadError(false);
     try {
       setDocs(await documentsApi.list());
-    } catch {
-      // 401 → AppShell redirect kezeli
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -75,6 +84,10 @@ export function DocumentsClient() {
         {loading ? (
           <div className="px-4 py-8 text-center text-sm text-anthracite-500">
             {t('loading')}
+          </div>
+        ) : loadError ? (
+          <div className="px-4 py-6">
+            <LoadErrorState onRetry={reload} />
           </div>
         ) : docs.length === 0 ? (
           <div className="px-4 py-8 text-center">

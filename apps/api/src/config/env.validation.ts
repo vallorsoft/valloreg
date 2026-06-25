@@ -52,8 +52,12 @@ export const envSchema = z.object({
   REDIS_PASSWORD: z.string().optional().default(''),
 
   // JWT
-  JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET kötelező'),
-  JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET kötelező'),
+  JWT_ACCESS_SECRET: z
+    .string()
+    .min(32, 'JWT_ACCESS_SECRET legalább 32 karakter legyen'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(32, 'JWT_REFRESH_SECRET legalább 32 karakter legyen'),
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
   // Refresh token élettartama (alap: 90 nap). A kliens minden használatkor
   // rotálja/gördíti előre, így az eszközön aktív felhasználó bejelentkezve marad.
