@@ -25,6 +25,8 @@ modul ráépül. Itt dől el az adatizoláció, az auth és a feldolgozási pipe
 - [~] Auth: JWT (access + refresh), regisztráció, login, jelszó-reset, RBAC guard
 - [~] RBAC: OWNER / FLEET_MANAGER / ADMIN / ACCOUNTANT / VIEWER + platform SUPER_ADMIN
 - [~] Audit log modul (minden érzékeny művelet naplózva)
+  - [x] Backend: `AuditService` + `GET /api/audit` (OWNER/ADMIN, lapozható)
+  - [x] Frontend: audit napló oldal (`/audit`) – táblázat, lapozás, OWNER/ADMIN-nak látható, i18n (hu/ro/en)
 - [~] Async infrastruktúra: BullMQ + Redis queue modul, worker váz, idempotens job-kulcs
 - [~] Storage absztrakció: S3/MinIO adapter (presigned upload/download)
 - [~] OCR + Extraction **portok** (interface-ek) stub implementációval (Fázis 2 plugint vár)
