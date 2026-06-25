@@ -4,6 +4,7 @@ import {
   PLAN_PRICES,
   PLAN_CURRENCY,
   PlanTier,
+  STORAGE_ADDONS,
   UNLIMITED,
 } from '@valloreg/shared';
 import { Card } from '@/components/ui/Card';
@@ -12,15 +13,17 @@ import { Link } from '@/i18n/routing';
 import { SectionHeading } from './SectionHeading';
 import { cn } from '@/lib/cn';
 
-// Display order; PROFESSIONAL is highlighted as the recommended plan.
+// Megjelenített sávok (3): Start · Pro · Fleet. A STANDARD legacy, nem jelenik meg.
+// A „Pro" (PROFESSIONAL) a kiemelt, ajánlott csomag.
 const PLAN_ORDER: PlanTier[] = [
   PlanTier.STARTER,
-  PlanTier.STANDARD,
   PlanTier.PROFESSIONAL,
   PlanTier.BUSINESS,
 ];
 
 const HIGHLIGHTED: PlanTier = PlanTier.PROFESSIONAL;
+
+const BYTES_PER_GB = 1024 * 1024 * 1024;
 
 export function Pricing() {
   const t = useTranslations('landing.pricing');
@@ -32,7 +35,7 @@ export function Pricing() {
         <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-anthracite-500">
           {t('transferNote')}
         </p>
-        <div className="mt-12 grid gap-6 lg:grid-cols-4">
+        <div className="mt-12 grid gap-6 lg:grid-cols-3">
           {PLAN_ORDER.map((tier) => {
             const limits = PLAN_LIMITS[tier];
             const highlighted = tier === HIGHLIGHTED;
@@ -49,6 +52,9 @@ export function Pricing() {
               limits.maxDocumentsPerMonth === UNLIMITED
                 ? t('documentsUnlimited')
                 : t('documents', { count: limits.maxDocumentsPerMonth });
+            const storage = t('storage', {
+              count: Math.round(limits.maxStorageBytes / BYTES_PER_GB),
+            });
 
             return (
               <Card
@@ -91,6 +97,9 @@ export function Pricing() {
                   <li className="flex items-center gap-2">
                     <Check /> {documents}
                   </li>
+                  <li className="flex items-center gap-2">
+                    <Check /> {storage}
+                  </li>
                 </ul>
 
                 <Link href="/register" className="mt-6">
@@ -104,6 +113,25 @@ export function Pricing() {
               </Card>
             );
           })}
+        </div>
+
+        <div className="mx-auto mt-12 max-w-3xl text-center">
+          <h3 className="text-lg font-bold text-anthracite-900">
+            {t('addonsTitle')}
+          </h3>
+          <p className="mx-auto mt-2 max-w-xl text-sm text-anthracite-500">
+            {t('addonsNote')}
+          </p>
+          <div className="mt-4 flex flex-wrap justify-center gap-3">
+            {STORAGE_ADDONS.map((addon) => (
+              <span
+                key={addon.extraGB}
+                className="rounded-full border border-anthracite-200 bg-white px-4 py-2 text-sm font-medium text-anthracite-700"
+              >
+                {t('addonItem', { gb: addon.extraGB, price: addon.pricePerMonth })}
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </section>

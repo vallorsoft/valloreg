@@ -188,7 +188,7 @@
       "cta": "Alege",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "Pentru flote mici, pentru primii pași."
         },
         "STANDARD": {
@@ -196,14 +196,18 @@
           "description": "Pentru flote în creștere, cu rapoarte și export."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "Pentru gestionarea activă a flotei, cu set complet de funcții."
+          "name": "Pro",
+          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, service complex."
         },
         "BUSINESS": {
-          "name": "Business",
-          "description": "Pentru flote mari, fără limite."
+          "name": "Fleet",
+          "description": "Inteligență completă a flotei: clasament, durabilitate, calitatea furnizorilor."
         }
-      }
+      },
+      "storage": "{count} GB stocare",
+      "addonsTitle": "Stocare suplimentară disponibilă",
+      "addonsNote": "Stocarea este capacitate totală (nu se resetează lunar); disponibilă pentru orice plan.",
+      "addonItem": "+{gb} GB — {price} RON / lună"
     },
     "faq": {
       "title": "Întrebări frecvente",

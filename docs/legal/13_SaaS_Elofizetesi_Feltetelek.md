@@ -18,11 +18,13 @@ funkció elérhető. A fizetés a próbaidő után **banki utalással** történ
 | **Pro** (Legnépszerűbb) – növekvő flottáknak: riport, export, emlékeztető, komplex szerviz | **129** | 15 | 10 | 400 | 5 GB |
 | **Fleet** – teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség | **299** | korlátlan | korlátlan | korlátlan | 15 GB |
 
-> 📌 **KÓD-ELTÉRÉS (audit):** A jelenlegi forráskód (`packages/shared/src/plans.ts`)
-> még a **régi, 4 sávos** struktúrát tartalmazza HUF-ban (STARTER/STANDARD/
-> PROFESSIONAL/BUSINESS). A fenti **3 sávos (Start/Pro/Fleet) RON** árazás az
-> aktuális üzleti ajánlat. A kód összehangolása külön feladat (lásd a projekt
-> teendői; a tier-átnevezés a Prisma enumot és migrációt is érinti).
+> 📌 **KÓD ÁLLAPOT:** A forráskód (`packages/shared/src/plans.ts`, `Pricing.tsx`,
+> i18n) immár a fenti **3 sávos (Start/Pro/Fleet) RON** árazást jeleníti meg, és
+> tartalmazza az extra tárhely díjszabását. Műszaki megjegyzés: a belső Prisma
+> `PlanTier` enum változatlan maradt (DB-migráció elkerülése végett): a `STARTER`
+> jelenik meg „Start"-ként, a `PROFESSIONAL` „Pro"-ként, a `BUSINESS` „Fleet"-ként;
+> a `STANDARD` **rejtett legacy** sáv (a Pro-val egyenértékű, új regisztrációnál
+> nem választható). Az árak pénzneme **RON**.
 
 ## 2. Vásárolható extra tárhely
 

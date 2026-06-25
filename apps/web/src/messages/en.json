@@ -188,7 +188,7 @@
       "cta": "Choose",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "For smaller fleets, to get started."
         },
         "STANDARD": {
@@ -196,14 +196,18 @@
           "description": "For growing fleets, with reports and export."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "For active fleet management, with the full feature set."
+          "name": "Pro",
+          "description": "For growing fleets: reports, export, reminders, complex servicing."
         },
         "BUSINESS": {
-          "name": "Business",
-          "description": "For large fleets, with no limits."
+          "name": "Fleet",
+          "description": "Full fleet intelligence: ranking, durability, supplier quality."
         }
-      }
+      },
+      "storage": "{count} GB storage",
+      "addonsTitle": "Extra storage available",
+      "addonsNote": "Storage is total capacity (it does not reset monthly); available for any plan.",
+      "addonItem": "+{gb} GB — {price} RON / mo"
     },
     "faq": {
       "title": "Frequently asked questions",

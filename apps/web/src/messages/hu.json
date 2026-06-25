@@ -188,7 +188,7 @@
       "cta": "Kiválasztom",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "Kisebb flottáknak, az első lépésekhez."
         },
         "STANDARD": {
@@ -196,14 +196,18 @@
           "description": "Növekvő flottáknak, riportokkal és exporttal."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "Aktív flottakezeléshez, teljes funkciókészlettel."
+          "name": "Pro",
+          "description": "Növekvő flottáknak: riport, export, emlékeztető, komplex szerviz."
         },
         "BUSINESS": {
-          "name": "Business",
-          "description": "Nagy flottáknak, korlátok nélkül."
+          "name": "Fleet",
+          "description": "Teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség."
         }
-      }
+      },
+      "storage": "{count} GB tárhely",
+      "addonsTitle": "Vásárolható extra tárhely",
+      "addonsNote": "A tárhely teljes kapacitás (nem nullázódik havonta); bármely csomaghoz vehető.",
+      "addonItem": "+{gb} GB — {price} RON / hó"
     },
     "faq": {
       "title": "Gyakori kérdések",

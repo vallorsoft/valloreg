@@ -25,12 +25,17 @@ export interface PlanLimits {
 
 const GB = 1024 * 1024 * 1024;
 
+// Megjelenített csomagok (3): Start (STARTER), Pro (PROFESSIONAL), Fleet (BUSINESS).
+// A STANDARD megtartott LEGACY sáv (nem jelenik meg új regisztrációnál); a
+// meglévő STANDARD előfizetők a Pro-val egyenértékű limitet kapnak. Az enum
+// értéke a DB-ben megmarad (nincs migráció).
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
+  // „Start" – 49 RON/hó
   [PlanTier.STARTER]: {
-    maxVehicles: 2,
+    maxVehicles: 3,
     maxUsers: 3,
-    maxStorageBytes: 2 * GB,
-    maxDocumentsPerMonth: 50,
+    maxStorageBytes: 1 * GB,
+    maxDocumentsPerMonth: 75,
     features: [
       FeatureKey.OCR,
       FeatureKey.AI_PROCESSING,
@@ -38,32 +43,27 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
       FeatureKey.DOCUMENT_LIBRARY,
     ],
   },
+  // LEGACY (rejtett) – a „Pro" sávval egyenértékű.
   [PlanTier.STANDARD]: {
-    maxVehicles: 5,
-    maxUsers: 5,
-    maxStorageBytes: 10 * GB,
-    maxDocumentsPerMonth: 200,
-    features: [
-      FeatureKey.OCR,
-      FeatureKey.AI_PROCESSING,
-      FeatureKey.DASHBOARD,
-      FeatureKey.DOCUMENT_LIBRARY,
-      FeatureKey.REPORTS,
-      FeatureKey.EXPORT,
-      FeatureKey.REMINDERS,
-    ],
-  },
-  [PlanTier.PROFESSIONAL]: {
-    maxVehicles: 20,
-    maxUsers: 20,
-    maxStorageBytes: 50 * GB,
-    maxDocumentsPerMonth: 1000,
+    maxVehicles: 15,
+    maxUsers: 10,
+    maxStorageBytes: 5 * GB,
+    maxDocumentsPerMonth: 400,
     features: ALL_FEATURE_KEYS,
   },
+  // „Pro" (Legnépszerűbb) – 129 RON/hó
+  [PlanTier.PROFESSIONAL]: {
+    maxVehicles: 15,
+    maxUsers: 10,
+    maxStorageBytes: 5 * GB,
+    maxDocumentsPerMonth: 400,
+    features: ALL_FEATURE_KEYS,
+  },
+  // „Fleet" – 299 RON/hó
   [PlanTier.BUSINESS]: {
     maxVehicles: UNLIMITED,
     maxUsers: UNLIMITED,
-    maxStorageBytes: 500 * GB,
+    maxStorageBytes: 15 * GB,
     maxDocumentsPerMonth: UNLIMITED,
     features: ALL_FEATURE_KEYS,
   },
@@ -76,17 +76,35 @@ export function isWithinLimit(current: number, limit: number): boolean {
 }
 
 /**
- * Csomag-árak (havi, nettó) az utalásos előfizetéshez. A `PLAN_CURRENCY` a
- * pénznem. Ezek alapértelmezett értékek – az üzemeltető igazíthatja.
+ * Csomag-árak (havi) az utalásos előfizetéshez. A `PLAN_CURRENCY` a pénznem.
+ * Megjelenített sávok: Start (49) · Pro (129) · Fleet (299). A STANDARD legacy
+ * (rejtett), a Pro árával egyenértékű.
  */
-export const PLAN_CURRENCY = 'HUF';
+export const PLAN_CURRENCY = 'RON';
 
 export const PLAN_PRICES: Record<PlanTier, number> = {
-  [PlanTier.STARTER]: 9900,
-  [PlanTier.STANDARD]: 19900,
-  [PlanTier.PROFESSIONAL]: 39900,
-  [PlanTier.BUSINESS]: 79900,
+  [PlanTier.STARTER]: 49, // „Start"
+  [PlanTier.STANDARD]: 129, // legacy → „Pro"-val egyenértékű
+  [PlanTier.PROFESSIONAL]: 129, // „Pro"
+  [PlanTier.BUSINESS]: 299, // „Fleet"
 };
+
+/**
+ * Vásárolható extra tárhely (havi díj, RON). A tárhely teljes kapacitás (nem
+ * nullázódik havonta); bármely csomaghoz hozzávehető.
+ */
+export interface StorageAddon {
+  /** Hozzáadott tárhely GB-ban. */
+  extraGB: number;
+  /** Havi díj a `PLAN_CURRENCY` pénznemben. */
+  pricePerMonth: number;
+}
+
+export const STORAGE_ADDONS: readonly StorageAddon[] = [
+  { extraGB: 5, pricePerMonth: 19 },
+  { extraGB: 10, pricePerMonth: 29 },
+  { extraGB: 25, pricePerMonth: 59 },
+];
 
 /** A próbaidőszak hossza napokban (a regisztráció ennyit ad ingyen). */
 export const TRIAL_DAYS = 14;
