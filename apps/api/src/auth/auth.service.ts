@@ -349,7 +349,19 @@ export class AuthService {
       where: { tokenHash },
     });
 
-    if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+    if (!stored || stored.expiresAt < new Date()) {
+      throw AppException.tokenExpired();
+    }
+
+    // Reuse-detektálás: ha a tokent MÁR visszavonták (rotáció során), de újra
+    // bemutatják, az ellopott-majd-rotált tokenre utal → biztonsági okból a
+    // felhasználó ÖSSZES aktív refresh tokenjét visszavonjuk (a tolvaj és a
+    // jogos kliens is újra-bejelentkezésre kényszerül).
+    if (stored.revokedAt) {
+      await this.prisma.system.refreshToken.updateMany({
+        where: { userId: stored.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
       throw AppException.tokenExpired();
     }
 

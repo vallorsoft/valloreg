@@ -36,14 +36,23 @@ export class ExternalRecallProvider implements RecallProvider {
 
       const res = await fetch(url, {
         headers: apiKey ? { Authorization: `Bearer ${apiKey}` } : {},
+        // Ne lógjon be egy lassú/akadó upstream a benchmark-feldolgozást.
+        signal: AbortSignal.timeout(10_000),
       });
       if (!res.ok) {
         this.logger.warn(`Recall feed hiba: ${res.status}`);
         return [];
       }
+      // Méret-korlát: egy ellenséges/hibás feed ne tudjon memóriát kimeríteni.
+      const declaredLen = Number(res.headers.get('content-length') ?? 0);
+      if (declaredLen > 2_000_000) {
+        this.logger.warn(`Recall válasz túl nagy (${declaredLen} bájt) – elvetve.`);
+        return [];
+      }
       const raw = (await res.json()) as unknown;
       const rows = Array.isArray(raw) ? raw : [];
-      return rows.map((r) => normalize(r as Record<string, unknown>));
+      // Sor-korlát: a feldolgozott visszahívások számát is korlátozzuk.
+      return rows.slice(0, 200).map((r) => normalize(r as Record<string, unknown>));
     } catch (err) {
       this.logger.warn(`Recall lekérés sikertelen: ${(err as Error).message}`);
       return [];
