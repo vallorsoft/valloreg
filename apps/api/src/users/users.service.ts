@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import * as argon2 from 'argon2';
-import { randomBytes } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
 import {
   DEFAULT_LOCALE,
   isWithinLimit,
@@ -18,6 +18,11 @@ import type { InviteUserDto } from './dto/invite-user.dto';
 import type { AcceptInviteDto } from './dto/accept-invite.dto';
 
 const INVITE_TTL_DAYS = 7;
+
+/** Meghívó-token hash-elése tároláshoz/visszakereséshez (mint a refresh token). */
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex');
+}
 
 @Injectable()
 export class UsersService {
@@ -81,7 +86,11 @@ export class UsersService {
       }
     }
 
+    // A nyers token csak az e-mailbe/linkbe kerül; a DB-ben a SHA-256 hash-ét
+    // tároljuk (a reset/refresh tokenekkel azonos mintára), hogy egy DB-szivárgás
+    // ne adjon kézbe felhasználható meghívó-tokent.
     const token = randomBytes(32).toString('hex');
+    const tokenHash = hashToken(token);
     const expiresAt = new Date(
       Date.now() + INVITE_TTL_DAYS * 24 * 60 * 60 * 1000,
     );
@@ -92,7 +101,7 @@ export class UsersService {
         tenantId,
         email,
         role: dto.role,
-        token,
+        token: tokenHash,
         expiresAt,
       },
     });
@@ -135,8 +144,10 @@ export class UsersService {
    * jelszóval létrehozza.
    */
   async acceptInvite(dto: AcceptInviteDto) {
+    // A linkben/e-mailben a NYERS token utazik; a DB-ben a hash-e van, ezért a
+    // beérkező tokent hash-eljük, és úgy keressük vissza.
     const invitation = await this.prisma.system.invitation.findUnique({
-      where: { token: dto.token },
+      where: { token: hashToken(dto.token) },
     });
 
     if (!invitation || invitation.acceptedAt) {

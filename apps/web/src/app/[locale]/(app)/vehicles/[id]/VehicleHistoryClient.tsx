@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { vehiclesApi, type VehicleServiceHistory } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 import { VehicleReminders } from '@/components/app/VehicleReminders';
 import { VehicleDocuments } from '@/components/app/VehicleDocuments';
 import { VehicleVerification } from '@/components/app/VehicleVerification';
@@ -31,19 +32,41 @@ export function VehicleHistoryClient({ id }: { id: string }) {
   const [data, setData] = useState<VehicleServiceHistory | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
-    vehiclesApi
-      .getHistory(id)
-      .then(setData)
-      .catch(() => setError(t('notFound')))
-      .finally(() => setLoading(false));
+  const load = useCallback(async () => {
+    setLoadError(false);
+    setError(null);
+    try {
+      setData(await vehiclesApi.getHistory(id));
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
+      else setError(t('notFound'));
+    } finally {
+      setLoading(false);
+    }
   }, [id, t]);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    void load();
+  }, [load]);
+
+  useEffect(() => { void load(); }, [load]);
 
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-sm text-anthracite-500">
         {t('loading')}
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <LoadErrorState onRetry={reload} />
       </div>
     );
   }
