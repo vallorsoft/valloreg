@@ -121,6 +121,9 @@ model User {
   name            String?
   isPlatformAdmin Boolean  @default(false)
   twoFactorSecret String?
+  // A 2FA csak akkor AKTÍV, ha ez nem null. A secret beállítható már a setup
+  // során (enable előtt), de a védelem csak az enableTwoFactor után él.
+  twoFactorEnabledAt DateTime?
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 

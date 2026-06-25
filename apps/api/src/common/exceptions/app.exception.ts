@@ -58,6 +58,31 @@ export class AppException extends HttpException {
     );
   }
 
+  // ── Kétfaktoros hitelesítés (2FA / TOTP) ──────────────────────────────
+  static twoFactorRequired(): AppException {
+    return new AppException(
+      ErrorCode.AUTH_2FA_REQUIRED,
+      'Kétfaktoros hitelesítés szükséges.',
+      HttpStatus.UNAUTHORIZED,
+    );
+  }
+
+  static twoFactorInvalid(): AppException {
+    return new AppException(
+      ErrorCode.AUTH_2FA_INVALID,
+      'Érvénytelen 2FA kód.',
+      HttpStatus.UNAUTHORIZED,
+    );
+  }
+
+  static twoFactorNotEnabled(): AppException {
+    return new AppException(
+      ErrorCode.AUTH_2FA_NOT_ENABLED,
+      'A kétfaktoros hitelesítés nincs beállítva.',
+      HttpStatus.BAD_REQUEST,
+    );
+  }
+
   static forbidden(message = 'Nincs jogosultság a művelethez.'): AppException {
     return new AppException(
       ErrorCode.AUTH_FORBIDDEN,

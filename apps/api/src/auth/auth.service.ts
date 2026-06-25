@@ -9,6 +9,11 @@ import { AppConfigService } from '../config/app-config.service';
 import { AuditService } from '../audit/audit.service';
 import { MailerService } from '../storage/mailer.service';
 import { AppException } from '../common/exceptions/app.exception';
+import {
+  buildOtpauthUrl,
+  generateTotpSecret,
+  verifyTotp,
+} from './totp.util';
 import type { AccessTokenPayload } from './strategies/jwt.strategy';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
@@ -32,6 +37,7 @@ export interface AuthResult extends AuthTokens {
     email: string;
     name: string | null;
     isPlatformAdmin: boolean;
+    twoFactorEnabled: boolean;
   };
   memberships: MembershipSummary[];
 }
@@ -142,6 +148,8 @@ export class AuthService {
         email: user.email,
         name: user.name,
         isPlatformAdmin: user.isPlatformAdmin,
+        // Frissen regisztrált fióknál a 2FA még soha nem volt beállítva.
+        twoFactorEnabled: false,
       },
       memberships: [
         {
@@ -173,6 +181,17 @@ export class AuthService {
       throw AppException.invalidCredentials();
     }
 
+    // Kétfaktoros hitelesítés: ha aktív (twoFactorEnabledAt != null), a TOTP kód
+    // is kötelező és érvényes kell legyen, mielőtt tokeneket adunk ki.
+    if (user.twoFactorEnabledAt) {
+      if (!dto.totp) {
+        throw AppException.twoFactorRequired();
+      }
+      if (!verifyTotp(user.twoFactorSecret ?? '', dto.totp)) {
+        throw AppException.twoFactorInvalid();
+      }
+    }
+
     await this.audit.log({
       userId: user.id,
       action: 'auth.login',
@@ -190,6 +209,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         isPlatformAdmin: user.isPlatformAdmin,
+        twoFactorEnabled: user.twoFactorEnabledAt != null,
       },
       memberships: user.memberships.map((m) => ({
         tenantId: m.tenantId,
@@ -401,6 +421,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         isPlatformAdmin: user.isPlatformAdmin,
+        twoFactorEnabled: user.twoFactorEnabledAt != null,
       },
       memberships: user.memberships.map((m) => ({
         tenantId: m.tenantId,
@@ -408,6 +429,127 @@ export class AuthService {
         role: m.role,
       })),
     };
+  }
+
+  // ── Kétfaktoros hitelesítés (2FA / TOTP) ─────────────────────────────────
+
+  /**
+   * 2FA beállítás INDÍTÁSA: új secretet generál és eltárolja
+   * (twoFactorSecret), de a védelem MÉG NEM él (twoFactorEnabledAt marad null).
+   * Visszaadja a secretet + az otpauth URL-t a QR-kódhoz. A felhasználónak az
+   * enableTwoFactor-ban egy érvényes kóddal kell megerősítenie.
+   */
+  async setupTwoFactor(
+    userId: string,
+  ): Promise<{ secret: string; otpauthUrl: string }> {
+    const user = await this.prisma.system.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, twoFactorEnabledAt: true },
+    });
+    if (!user) {
+      throw AppException.unauthorized();
+    }
+    if (user.twoFactorEnabledAt) {
+      throw AppException.validation('2FA már aktív');
+    }
+
+    const secret = generateTotpSecret();
+    await this.prisma.system.user.update({
+      where: { id: user.id },
+      data: { twoFactorSecret: secret },
+    });
+
+    await this.audit.log({
+      userId: user.id,
+      action: 'auth.2fa_setup',
+      resourceType: 'User',
+      resourceId: user.id,
+    });
+
+    return {
+      secret,
+      otpauthUrl: buildOtpauthUrl(secret, user.email),
+    };
+  }
+
+  /**
+   * 2FA AKTIVÁLÁSA: a setup során eltárolt secrethez tartozó kód megerősítése
+   * után beállítja a twoFactorEnabledAt időbélyeget (innentől él a védelem).
+   */
+  async enableTwoFactor(userId: string, code: string): Promise<{ ok: true }> {
+    const user = await this.prisma.system.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        twoFactorSecret: true,
+        twoFactorEnabledAt: true,
+      },
+    });
+    if (!user) {
+      throw AppException.unauthorized();
+    }
+    if (user.twoFactorEnabledAt) {
+      throw AppException.validation('2FA már aktív');
+    }
+    if (!user.twoFactorSecret) {
+      // Nincs előzetes setup → nincs mit aktiválni.
+      throw AppException.twoFactorNotEnabled();
+    }
+    if (!verifyTotp(user.twoFactorSecret, code)) {
+      throw AppException.twoFactorInvalid();
+    }
+
+    await this.prisma.system.user.update({
+      where: { id: user.id },
+      data: { twoFactorEnabledAt: new Date() },
+    });
+
+    await this.audit.log({
+      userId: user.id,
+      action: 'auth.2fa_enabled',
+      resourceType: 'User',
+      resourceId: user.id,
+    });
+
+    return { ok: true };
+  }
+
+  /**
+   * 2FA KIKAPCSOLÁSA: csak aktív 2FA esetén, érvényes kóddal. Törli a secretet
+   * és az aktiválás időbélyegét.
+   */
+  async disableTwoFactor(userId: string, code: string): Promise<{ ok: true }> {
+    const user = await this.prisma.system.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        twoFactorSecret: true,
+        twoFactorEnabledAt: true,
+      },
+    });
+    if (!user) {
+      throw AppException.unauthorized();
+    }
+    if (!user.twoFactorEnabledAt || !user.twoFactorSecret) {
+      throw AppException.twoFactorNotEnabled();
+    }
+    if (!verifyTotp(user.twoFactorSecret, code)) {
+      throw AppException.twoFactorInvalid();
+    }
+
+    await this.prisma.system.user.update({
+      where: { id: user.id },
+      data: { twoFactorSecret: null, twoFactorEnabledAt: null },
+    });
+
+    await this.audit.log({
+      userId: user.id,
+      action: 'auth.2fa_disabled',
+      resourceType: 'User',
+      resourceId: user.id,
+    });
+
+    return { ok: true };
   }
 
   // ── Belső segédek ───────────────────────────────────────────────────────

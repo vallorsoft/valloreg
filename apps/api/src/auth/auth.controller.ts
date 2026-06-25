@@ -23,6 +23,7 @@ import { LoginDto } from './dto/login.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { TwoFactorDto } from './dto/two-factor.dto';
 
 @Controller('auth')
 @UseGuards(RateLimitGuard)
@@ -81,5 +82,34 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.authService.me(user.userId);
+  }
+
+  // ── Kétfaktoros hitelesítés (2FA / TOTP) ──────────────────────────────
+
+  /** 2FA beállítás indítása: secret + otpauth URL a QR-kódhoz. */
+  @UseGuards(JwtAuthGuard)
+  @RateLimit(10, 60_000)
+  @Post('2fa/setup')
+  @HttpCode(HttpStatus.OK)
+  setupTwoFactor(@CurrentUser() user: AuthUser) {
+    return this.authService.setupTwoFactor(user.userId);
+  }
+
+  /** 2FA aktiválása a setup-secrethez tartozó kód megerősítésével. */
+  @UseGuards(JwtAuthGuard)
+  @RateLimit(10, 60_000)
+  @Post('2fa/enable')
+  @HttpCode(HttpStatus.OK)
+  enableTwoFactor(@CurrentUser() user: AuthUser, @Body() dto: TwoFactorDto) {
+    return this.authService.enableTwoFactor(user.userId, dto.code);
+  }
+
+  /** 2FA kikapcsolása érvényes kóddal. */
+  @UseGuards(JwtAuthGuard)
+  @RateLimit(10, 60_000)
+  @Post('2fa/disable')
+  @HttpCode(HttpStatus.OK)
+  disableTwoFactor(@CurrentUser() user: AuthUser, @Body() dto: TwoFactorDto) {
+    return this.authService.disableTwoFactor(user.userId, dto.code);
   }
 }
