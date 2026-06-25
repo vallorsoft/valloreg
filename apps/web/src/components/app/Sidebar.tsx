@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
+import { TenantRole } from '@valloreg/shared';
 import { Link, usePathname } from '@/i18n/routing';
 import { Logo } from '@/components/Logo';
 import { cn } from '@/lib/cn';
 import { authApi } from '@/lib/api';
+import { getActiveTenantId } from '@/lib/auth';
 
 const NAV = [
   { href: '/dashboard', key: 'dashboard' },
@@ -18,21 +20,34 @@ const NAV = [
   { href: '/billing', key: 'billing' },
 ] as const;
 
+const AUDIT_ROLES = new Set<string>([TenantRole.OWNER, TenantRole.ADMIN]);
+
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
   const t = useTranslations('app.nav');
   const pathname = usePathname();
   const [isAdmin, setIsAdmin] = useState(false);
+  const [canAudit, setCanAudit] = useState(false);
 
   useEffect(() => {
     authApi
       .me()
-      .then((me) => setIsAdmin(me.user.isPlatformAdmin))
-      .catch(() => setIsAdmin(false));
+      .then((me) => {
+        setIsAdmin(me.user.isPlatformAdmin);
+        const tenantId = getActiveTenantId();
+        const membership = me.memberships.find((m) => m.tenantId === tenantId);
+        setCanAudit(membership ? AUDIT_ROLES.has(membership.role) : false);
+      })
+      .catch(() => {
+        setIsAdmin(false);
+        setCanAudit(false);
+      });
   }, []);
 
-  const items = isAdmin
-    ? [...NAV, { href: '/admin', key: 'admin' } as const]
-    : NAV;
+  const items = [
+    ...NAV,
+    ...(canAudit ? [{ href: '/audit', key: 'audit' } as const] : []),
+    ...(isAdmin ? [{ href: '/admin', key: 'admin' } as const] : []),
+  ];
 
   return (
     <div className="flex h-full flex-col">

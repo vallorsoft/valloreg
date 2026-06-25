@@ -1089,3 +1089,29 @@ export const notificationsApi = {
     });
   },
 };
+
+// ── Audit log ────────────────────────────────────────────────────────────────
+
+/** Egy audit napló bejegyzés (a backend `AuditLog` modellje). */
+export interface AuditLogEntry {
+  id: string;
+  tenantId: string | null;
+  userId: string | null;
+  action: string;
+  resourceType: string;
+  resourceId: string | null;
+  metadata: Record<string, unknown> | null;
+  ip: string | null;
+  createdAt: string;
+}
+
+export const auditApi = {
+  /** Tenant audit lista (OWNER/ADMIN). Lapozás take/skip-pel. */
+  list(params: { take?: number; skip?: number } = {}) {
+    const qs = new URLSearchParams();
+    if (params.take !== undefined) qs.set('take', String(params.take));
+    if (params.skip !== undefined) qs.set('skip', String(params.skip));
+    const suffix = qs.toString() ? `?${qs.toString()}` : '';
+    return apiRequest<AuditLogEntry[]>(`/audit${suffix}`);
+  },
+};

@@ -343,7 +343,8 @@
       "team": "Csapat",
       "billing": "Előfizetés",
       "admin": "Super Admin",
-      "logout": "Kijelentkezés"
+      "logout": "Kijelentkezés",
+      "audit": "Audit napló"
     },
     "header": {
       "tenantLabel": "Aktív cég",
@@ -1018,5 +1019,25 @@
     "disable": "Kikapcsolás",
     "working": "Folyamatban…",
     "error": "Hiba történt, próbáld újra."
+  },
+  "audit": {
+    "title": "Audit napló",
+    "subtitle": "A cég biztonsági és adatváltozási eseményei időrendben.",
+    "loading": "Betöltés…",
+    "accessDenied": "Az audit naplót csak tulajdonos és adminisztrátor tekintheti meg.",
+    "error": "Az audit napló betöltése nem sikerült.",
+    "loadMore": "Több betöltése",
+    "empty": {
+      "title": "Nincs naplóbejegyzés",
+      "description": "Még nem történt naplózott esemény ebben a cégben."
+    },
+    "columns": {
+      "time": "Időpont",
+      "action": "Esemény",
+      "resource": "Erőforrás",
+      "user": "Felhasználó",
+      "ip": "IP-cím"
+    },
+    "system": "rendszer"
   }
 }

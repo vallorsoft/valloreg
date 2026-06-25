@@ -343,7 +343,8 @@
       "team": "Team",
       "billing": "Billing",
       "admin": "Super Admin",
-      "logout": "Log out"
+      "logout": "Log out",
+      "audit": "Audit log"
     },
     "header": {
       "tenantLabel": "Active company",
@@ -1018,5 +1019,25 @@
     "disable": "Disable",
     "working": "Working…",
     "error": "Something went wrong, please try again."
+  },
+  "audit": {
+    "title": "Audit log",
+    "subtitle": "Security and data-change events for your company, in order.",
+    "loading": "Loading…",
+    "accessDenied": "Only owners and administrators can view the audit log.",
+    "error": "Failed to load the audit log.",
+    "loadMore": "Load more",
+    "empty": {
+      "title": "No log entries",
+      "description": "No audited events have happened in this company yet."
+    },
+    "columns": {
+      "time": "Time",
+      "action": "Action",
+      "resource": "Resource",
+      "user": "User",
+      "ip": "IP address"
+    },
+    "system": "system"
   }
 }

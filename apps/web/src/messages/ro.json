@@ -343,7 +343,8 @@
       "team": "Echipă",
       "billing": "Abonament",
       "admin": "Super Admin",
-      "logout": "Deconectare"
+      "logout": "Deconectare",
+      "audit": "Jurnal de audit"
     },
     "header": {
       "tenantLabel": "Compania activă",
@@ -1018,5 +1019,25 @@
     "disable": "Dezactivare",
     "working": "Se procesează…",
     "error": "A apărut o eroare, încercați din nou."
+  },
+  "audit": {
+    "title": "Jurnal de audit",
+    "subtitle": "Evenimentele de securitate și modificările de date ale companiei, cronologic.",
+    "loading": "Se încarcă…",
+    "accessDenied": "Doar proprietarii și administratorii pot vedea jurnalul de audit.",
+    "error": "Încărcarea jurnalului de audit a eșuat.",
+    "loadMore": "Încarcă mai multe",
+    "empty": {
+      "title": "Nicio înregistrare",
+      "description": "Încă nu a avut loc niciun eveniment auditat în această companie."
+    },
+    "columns": {
+      "time": "Moment",
+      "action": "Acțiune",
+      "resource": "Resursă",
+      "user": "Utilizator",
+      "ip": "Adresă IP"
+    },
+    "system": "sistem"
   }
 }
