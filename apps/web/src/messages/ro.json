@@ -38,7 +38,11 @@
       "about": "Despre noi",
       "tagline": "Gestionarea flotei inteligent – mai puțină birocrație, mai multă transparență."
     },
-    "contactEmail": "vallorsoft@gmail.com"
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "Pagina căutată nu a fost găsită.",
+      "backHome": "Înapoi la pagina principală"
+    }
   },
   "landing": {
     "hero": {

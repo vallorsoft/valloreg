@@ -38,7 +38,11 @@
       "about": "Rólunk",
       "tagline": "Flottakezelés okosan – kevesebb adminisztráció, több átláthatóság."
     },
-    "contactEmail": "vallorsoft@gmail.com"
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "A keresett oldal nem található.",
+      "backHome": "Vissza a főoldalra"
+    }
   },
   "landing": {
     "hero": {

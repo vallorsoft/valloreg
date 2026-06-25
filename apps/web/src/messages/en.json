@@ -38,7 +38,11 @@
       "about": "About us",
       "tagline": "Smarter fleet management – less admin, more transparency."
     },
-    "contactEmail": "vallorsoft@gmail.com"
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "The page you're looking for could not be found.",
+      "backHome": "Back to home"
+    }
   },
   "landing": {
     "hero": {
