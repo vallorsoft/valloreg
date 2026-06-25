@@ -220,12 +220,61 @@ export interface AuthResponse extends AuthTokens {
   memberships: TenantMembership[];
 }
 
+/** 2FA aktív felhasználónál a login csak egy challenge-et ad vissza. */
+export interface TwoFactorChallenge {
+  twoFactorRequired: true;
+  sessionToken: string;
+}
+
+export type LoginResponse = AuthResponse | TwoFactorChallenge;
+
+/** Type guard: a login válasza 2FA challenge-e? */
+export function isTwoFactorChallenge(
+  res: LoginResponse,
+): res is TwoFactorChallenge {
+  return (res as TwoFactorChallenge).twoFactorRequired === true;
+}
+
+export interface TwoFactorSetup {
+  secret: string;
+  otpAuthUri: string;
+}
+
 export const authApi = {
-  login(payload: LoginPayload): Promise<AuthResponse> {
-    return apiRequest<AuthResponse>('/auth/login', {
+  login(payload: LoginPayload): Promise<LoginResponse> {
+    return apiRequest<LoginResponse>('/auth/login', {
       method: 'POST',
       json: payload,
       anonymous: true,
+    });
+  },
+  /** 2FA bejelentkezés második lépése (challenge token + kód). */
+  verifyTwoFactorLogin(
+    sessionToken: string,
+    code: string,
+  ): Promise<AuthResponse> {
+    return apiRequest<AuthResponse>('/auth/2fa/verify-login', {
+      method: 'POST',
+      json: { sessionToken, code },
+      anonymous: true,
+    });
+  },
+  /** 2FA bekapcsolásának indítása (titok + otpauth URI). */
+  beginTwoFactorSetup(): Promise<TwoFactorSetup> {
+    return apiRequest<TwoFactorSetup>('/auth/2fa/setup', { method: 'POST' });
+  },
+  /** 2FA megerősítése (titok + kód). */
+  confirmTwoFactor(secret: string, code: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/2fa/confirm', {
+      method: 'POST',
+      json: { secret, code },
+    });
+  },
+  /** 2FA kikapcsolása jelszó-megerősítéssel. */
+  disableTwoFactor(password: string): Promise<{ ok: true }> {
+    return apiRequest<{ ok: true }>('/auth/2fa/disable', {
+      method: 'POST',
+      json: { password },
     });
   },
   register(payload: RegisterPayload): Promise<AuthResponse> {
@@ -266,6 +315,39 @@ export function storeAuth(response: AuthResponse): void {
   });
   resolveActiveTenant(response.memberships);
 }
+
+// ── GDPR adatalany-jogok (DSR) ──────────────────────────────────────────────
+
+export const dsrApi = {
+  /** Saját + céges adatok exportja (JSON blob, letöltéshez). */
+  async exportData(): Promise<Blob> {
+    const headers = new Headers();
+    const token = getAccessToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    const tenantId = getActiveTenantId();
+    if (tenantId) headers.set('x-tenant-id', tenantId);
+    const res = await fetch(`${API_BASE_URL}/dsr/export`, {
+      method: 'POST',
+      headers,
+    });
+    if (!res.ok) throw await parseError(res);
+    return res.blob();
+  },
+  /** Saját fiók törlése (jelszó-megerősítéssel). */
+  deleteAccount(password: string): Promise<void> {
+    return apiRequest<void>('/dsr/account/delete', {
+      method: 'POST',
+      json: { password },
+    });
+  },
+  /** Cég és minden adatának törlése (csak OWNER, jelszóval). */
+  deleteTenant(password: string): Promise<void> {
+    return apiRequest<void>('/dsr/tenant/delete', {
+      method: 'POST',
+      json: { password },
+    });
+  },
+};
 
 // ── Documents ─────────────────────────────────────────────────────────────────
 

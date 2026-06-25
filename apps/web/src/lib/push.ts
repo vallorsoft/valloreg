@@ -1,6 +1,7 @@
 'use client';
 
 import { notificationsApi } from './api';
+import { hasMarketingConsent } from './consent';
 
 /** base64url VAPID kulcs → Uint8Array (a PushManager.subscribe ezt várja). */
 function urlBase64ToUint8Array(base64String: string): Uint8Array {
@@ -47,6 +48,9 @@ export async function isSubscribed(): Promise<boolean> {
  */
 export async function enablePush(): Promise<boolean> {
   if (!isPushSupported()) return false;
+
+  // ePrivacy/GDPR: a push a „marketing" kategória – hozzájárulás nélkül nem indul.
+  if (!hasMarketingConsent()) return false;
 
   const permission = await Notification.requestPermission();
   if (permission !== 'granted') return false;

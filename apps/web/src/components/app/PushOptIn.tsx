@@ -11,6 +11,7 @@ import {
   disablePush,
   notificationPermission,
 } from '@/lib/push';
+import { hasMarketingConsent } from '@/lib/consent';
 
 export function PushOptIn() {
   const t = useTranslations('notifications');
@@ -33,6 +34,10 @@ export function PushOptIn() {
     setBusy(true);
     setError(null);
     try {
+      if (!hasMarketingConsent()) {
+        setError(t('consentRequired'));
+        return;
+      }
       const ok = await enablePush();
       setSubscribed(ok);
       if (!ok) {

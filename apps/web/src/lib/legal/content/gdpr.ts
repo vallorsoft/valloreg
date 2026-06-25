@@ -210,14 +210,22 @@ const retention: LegalDoc = {
         ['Token-uri de reîmprospătare', `${(1209600 / 86400)} zile (TTL)`, 'Expirare/revocare automată'],
         ['Token de resetare parolă', '1 oră (TTL)', 'Expirare; de unică folosință'],
         ['Invitații', '7 zile (TTL)', 'Expirare automată'],
-        ['Jurnale de audit', '[DE STABILIT]', 'Necesită politică de retenție definită'],
+        ['Jurnale de audit', '365 de zile (implicit, configurabil)', 'Ștergere automată zilnică (job de retenție)'],
         ['Date financiar-contabile (facturare)', 'Conform legii (de regulă 10 ani)', 'Obligație legală'],
         ['Backup-uri', 'Conform politicii furnizorului', 'Vezi Plan Backup & Disaster Recovery'],
       ],
     },
     {
+      k: 'p',
+      t: 'Există un job automat zilnic de retenție care șterge înregistrările tehnice expirate/inutile: jurnale de audit mai vechi decât termenul configurat, token-uri de reîmprospătare și de resetare expirate/revocate, invitații expirate și accese de suport expirate/revocate. Termenele sunt configurabile prin variabile de mediu.',
+    },
+    {
+      k: 'p',
+      t: 'Persoanele vizate / clienții pot exercita drepturile prin funcții de auto-servire în aplicație (secțiunea „Cont"): exportul datelor (JSON) și ștergerea contului, respectiv ștergerea întregii companii și a tuturor datelor (doar proprietarul). La ștergere, fișierele asociate sunt eliminate și din spațiul de stocare.',
+    },
+    {
       k: 'note',
-      t: '[DE COMPLETAT – important] În implementarea actuală NU există un job automat de ștergere/retenție pentru documente și jurnale după expirarea termenelor; ștergerea se face manual (la cerere) sau în cascadă la ștergerea companiei. Se recomandă definirea termenelor exacte (în special pentru jurnalele de audit) și implementarea unei rutine de ștergere automată. De asemenea, nu există încă un endpoint de auto-servire pentru export/ștergere (DSR); cererile se tratează manual.',
+      t: '[DE VERIFICAT JURIDIC] Termenele implicite (de ex. 365 de zile pentru jurnalele de audit) trebuie validate față de obligațiile legale concrete (contabile, fiscale, de securitate). Ștergerea documentelor de business rămâne la inițiativa clientului (operator); platforma nu le șterge automat după o perioadă, pentru a nu pierde istoricul de service necesar clientului.',
     },
   ],
 };

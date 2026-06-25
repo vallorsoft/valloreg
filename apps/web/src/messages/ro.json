@@ -32,7 +32,8 @@
       "contact": "Contact",
       "login": "Autentificare",
       "register": "Înregistrare",
-      "dashboard": "Panou de control"
+      "dashboard": "Panou de control",
+      "legal": "Legal"
     },
     "actions": {
       "startTrial": "Încercați gratuit",
@@ -272,6 +273,14 @@
     }
   },
   "auth": {
+    "twoFactor": {
+      "title": "Verificare în doi pași",
+      "subtitle": "Introdu codul de 6 cifre din aplicația de autentificare.",
+      "codeLabel": "Cod",
+      "verify": "Verifică",
+      "invalid": "Cod invalid. Încearcă din nou.",
+      "back": "Înapoi la autentificare"
+    },
     "login": {
       "title": "Autentificare",
       "subtitle": "Bine ați revenit! Conectați-vă la contul dumneavoastră.",
@@ -367,6 +376,7 @@
       "insights": "Anomalii",
       "team": "Echipă",
       "billing": "Abonament",
+      "account": "Cont",
       "admin": "Super Admin",
       "logout": "Deconectare"
     },
@@ -1033,6 +1043,49 @@
       "none": "Nicio funcție activată."
     }
   },
+  "account": {
+    "title": "Cont și securitate",
+    "twoFactor": {
+      "heading": "Autentificare în doi pași (2FA)",
+      "statusLabel": "Stare",
+      "enabled": "Activată",
+      "disabled": "Dezactivată",
+      "intro": "Adaugă un nivel suplimentar de securitate cu o aplicație de autentificare (Google Authenticator, Authy etc.).",
+      "enable": "Activează 2FA",
+      "disable": "Dezactivează 2FA",
+      "setupIntro": "Introdu cheia de mai jos (sau deschide linkul otpauth) în aplicația de autentificare, apoi introdu codul de 6 cifre.",
+      "secretLabel": "Cheie (introducere manuală)",
+      "uriLabel": "Link otpauth",
+      "codeLabel": "Cod din aplicație",
+      "confirm": "Confirmă activarea",
+      "passwordLabel": "Parola ta",
+      "confirmDisable": "Confirmă dezactivarea",
+      "successEnabled": "Autentificarea în doi pași a fost activată.",
+      "successDisabled": "Autentificarea în doi pași a fost dezactivată.",
+      "invalid": "Cod invalid. Încearcă din nou.",
+      "working": "Se procesează…",
+      "cancel": "Anulează"
+    }
+  },
+  "dsr": {
+    "heading": "Datele tale (GDPR)",
+    "exportTitle": "Exportă datele",
+    "exportDesc": "Descarcă un fișier JSON cu datele contului și ale companiei (vehicule, documente, facturi, mementouri, jurnale de audit).",
+    "exportButton": "Descarcă datele (JSON)",
+    "exporting": "Se pregătește…",
+    "deleteAccountTitle": "Șterge contul",
+    "deleteAccountDesc": "Îți șterge definitiv contul personal. Acțiune ireversibilă.",
+    "deleteAccountButton": "Șterge contul meu",
+    "deleteTenantTitle": "Șterge compania",
+    "deleteTenantDesc": "Șterge definitiv compania și toate datele (vehicule, facturi, documente). Doar proprietarul (OWNER).",
+    "deleteTenantButton": "Șterge compania",
+    "passwordLabel": "Confirmă cu parola",
+    "confirm": "Confirmă",
+    "cancel": "Anulează",
+    "working": "Se procesează…",
+    "deleted": "Șters. Vei fi deconectat.",
+    "error": "Operația a eșuat. Încearcă din nou."
+  },
   "notifications": {
     "title": "Notificări push",
     "description": "Primiți o notificare când procesarea unui document este gata.",
@@ -1042,6 +1095,7 @@
     "enable": "Activare",
     "disable": "Dezactivare",
     "working": "Se procesează…",
-    "error": "A apărut o eroare, încercați din nou."
+    "error": "A apărut o eroare, încercați din nou.",
+    "consentRequired": "Activează mai întâi consimțământul pentru marketing/notificări (bannerul de cookie-uri)."
   }
 }
