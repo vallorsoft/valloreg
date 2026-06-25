@@ -110,6 +110,16 @@ export function AdminTenantClient({ id }: { id: string }) {
     }
   }
 
+  function featureKeyLabel(key: string): string {
+    const k = `featureKeys.${key}` as Parameters<typeof t>[0];
+    return t.has(k) ? t(k) : key;
+  }
+
+  function roleLabel(role: string): string {
+    const k = `roles.${role}` as Parameters<typeof t>[0];
+    return t.has(k) ? t(k) : role;
+  }
+
   function overrideState(key: string): 'default' | 'on' | 'off' {
     const ov = data?.featureOverrides.find((o) => o.key === key);
     if (!ov) return 'default';
@@ -285,7 +295,7 @@ export function AdminTenantClient({ id }: { id: string }) {
           <tbody className="divide-y divide-anthracite-100">
             {ALL_FEATURE_KEYS.map((key) => (
               <tr key={key}>
-                <td className="px-4 py-3 font-medium text-anthracite-900">{key}</td>
+                <td className="px-4 py-3 font-medium text-anthracite-900">{featureKeyLabel(key)}</td>
                 <td className="px-4 py-3 text-anthracite-600">
                   {planDefault(key) ? t('features.enabled') : t('features.disabled')}
                 </td>
@@ -326,7 +336,7 @@ export function AdminTenantClient({ id }: { id: string }) {
               <tr key={m.membershipId}>
                 <td className="px-4 py-3 font-medium text-anthracite-900">{m.user.name ?? '-'}</td>
                 <td className="px-4 py-3 text-anthracite-600">{m.user.email}</td>
-                <td className="px-4 py-3 text-anthracite-600">{m.role}</td>
+                <td className="px-4 py-3 text-anthracite-600">{roleLabel(m.role)}</td>
               </tr>
             ))}
           </tbody>

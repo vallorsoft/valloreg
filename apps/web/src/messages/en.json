@@ -767,7 +767,8 @@
         "delete": "Delete",
         "deleting": "Deleting…",
         "deleteError": "Failed to delete the line.",
-        "confirmDelete": "Delete this line?"
+        "confirmDelete": "Delete this line?",
+        "uncertain": "Uncertain"
       }
     },
     "actions": {
@@ -1090,6 +1091,21 @@
       "subtitle": "Public recall notices for your fleet's vehicles (from a free source).",
       "remedy": "Action"
     },
+    "itemCategories": {
+      "brakes": "Brakes",
+      "engine": "Engine",
+      "filters": "Filters",
+      "tires": "Tires",
+      "suspension": "Suspension",
+      "electrical": "Electrical",
+      "transmission": "Transmission",
+      "body": "Body",
+      "fluids": "Fluids",
+      "brake_pads": "Brake pads",
+      "timing_belt": "Timing belt",
+      "oil_change": "Oil change",
+      "other": "Other"
+    },
     "durability": {
       "title": "Durability survey (per segment)",
       "subtitle": "Lifetime differs by category (van vs. tractor unit vs. trailer). The expected value can also be set manually, alongside the default (learned/seed).",
@@ -1241,6 +1257,24 @@
       "forceOn": "On",
       "forceOff": "Off",
       "error": "Update failed."
+    },
+    "featureKeys": {
+      "OCR": "OCR text recognition",
+      "AI_PROCESSING": "AI processing",
+      "DASHBOARD": "Dashboard",
+      "REPORTS": "Reports",
+      "API": "API access",
+      "EXPORT": "Export",
+      "REMINDERS": "Reminders",
+      "DOCUMENT_LIBRARY": "Document library",
+      "ANALYTICS": "Premium analytics"
+    },
+    "roles": {
+      "OWNER": "Owner",
+      "FLEET_MANAGER": "Fleet manager",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Accountant",
+      "VIEWER": "Viewer"
     },
     "members": {
       "title": "Members",

@@ -767,7 +767,8 @@
         "delete": "Törlés",
         "deleting": "Törlés…",
         "deleteError": "A tétel törlése sikertelen.",
-        "confirmDelete": "Biztosan törlöd ezt a tételt?"
+        "confirmDelete": "Biztosan törlöd ezt a tételt?",
+        "uncertain": "Bizonytalan"
       }
     },
     "actions": {
@@ -1090,6 +1091,21 @@
       "subtitle": "A flottád járműveire vonatkozó, nyilvános visszahívási értesítések (ingyenes forrásból).",
       "remedy": "Teendő"
     },
+    "itemCategories": {
+      "brakes": "Fék",
+      "engine": "Motor",
+      "filters": "Szűrők",
+      "tires": "Gumiabroncs",
+      "suspension": "Futómű",
+      "electrical": "Elektromos",
+      "transmission": "Erőátvitel",
+      "body": "Karosszéria",
+      "fluids": "Folyadékok",
+      "brake_pads": "Fékbetét",
+      "timing_belt": "Vezérműszíj",
+      "oil_change": "Olajcsere",
+      "other": "Egyéb"
+    },
     "durability": {
       "title": "Tartósság-felmérés (szegmensenként)",
       "subtitle": "Kategóriánként más a kifutási idő (furgon vs. nyerges vs. pótkocsi). A várható élettartam kézzel is beállítható az alapértelmezett (tanult/seed) mellett.",
@@ -1241,6 +1257,24 @@
       "forceOn": "Bekapcsolva",
       "forceOff": "Kikapcsolva",
       "error": "A módosítás sikertelen."
+    },
+    "featureKeys": {
+      "OCR": "OCR szövegfelismerés",
+      "AI_PROCESSING": "AI feldolgozás",
+      "DASHBOARD": "Vezérlőpult",
+      "REPORTS": "Riportok",
+      "API": "API hozzáférés",
+      "EXPORT": "Export",
+      "REMINDERS": "Emlékeztetők",
+      "DOCUMENT_LIBRARY": "Dokumentumtár",
+      "ANALYTICS": "Prémium analitika"
+    },
+    "roles": {
+      "OWNER": "Tulajdonos",
+      "FLEET_MANAGER": "Flottamenedzser",
+      "ADMIN": "Adminisztrátor",
+      "ACCOUNTANT": "Könyvelő",
+      "VIEWER": "Megtekintő"
     },
     "members": {
       "title": "Tagok",

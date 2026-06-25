@@ -767,7 +767,8 @@
         "delete": "Șterge",
         "deleting": "Se șterge…",
         "deleteError": "Ștergerea liniei a eșuat.",
-        "confirmDelete": "Sigur ștergi această linie?"
+        "confirmDelete": "Sigur ștergi această linie?",
+        "uncertain": "Nesigur"
       }
     },
     "actions": {
@@ -1090,6 +1091,21 @@
       "subtitle": "Notificări publice de rechemare pentru vehiculele flotei tale (din sursă gratuită).",
       "remedy": "De făcut"
     },
+    "itemCategories": {
+      "brakes": "Frâne",
+      "engine": "Motor",
+      "filters": "Filtre",
+      "tires": "Anvelope",
+      "suspension": "Suspensie",
+      "electrical": "Electric",
+      "transmission": "Transmisie",
+      "body": "Caroserie",
+      "fluids": "Lichide",
+      "brake_pads": "Plăcuțe de frână",
+      "timing_belt": "Curea de distribuție",
+      "oil_change": "Schimb de ulei",
+      "other": "Altele"
+    },
     "durability": {
       "title": "Studiu de durabilitate (pe segment)",
       "subtitle": "Durata de viață diferă pe categorie (furgonetă vs. cap tractor vs. remorcă). Valoarea estimată poate fi setată și manual, pe lângă cea implicită (învățată/de bază).",
@@ -1241,6 +1257,24 @@
       "forceOn": "Pornit",
       "forceOff": "Oprit",
       "error": "Actualizarea a eșuat."
+    },
+    "featureKeys": {
+      "OCR": "Recunoaștere text OCR",
+      "AI_PROCESSING": "Procesare AI",
+      "DASHBOARD": "Tablou de bord",
+      "REPORTS": "Rapoarte",
+      "API": "Acces API",
+      "EXPORT": "Export",
+      "REMINDERS": "Memento-uri",
+      "DOCUMENT_LIBRARY": "Bibliotecă documente",
+      "ANALYTICS": "Analitică premium"
+    },
+    "roles": {
+      "OWNER": "Proprietar",
+      "FLEET_MANAGER": "Manager de flotă",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Contabil",
+      "VIEWER": "Vizualizator"
     },
     "members": {
       "title": "Membri",

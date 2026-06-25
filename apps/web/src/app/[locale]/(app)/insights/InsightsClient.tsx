@@ -113,6 +113,11 @@ export function InsightsClient() {
     return t('message.unusual_amount', { pct: a.deltaPct ?? 0 });
   }
 
+  function itemCategoryLabel(category: string): string {
+    const key = `itemCategories.${category}` as Parameters<typeof t>[0];
+    return t.has(key) ? t(key) : category;
+  }
+
   function meta(a: Anomaly): string {
     const parts: string[] = [];
     if (a.supplier) parts.push(a.supplier);
@@ -308,7 +313,8 @@ export function InsightsClient() {
                               {b.makeModel}
                             </p>
                             <p className="text-xs text-anthracite-500">
-                              {b.itemCategory} · {kmBucketLabel(b.kmBucket)} ·{' '}
+                              {itemCategoryLabel(b.itemCategory)} ·{' '}
+                              {kmBucketLabel(b.kmBucket)} ·{' '}
                               {t('benchmark.sample', { n: b.sampleVehicles })}
                             </p>
                           </td>
