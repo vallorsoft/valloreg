@@ -90,6 +90,43 @@ export const PLAN_PRICES: Record<PlanTier, number> = {
 };
 
 /**
+ * Számlázási ciklus. Éves előfizetésnél 12 hónap helyett csak
+ * `ANNUAL_MONTHS_CHARGED` (= 11) havidíjat számlázunk → 1 hónap ingyen,
+ * minden csomagnál.
+ */
+export const BillingInterval = {
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY',
+} as const;
+
+export type BillingInterval =
+  (typeof BillingInterval)[keyof typeof BillingInterval];
+
+/** Éves előfizetésnél felszámolt havidíjak száma (12 helyett). */
+export const ANNUAL_MONTHS_CHARGED = 11;
+
+/** A csomag fizetendő összege a választott ciklusra (havi díj vagy 11×havi díj). */
+export function planPrice(
+  tier: PlanTier,
+  interval: BillingInterval = BillingInterval.MONTHLY,
+): number {
+  const monthly = PLAN_PRICES[tier];
+  return interval === BillingInterval.YEARLY
+    ? monthly * ANNUAL_MONTHS_CHARGED
+    : monthly;
+}
+
+/** Az éves előfizetés teljes díja (11×havi díj). */
+export function annualPrice(tier: PlanTier): number {
+  return PLAN_PRICES[tier] * ANNUAL_MONTHS_CHARGED;
+}
+
+/** Éves fizetésnél megtakarított összeg (1 havi díj). */
+export function annualSavings(tier: PlanTier): number {
+  return PLAN_PRICES[tier] * (12 - ANNUAL_MONTHS_CHARGED);
+}
+
+/**
  * Vásárolható extra tárhely-csomagok (havi add-on). A megvett GB hozzáadódik a
  * csomag tárhelyéhez (a tárhely TELJES kapacitás, nem havi reset). Az aktiválás
  * – mint a csomag – utalás után, a Super Admin panelen történik.
