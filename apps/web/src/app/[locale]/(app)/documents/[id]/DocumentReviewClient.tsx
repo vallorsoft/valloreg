@@ -49,8 +49,14 @@ function vehicleLabel(v: Vehicle): string {
 
 export function DocumentReviewClient({ id }: { id: string }) {
   const t = useTranslations('documents');
+  const tCat = useTranslations('reports.categories');
   const locale = useLocale();
   const router = useRouter();
+
+  const categoryLabel = (category: string): string =>
+    tCat.has(category as Parameters<typeof tCat>[0])
+      ? tCat(category as Parameters<typeof tCat>[0])
+      : tCat('other');
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -434,12 +440,17 @@ export function DocumentReviewClient({ id }: { id: string }) {
                         <td className="px-4 py-3 font-medium text-anthracite-900">
                           {item.name}
                           {item.confidence < 0.7 && (
-                            <span className="ml-1.5 text-xs text-yellow-500" title="Bizonytalan">
+                            <span
+                              className="ml-1.5 text-xs text-yellow-500"
+                              title={t('review.items.uncertain')}
+                            >
                               ⚠
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-anthracite-600">{item.category}</td>
+                        <td className="px-4 py-3 text-anthracite-600">
+                          {categoryLabel(item.category)}
+                        </td>
                         <td className="px-4 py-3 text-anthracite-600">
                           <select
                             value={item.vehicleId ?? ''}

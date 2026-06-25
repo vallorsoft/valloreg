@@ -37,6 +37,11 @@
       "terms": "Terms of Service",
       "about": "About us",
       "tagline": "Smarter fleet management – less admin, more transparency."
+    },
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "The page you're looking for could not be found.",
+      "backHome": "Back to home"
     }
   },
   "landing": {
@@ -276,7 +281,10 @@
       "message": "Message",
       "messagePlaceholder": "How can we help?",
       "submit": "Send message",
-      "note": "We'll get back to you soon. Form wiring lands in a later phase."
+      "note": "We'll open your email app with the message pre-filled. We'll get back to you soon.",
+      "mailtoSubject": "Valloreg – contact request",
+      "success": "We opened your email app with the message pre-filled. If it didn't open, write to us directly at {email}.",
+      "errorNoMessage": "Please enter your message."
     }
   },
   "auth": {
@@ -364,6 +372,22 @@
       "success": "Your password has been changed. You can now log in with your new password.",
       "goToLogin": "Log in",
       "invalidLink": "The reset link is invalid or missing. Please request a new one."
+    },
+    "acceptInvite": {
+      "title": "Accept invitation",
+      "subtitle": "Set up your account to join the company.",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Accept invitation",
+      "backToLogin": "Back to login",
+      "success": "Your invitation has been accepted. You can now log in.",
+      "goToLogin": "Log in",
+      "invalidLink": "The invitation link is invalid or missing. Please request a new one from your company.",
+      "hint": "If you already have an account with this email, you can accept the invitation without entering a password."
     }
   },
   "app": {
@@ -747,7 +771,8 @@
         "delete": "Delete",
         "deleting": "Deleting…",
         "deleteError": "Failed to delete the line.",
-        "confirmDelete": "Delete this line?"
+        "confirmDelete": "Delete this line?",
+        "uncertain": "Uncertain"
       }
     },
     "actions": {
@@ -1070,6 +1095,21 @@
       "subtitle": "Public recall notices for your fleet's vehicles (from a free source).",
       "remedy": "Action"
     },
+    "itemCategories": {
+      "brakes": "Brakes",
+      "engine": "Engine",
+      "filters": "Filters",
+      "tires": "Tires",
+      "suspension": "Suspension",
+      "electrical": "Electrical",
+      "transmission": "Transmission",
+      "body": "Body",
+      "fluids": "Fluids",
+      "brake_pads": "Brake pads",
+      "timing_belt": "Timing belt",
+      "oil_change": "Oil change",
+      "other": "Other"
+    },
     "durability": {
       "title": "Durability survey (per segment)",
       "subtitle": "Lifetime differs by category (van vs. tractor unit vs. trailer). The expected value can also be set manually, alongside the default (learned/seed).",
@@ -1222,6 +1262,24 @@
       "forceOff": "Off",
       "error": "Update failed."
     },
+    "featureKeys": {
+      "OCR": "OCR text recognition",
+      "AI_PROCESSING": "AI processing",
+      "DASHBOARD": "Dashboard",
+      "REPORTS": "Reports",
+      "API": "API access",
+      "EXPORT": "Export",
+      "REMINDERS": "Reminders",
+      "DOCUMENT_LIBRARY": "Document library",
+      "ANALYTICS": "Premium analytics"
+    },
+    "roles": {
+      "OWNER": "Owner",
+      "FLEET_MANAGER": "Fleet manager",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Accountant",
+      "VIEWER": "Viewer"
+    },
     "members": {
       "title": "Members",
       "name": "Name",
@@ -1281,12 +1339,24 @@
       "documents": "Documents (this month)",
       "storage": "Storage",
       "includesExtra": "includes {gb} GB extra",
-      "storageNote": "Storage is total capacity (does not reset monthly). Extra storage can be purchased – contact us.",
-      "storagePacks": "Extra storage (monthly): {list}"
+      "storageNote": "Storage is total capacity (does not reset monthly).",
+      "storagePacks": "Extra storage (monthly): {list}",
+      "buyStorageTitle": "Buy extra storage (monthly, by bank transfer):"
     },
     "features": {
       "title": "Available features",
-      "none": "No features enabled."
+      "none": "No features enabled.",
+      "keys": {
+        "OCR": "OCR text recognition",
+        "AI_PROCESSING": "AI processing",
+        "DASHBOARD": "Dashboard",
+        "REPORTS": "Reports",
+        "API": "API access",
+        "EXPORT": "Export",
+        "REMINDERS": "Reminders",
+        "DOCUMENT_LIBRARY": "Document library",
+        "ANALYTICS": "Premium analytics"
+      }
     }
   },
   "notifications": {
@@ -1299,5 +1369,61 @@
     "disable": "Disable",
     "working": "Working…",
     "error": "Something went wrong, please try again."
+  },
+  "legal": {
+    "lastUpdated": "Last updated: 1 June 2025",
+    "backToHome": "Back to home",
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "This policy explains how Valloreg processes the personal data you provide while using the service. Processing is carried out in accordance with the European Union's General Data Protection Regulation (GDPR).",
+      "sections": [
+        {
+          "heading": "Data controller",
+          "body": "The service is operated by Valloreg. For privacy questions, you can reach us at {email}."
+        },
+        {
+          "heading": "What data we process",
+          "body": "Account and contact details (name, email address, company information), as well as the documents and vehicle data you upload while using the service. Automatic logs may contain technical data (IP address, browser type) for security and operational purposes."
+        },
+        {
+          "heading": "Purpose and legal basis",
+          "body": "We process data to provide the service, perform the contract, handle billing, and meet legal obligations. The legal basis is contract performance, legitimate interest, or legal obligation."
+        },
+        {
+          "heading": "Data storage and transfer",
+          "body": "We retain data for as long as the account is active or as required by law. As processors, we use hosting, email, and AI providers, only to the extent necessary to operate the service."
+        },
+        {
+          "heading": "Your rights",
+          "body": "You have the right to access, rectify, erase, restrict the processing of, and port your personal data. You can submit your request at {email}."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "intro": "By using the Valloreg service you accept the following terms. Please read them carefully before use.",
+      "sections": [
+        {
+          "heading": "The service",
+          "body": "Valloreg provides fleet management software that processes uploaded documents and vehicle data using OCR and artificial intelligence. The service is provided according to the terms of your current subscription plan."
+        },
+        {
+          "heading": "Account and responsibility",
+          "body": "You are responsible for keeping your account credentials secure and for the activities carried out through your account. The service may be used only for lawful purposes."
+        },
+        {
+          "heading": "Content and data",
+          "body": "Content you upload remains your property. You are responsible for having the right to upload and process the data. The output of AI-based processing is for guidance only, so we recommend verifying important data."
+        },
+        {
+          "heading": "Limitation of liability",
+          "body": "The service is provided \"as is\". To the extent permitted by law, we are not liable for indirect damages arising from the use of the service."
+        },
+        {
+          "heading": "Contact",
+          "body": "For questions about these terms, please write to us at {email}."
+        }
+      ]
+    }
   }
 }

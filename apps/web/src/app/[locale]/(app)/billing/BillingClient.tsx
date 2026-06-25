@@ -12,11 +12,6 @@ import {
   planPrice,
 } from '@valloreg/shared';
 import { cn } from '@/lib/cn';
-
-// "+5 GB — 19 RON · +10 GB — 29 RON · +25 GB — 59 RON"
-const STORAGE_PACK_LIST = STORAGE_PACKS.map(
-  (p) => `+${Math.round(p.bytes / BYTES_PER_GB)} GB — ${p.price} ${PLAN_CURRENCY}`,
-).join(' · ');
 import {
   billingApi,
   ApiError,
@@ -26,6 +21,7 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const PLAN_ORDER = [
   PlanTier.STARTER,
@@ -85,6 +81,19 @@ export function BillingClient() {
     setResult(null);
     try {
       setResult(await billingApi.requestSubscription(planTier, billingInterval));
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : t('subscribe.error'));
+    } finally {
+      setRequesting(null);
+    }
+  }
+
+  async function handleRequestStorage(bytes: number) {
+    setRequesting(`storage:${bytes}`);
+    setError(null);
+    setResult(null);
+    try {
+      setResult(await billingApi.requestStorage(bytes));
     } catch (err) {
       setError(err instanceof ApiError ? err.message : t('subscribe.error'));
     } finally {
@@ -295,9 +304,32 @@ export function BillingClient() {
             </div>
             <UsageBar used={data.usage.storageBytes} limit={data.limits.maxStorageBytes} />
             <p className="mt-1 text-xs text-anthracite-500">{t('usage.storageNote')}</p>
-            <p className="mt-1 text-xs font-medium text-anthracite-600">
-              {t('usage.storagePacks', { list: STORAGE_PACK_LIST })}
-            </p>
+
+            {/* Extra tárhely vásárlása (utalásos igénylés) */}
+            <div className="mt-3">
+              <p className="text-xs font-medium text-anthracite-700">
+                {t('usage.buyStorageTitle')}
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {STORAGE_PACKS.map((pack) => {
+                  const gb = Math.round(pack.bytes / BYTES_PER_GB);
+                  const key = `storage:${pack.bytes}`;
+                  return (
+                    <Button
+                      key={pack.bytes}
+                      size="sm"
+                      variant="outline"
+                      disabled={requesting !== null}
+                      onClick={() => void handleRequestStorage(pack.bytes)}
+                    >
+                      {requesting === key
+                        ? t('subscribe.requesting')
+                        : `+${gb} GB · ${pack.price.toLocaleString(locale)} ${PLAN_CURRENCY} ${t('subscribe.perMonth')}`}
+                    </Button>
+                  );
+                })}
+              </div>
+            </div>
           </div>
         </div>
       </Card>
@@ -309,14 +341,17 @@ export function BillingClient() {
           <p className="text-sm text-anthracite-500">{t('features.none')}</p>
         ) : (
           <div className="flex flex-wrap gap-2">
-            {data.features.map((f) => (
-              <span
-                key={f}
-                className="inline-flex items-center rounded-full bg-anthracite-50 px-3 py-1 text-xs font-medium text-anthracite-700"
-              >
-                {f}
-              </span>
-            ))}
+            {data.features.map((f) => {
+              const key = `features.keys.${f}` as Parameters<typeof t>[0];
+              return (
+                <span
+                  key={f}
+                  className="inline-flex items-center rounded-full bg-anthracite-50 px-3 py-1 text-xs font-medium text-anthracite-700"
+                >
+                  {t.has(key) ? t(key) : f}
+                </span>
+              );
+            })}
           </div>
         )}
       </Card>

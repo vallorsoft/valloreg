@@ -39,6 +39,8 @@ const TENANT_SCOPED_MODELS = new Set<string>([
   'VehicleVerification',
   'VehicleScan',
   'VehicleParty',
+  'MajorComponentEvent',
+  'DurabilityBaseline',
   // Tenant és AuditLog NEM itt: lásd alább a megjegyzést.
 ]);
 

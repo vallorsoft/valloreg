@@ -103,7 +103,10 @@ export class ReportsService {
       // Havonta (a számla dátuma alapján).
       const date = item.invoice?.date ?? null;
       if (date) {
-        const month = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        // UTC-ben bucketelünk, mert a dátumszűrő (buildDateFilter) is UTC-ben
+        // dolgozik – a helyi getFullYear()/getMonth() a szerver időzónájától
+        // függően rossz hónapba sorolhatná a határ menti dátumokat.
+        const month = `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
         byMonth.set(
           month,
           (byMonth.get(month) ?? new Prisma.Decimal(0)).add(item.price),
@@ -220,7 +223,9 @@ function buildDateFilter(
   if (to) {
     const d = new Date(to);
     if (!isNaN(d.getTime())) {
-      d.setHours(23, 59, 59, 999);
+      // A `to` napvégéig inkluzív, UTC-ben (a setHours helyi időzónát használt
+      // volna, ami a `gte`/UTC-tárolt dátumokhoz képest inkonzisztens lenne).
+      d.setUTCHours(23, 59, 59, 999);
       filter.lte = d;
     }
   }

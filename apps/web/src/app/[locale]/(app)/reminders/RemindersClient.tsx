@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { ReminderRow } from '@/components/app/ReminderRow';
 import { ReminderFormModal } from '@/components/app/ReminderFormModal';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const GROUPS: ReminderStatusValue[] = ['overdue', 'due_soon', 'ok'];
 
@@ -27,8 +28,10 @@ export function RemindersClient() {
   const [editing, setEditing] = useState<Reminder | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
 
   const refresh = useCallback(async () => {
+    setLoadError(false);
     try {
       const [r, v] = await Promise.all([
         remindersApi.list(),
@@ -36,12 +39,18 @@ export function RemindersClient() {
       ]);
       setReminders(r);
       setVehicles(v);
-    } catch {
-      // 401 → AppShell redirect
+    } catch (err) {
+      // 401 → AppShell redirect; 403/feature-off → üres állapot; egyéb → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => {
     void refresh();
@@ -118,6 +127,8 @@ export function RemindersClient() {
         <p className="py-10 text-center text-sm text-anthracite-500">
           {t('loading')}
         </p>
+      ) : loadError ? (
+        <LoadErrorState onRetry={reload} />
       ) : reminders.length === 0 ? (
         <Card className="py-16">
           <div className="mx-auto max-w-sm text-center">

@@ -85,14 +85,19 @@ export class NotificationsService implements OnModuleInit {
     return { ok: true };
   }
 
-  /** Leiratkozás endpoint alapján. */
-  async unsubscribe(endpoint: string): Promise<{ ok: true }> {
+  /**
+   * Leiratkozás endpoint alapján – CSAK a saját (userId) feliratkozást törli,
+   * hogy egy felhasználó ne tudja más eszközét leiratni (IDOR-védelem).
+   */
+  async unsubscribe(userId: string, endpoint: string): Promise<{ ok: true }> {
     // Védelem: üres/hiányzó endpoint esetén a Prisma `where: { endpoint: undefined }`
     // MINDEN feliratkozást törölne (a szűrő kiesik) – ezt fail-safe kizárjuk.
     if (!endpoint) {
       return { ok: true };
     }
-    await this.prisma.system.pushSubscription.deleteMany({ where: { endpoint } });
+    await this.prisma.system.pushSubscription.deleteMany({
+      where: { endpoint, userId },
+    });
     return { ok: true };
   }
 

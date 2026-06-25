@@ -156,6 +156,16 @@ export class RankingsService {
       const maxRel = rels.length ? Math.max(...rels) : 0;
       const medianCost = median(costs);
 
+      // Ismeretlen megbízhatóságú jármű (nincs futásteljesítmény → nincs
+      // esemény/100k km) NEM számít a legmegbízhatóbbnak: korábban normRel=0-t
+      // kapott, ami az economyScore-ban (1 - normRel) teljes megbízhatósági
+      // pontot adott, így felfelé torzított. Helyette a csoport ismert
+      // értékeinek MEDIÁNJÁT imputáljuk (a legkevésbé meglepő: a jármű a mezőny
+      // közepére kerül, nem a tetejére/aljára).
+      const imputedRel = rels.length
+        ? normalizeLowerBetter(median(rels) ?? minRel, minRel, maxRel)
+        : 0.5;
+
       const ranked: VehicleRanking[] = members.map((m) => {
         const normCost =
           m.costPerKm != null
@@ -164,7 +174,7 @@ export class RankingsService {
         const normRel =
           m.reliabilityPer100k != null
             ? normalizeLowerBetter(m.reliabilityPer100k, minRel, maxRel)
-            : 0;
+            : imputedRel;
         const economyScore = economyScoreFrom(normCost, normRel);
         const profitPerKm =
           m.revenuePerKm != null && m.costPerKm != null

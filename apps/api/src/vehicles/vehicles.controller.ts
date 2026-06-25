@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { FeatureGuard } from '../common/guards/feature.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RequireFeature } from '../common/decorators/require-feature.decorator';
 import { CurrentTenant } from '../common/decorators/current-tenant.decorator';
@@ -103,6 +104,7 @@ export class VehiclesController {
    * eredményre – így a hosszú OCR+AI nem a HTTP-kérés idejét terheli.
    */
   @Post('scan')
+  @UseGuards(SubscriptionGuard)
   @RequireFeature(FeatureKey.AI_PROCESSING)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   @UseInterceptors(
@@ -153,6 +155,7 @@ export class VehiclesController {
 
   /** A beolvasott (ellenőrzött) adatok mentése: új jármű vagy meglévő frissítése. */
   @Post('scan/confirm')
+  @UseGuards(SubscriptionGuard)
   @RequireFeature(FeatureKey.AI_PROCESSING)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   confirmScan(
@@ -219,6 +222,7 @@ export class VehiclesController {
 
   /** Létrehozás – OWNER, FLEET_MANAGER, ADMIN. */
   @Post()
+  @UseGuards(SubscriptionGuard)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   create(
     @CurrentTenant() tenant: ActiveTenant,

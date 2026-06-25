@@ -38,15 +38,21 @@ export function MarketingFooter() {
           <a href="#contact" className="block text-anthracite-500 hover:text-anthracite-900">
             {t('nav.contact')}
           </a>
-          <span className="block text-anthracite-500">{t('footer.about')}</span>
+          <Link href="/" className="block text-anthracite-500 hover:text-anthracite-900">
+            {t('footer.about')}
+          </Link>
         </nav>
 
         <nav aria-label={t('footer.legal')} className="space-y-3 text-sm">
           <p className="font-semibold text-anthracite-900">
             {t('footer.legal')}
           </p>
-          <span className="block text-anthracite-500">{t('footer.privacy')}</span>
-          <span className="block text-anthracite-500">{t('footer.terms')}</span>
+          <Link href="/privacy" className="block text-anthracite-500 hover:text-anthracite-900">
+            {t('footer.privacy')}
+          </Link>
+          <Link href="/terms" className="block text-anthracite-500 hover:text-anthracite-900">
+            {t('footer.terms')}
+          </Link>
         </nav>
       </div>
 
