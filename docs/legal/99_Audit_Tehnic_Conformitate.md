@@ -25,7 +25,7 @@
   1. **Rotația imediată** a credențialelor Neon (parolă/endpoint) — credențialul trebuie considerat compromis (este în istoricul git).
   2. Înlocuirea valorilor reale cu **placeholder-e** în `.env.example`.
   3. Opțional: curățarea istoricului git (filter-repo/BFG) — necesită forțarea rescrierii istoricului.
-- **Status fix pregătit:** redactare `.env.example` pregătită local (a se vedea modificările din working tree). **Rotația rămâne obligatorie și nu poate fi făcută din cod.**
+- **Status:** `.env.example` redactat la placeholdere. **Confirmat de proprietar:** valorile expuse nu erau credențiale de producție live (credențialele reale sunt doar în variabilele de mediu Render/Neon), deci **rotația nu este necesară**. Severitate reală: informativă.
 
 ## 🟠 F2 — Rate limiting documentat dar neimplementat
 
@@ -122,7 +122,7 @@ Audit de concurență „check-then-act" / time-of-check-to-time-of-use:
 
 | ID | Stare |
 |---|---|
-| F1 | ✅ `.env.example` redactat. ⚠️ **Rotația credențialelor Neon rămâne obligatorie** (sunt în istoricul git). |
+| F1 | ✅ `.env.example` redactat (placeholdere). **Confirmat de proprietar:** valorile expuse **NU** erau credențiale de producție live — credențialele reale sunt gestionate exclusiv prin variabile de mediu (Render `sync:false` / Neon env), deci rotația **nu** este necesară. Bună practică păstrată: `.env.example` conține doar placeholdere. |
 | F2 | ✅ Reparat — `RateLimitGuard` + `@RateLimit` pe endpoint-urile de auth (login/register/refresh/forgot/reset). |
 | F3 | ✅ Documentație corectată (2FA marcat roadmap). Implementarea TOTP rămâne decizie de produs. |
 | F4 | ✅ `ServerSideEncryption: 'AES256'` adăugat explicit la upload (R2 oricum criptează implicit). |
