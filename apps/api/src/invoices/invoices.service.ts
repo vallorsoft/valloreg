@@ -193,9 +193,27 @@ export class InvoicesService {
         data: { weight: { increment: 1 } },
       });
     } else {
-      await this.prisma.scoped.itemCategoryMapping.create({
-        data: { tenantId, supplierId: supplierId ?? null, pattern, category, type },
-      });
+      try {
+        await this.prisma.scoped.itemCategoryMapping.create({
+          data: { tenantId, supplierId: supplierId ?? null, pattern, category, type },
+        });
+      } catch (err) {
+        // TOCTOU: párhuzamos ág már létrehozta ugyanezt a mappinget
+        // (@@unique → P2002). A vesztő ág a meglévő sor súlyát növeli.
+        // (NULL supplierId esetén a Postgres a NULL-okat különbözőnek veszi, így
+        //  ott a unique nem fog meg – ritka, alacsony súlyú duplikátum maradhat.)
+        if (
+          err instanceof Prisma.PrismaClientKnownRequestError &&
+          err.code === 'P2002'
+        ) {
+          await this.prisma.scoped.itemCategoryMapping.updateMany({
+            where: { pattern, category, type, supplierId: supplierId ?? null },
+            data: { weight: { increment: 1 } },
+          });
+        } else {
+          throw err;
+        }
+      }
     }
   }
 }

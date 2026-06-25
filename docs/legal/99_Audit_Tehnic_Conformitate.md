@@ -105,8 +105,16 @@ Audit de concurență „check-then-act" / time-of-check-to-time-of-use:
 | TC4 | `documents.service.ts` `upload` | P2002 pe `(tenantId,sha256)` la upload concurent → 500 | 🟠 Ridicat | ✅ Reparat — catch P2002 → întoarce existentul |
 | TC5 | `users.service.ts` `acceptInvite` | Dublă acceptare invitație → 500 | 🟡 Mediu | ✅ Reparat — `updateMany(acceptedAt:null)` + catch P2002 |
 | TC6 | `invoices.service.ts` mapping furnizor-vehicul | P2002 la învățare concurentă | 🟡 Mediu | ✅ Reparat — catch P2002 → increment |
-| TC7 | `matching.service.ts` supplier dedup | Furnizori duplicați (lipsă unique constraint) | 🟡 Mediu | ⏳ Necesită migrare de schemă (dedup date existente) |
-| TC8 | `invoices.service.ts` mapping categorie tétel | Mapping-uri duplicate (lipsă unique constraint) | 🔵 Scăzut | ⏳ Necesită migrare de schemă |
+| TC7 | `matching.service.ts` supplier dedup | Furnizori duplicați (lipsă unique constraint) | 🟡 Mediu | ✅ Reparat — migrare cu dedup + `@@unique([tenantId,normalizedName])` + catch P2002 |
+| TC8 | `invoices.service.ts` mapping categorie tétel | Mapping-uri duplicate (lipsă unique constraint) | 🔵 Scăzut | ✅ Reparat — migrare cu dedup + `@@unique(...)` + catch P2002 (excepție: supplierId NULL, vezi nota) |
+
+> **Migrarea** `20260625130000_supplier_itemcat_dedup_unique` deduplică datele
+> existente (reorientează FK-urile către furnizorul canonic, însumează ponderile
+> mapping-urilor de învățare) ÎNAINTE de a adăuga constrângerile unice. Testată pe
+> PostgreSQL 16 real: dedup corect + constrângerile resping duplicatele noi.
+> **Notă (TC8):** pentru `supplierId NULL`, PostgreSQL tratează NULL-urile ca
+> distincte, deci constrângerea unică nu acoperă rândurile fără furnizor; calea
+> `findFirst`+increment din service gestionează acel caz (race rezidual rar, ponderi).
 
 ---
 

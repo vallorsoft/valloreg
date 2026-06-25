@@ -269,7 +269,7 @@ model Supplier {
   itemCategoryMappings ItemCategoryMapping[]
 
   @@index([tenantId])
-  @@index([tenantId, normalizedName])
+  @@unique([tenantId, normalizedName])
   @@map("suppliers")
 }
 
@@ -455,6 +455,10 @@ model ItemCategoryMapping {
   tenant   Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
   supplier Supplier? @relation(fields: [supplierId], references: [id], onDelete: Cascade)
 
+  // Megakadályozza a duplikált tanuló-mappingeket (TC8). FIGYELEM: NULL supplierId
+  // esetén a Postgres a NULL-okat KÜLÖNBÖZŐnek tekinti, így a unique nem fogja meg
+  // a beszállító nélküli sorokat – ezt a service findFirst+increment ága kezeli.
+  @@unique([tenantId, supplierId, pattern, category, type], map: "item_cat_map_unique")
   @@index([tenantId])
   @@index([tenantId, pattern])
   @@map("item_category_mappings")

@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import type { ExtractionResult } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -42,11 +43,27 @@ export class MatchingService {
     });
     if (existing) return existing.id;
 
-    const created = await this.prisma.system.supplier.create({
-      data: { tenantId, name: trimmed, normalizedName },
-      select: { id: true },
-    });
-    return created.id;
+    try {
+      const created = await this.prisma.system.supplier.create({
+        data: { tenantId, name: trimmed, normalizedName },
+        select: { id: true },
+      });
+      return created.id;
+    } catch (err) {
+      // TOCTOU: párhuzamos ág már létrehozta ugyanezt a beszállítót
+      // (@@unique[tenantId, normalizedName] → P2002). A vesztő ág a győztest adja.
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        const winner = await this.prisma.system.supplier.findFirst({
+          where: { tenantId, normalizedName },
+          select: { id: true },
+        });
+        if (winner) return winner.id;
+      }
+      throw err;
+    }
   }
 
   /**

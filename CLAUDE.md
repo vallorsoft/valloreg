@@ -57,12 +57,15 @@ Pattern-uri obligatorii pentru a evita race conditions (vezi `docs/legal/99_Audi
 3. Operațiile cu mai mulți pași care trebuie atomice → `$transaction`; aruncarea în
    interior produce rollback.
 
-**Race-uri rămase (necesită migrare de schemă — NU rezolvate încă):**
-- `Supplier` nu are `@@unique([tenantId, normalizedName])` → `matching.service.ts` poate
-  crea furnizori duplicați la concurență.
-- `ItemCategoryMapping` nu are unique constraint → `invoices.service.ts` poate crea
-  mapping-uri duplicate.
-  Adăugarea constrângerilor cere un pas de dedup pe datele existente (a nu rula orbește).
+**Race-uri rezolvate prin migrarea `20260625130000_supplier_itemcat_dedup_unique`:**
+- `Supplier` are acum `@@unique([tenantId, normalizedName])`; `matching.service.ts`
+  prinde P2002 → întoarce câștigătorul.
+- `ItemCategoryMapping` are `@@unique([tenantId, supplierId, pattern, category, type])`;
+  `invoices.service.ts` prinde P2002 → increment. **Excepție:** `supplierId NULL` —
+  Postgres tratează NULL-urile ca distincte, deci unique nu acoperă rândurile fără
+  furnizor (race rezidual rar; calea `findFirst`+increment îl gestionează).
+- Migrarea deduplică datele existente (reorientează FK-uri, însumează ponderi) ÎNAINTE
+  de a adăuga constrângerile. **Nu adăuga un `@@unique` fără pas de dedup.**
 
 ### Schedulere
 - BullMQ direct (nu `@nestjs/schedule`). Pattern: vezi `reminders.scheduler.ts` /
