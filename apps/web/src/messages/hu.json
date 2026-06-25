@@ -189,15 +189,18 @@
       "plans": {
         "START": {
           "name": "Start",
-          "description": "Kisebb flottáknak, az első lépésekhez."
+          "description": "Kisebb flottáknak, az első lépésekhez.",
+          "recommendedFor": "Egyéni vállalkozóknak és kisebb flottáknak (1–3 jármű), akik most kezdik a digitalizálást."
         },
         "PRO": {
           "name": "Pro",
-          "description": "Növekvő flottáknak: riport, export, emlékeztető, komplex szerviz."
+          "description": "Növekvő flottáknak: riport, export, emlékeztető, komplex szerviz.",
+          "recommendedFor": "Növekvő KKV-knak és flottakezelőknek (akár 15 jármű), akiknek riport, export és emlékeztetők is kellenek."
         },
         "FLEET": {
           "name": "Fleet",
-          "description": "Teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség."
+          "description": "Teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség.",
+          "recommendedFor": "Nagyobb flottáknak és flottakezelő cégeknek: korlátlan jármű és teljes flotta-intelligencia."
         }
       },
       "storage": "{count} GB tárhely",
@@ -215,6 +218,16 @@
         "EXPORT": "Adatexport (CSV/Excel)",
         "REMINDERS": "Emlékeztetők (műszaki, biztosítás, szerviz)",
         "DOCUMENT_LIBRARY": "Dokumentumtár"
+      },
+      "recommendedForLabel": "Kinek ajánljuk",
+      "compare": {
+        "title": "Csomagok összehasonlítása",
+        "feature": "Jellemző",
+        "price": "Havidíj",
+        "vehicles": "Járművek",
+        "users": "Felhasználók",
+        "documents": "Dokumentum / hó",
+        "storage": "Tárhely"
       }
     },
     "faq": {

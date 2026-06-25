@@ -28,6 +28,41 @@ const BYTES_PER_GB = 1024 * 1024 * 1024;
 export function Pricing() {
   const t = useTranslations('landing.pricing');
 
+  const fmtNum = (v: number) =>
+    v === UNLIMITED ? '∞' : v.toLocaleString('hu-HU');
+
+  // Az összehasonlító táblázat keret-sorai (a funkció-sorokat a feature-flagek adják).
+  const compareLimitRows = [
+    {
+      label: t('compare.price'),
+      values: PLAN_ORDER.map(
+        (tier) =>
+          `${PLAN_PRICES[tier].toLocaleString('hu-HU')} ${PLAN_CURRENCY}`,
+      ),
+    },
+    {
+      label: t('compare.vehicles'),
+      values: PLAN_ORDER.map((tier) => fmtNum(PLAN_LIMITS[tier].maxVehicles)),
+    },
+    {
+      label: t('compare.users'),
+      values: PLAN_ORDER.map((tier) => fmtNum(PLAN_LIMITS[tier].maxUsers)),
+    },
+    {
+      label: t('compare.documents'),
+      values: PLAN_ORDER.map((tier) =>
+        fmtNum(PLAN_LIMITS[tier].maxDocumentsPerMonth),
+      ),
+    },
+    {
+      label: t('compare.storage'),
+      values: PLAN_ORDER.map(
+        (tier) =>
+          `${Math.round(PLAN_LIMITS[tier].maxStorageBytes / BYTES_PER_GB)} GB`,
+      ),
+    },
+  ];
+
   return (
     <section id="pricing" className="scroll-mt-20 bg-white py-20">
       <div className="container-page">
@@ -128,6 +163,15 @@ export function Pricing() {
                   })}
                 </ul>
 
+                <div className="mt-6 rounded-xl bg-anthracite-50 p-3">
+                  <p className="text-xs font-semibold uppercase tracking-wide text-anthracite-500">
+                    {t('recommendedForLabel')}
+                  </p>
+                  <p className="mt-1 min-h-[3.5rem] text-sm text-anthracite-700">
+                    {t(`plans.${tier}.recommendedFor`)}
+                  </p>
+                </div>
+
                 <Link href="/register" className="mt-6">
                   <Button
                     fullWidth
@@ -157,6 +201,75 @@ export function Pricing() {
                 {t('addonItem', { gb: addon.extraGB, price: addon.pricePerMonth })}
               </span>
             ))}
+          </div>
+        </div>
+
+        {/* Összehasonlító táblázat */}
+        <div className="mt-20">
+          <h3 className="text-center text-lg font-bold text-anthracite-900">
+            {t('compare.title')}
+          </h3>
+          <div className="mt-6 overflow-x-auto">
+            <table className="w-full min-w-[640px] border-collapse text-sm">
+              <thead>
+                <tr className="border-b border-anthracite-200">
+                  <th className="px-4 py-3 text-left font-semibold text-anthracite-600">
+                    {t('compare.feature')}
+                  </th>
+                  {PLAN_ORDER.map((tier) => (
+                    <th
+                      key={tier}
+                      className={cn(
+                        'px-4 py-3 text-center font-semibold text-anthracite-900',
+                        tier === HIGHLIGHTED && 'bg-primary-50',
+                      )}
+                    >
+                      {t(`plans.${tier}.name`)}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-anthracite-100">
+                {compareLimitRows.map((row) => (
+                  <tr key={row.label}>
+                    <td className="px-4 py-3 text-anthracite-700">{row.label}</td>
+                    {row.values.map((val, i) => (
+                      <td
+                        key={PLAN_ORDER[i]}
+                        className={cn(
+                          'px-4 py-3 text-center font-medium text-anthracite-900',
+                          PLAN_ORDER[i] === HIGHLIGHTED && 'bg-primary-50/50',
+                        )}
+                      >
+                        {val}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+                {ALL_FEATURE_KEYS.map((key) => (
+                  <tr key={key}>
+                    <td className="px-4 py-3 text-anthracite-700">
+                      {t(`features.${key}`)}
+                    </td>
+                    {PLAN_ORDER.map((tier) => (
+                      <td
+                        key={tier}
+                        className={cn(
+                          'px-4 py-3 text-center',
+                          tier === HIGHLIGHTED && 'bg-primary-50/50',
+                        )}
+                      >
+                        {PLAN_LIMITS[tier].features.includes(key) ? (
+                          <span className="font-bold text-primary-700">✓</span>
+                        ) : (
+                          <span className="text-anthracite-300">—</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
       </div>

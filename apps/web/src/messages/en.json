@@ -189,15 +189,18 @@
       "plans": {
         "START": {
           "name": "Start",
-          "description": "For smaller fleets, to get started."
+          "description": "For smaller fleets, to get started.",
+          "recommendedFor": "For sole traders and small fleets (1–3 vehicles) starting to digitize."
         },
         "PRO": {
           "name": "Pro",
-          "description": "For growing fleets: reports, export, reminders, complex servicing."
+          "description": "For growing fleets: reports, export, reminders, complex servicing.",
+          "recommendedFor": "For growing SMBs and fleet managers (up to 15 vehicles) who need reports, export and reminders."
         },
         "FLEET": {
           "name": "Fleet",
-          "description": "Full fleet intelligence: ranking, durability, supplier quality."
+          "description": "Full fleet intelligence: ranking, durability, supplier quality.",
+          "recommendedFor": "For larger fleets and fleet-management firms: unlimited vehicles and full fleet intelligence."
         }
       },
       "storage": "{count} GB storage",
@@ -215,6 +218,16 @@
         "EXPORT": "Data export (CSV/Excel)",
         "REMINDERS": "Reminders (inspection, insurance, service)",
         "DOCUMENT_LIBRARY": "Document library"
+      },
+      "recommendedForLabel": "Recommended for",
+      "compare": {
+        "title": "Compare plans",
+        "feature": "Feature",
+        "price": "Monthly price",
+        "vehicles": "Vehicles",
+        "users": "Users",
+        "documents": "Documents / mo",
+        "storage": "Storage"
       }
     },
     "faq": {

@@ -189,15 +189,18 @@
       "plans": {
         "START": {
           "name": "Start",
-          "description": "Pentru flote mici, pentru primii pași."
+          "description": "Pentru flote mici, pentru primii pași.",
+          "recommendedFor": "Pentru PFA și flote mici (1–3 vehicule) care încep digitalizarea."
         },
         "PRO": {
           "name": "Pro",
-          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, service complex."
+          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, service complex.",
+          "recommendedFor": "Pentru IMM-uri în creștere și manageri de flotă (până la 15 vehicule) care au nevoie de rapoarte, export și memento-uri."
         },
         "FLEET": {
           "name": "Fleet",
-          "description": "Inteligență completă a flotei: clasament, durabilitate, calitatea furnizorilor."
+          "description": "Inteligență completă a flotei: clasament, durabilitate, calitatea furnizorilor.",
+          "recommendedFor": "Pentru flote mari și firme de management de flotă: vehicule nelimitate și inteligență completă a flotei."
         }
       },
       "storage": "{count} GB stocare",
@@ -215,6 +218,16 @@
         "EXPORT": "Export de date (CSV/Excel)",
         "REMINDERS": "Memento-uri (ITP, asigurare, service)",
         "DOCUMENT_LIBRARY": "Bibliotecă de documente"
+      },
+      "recommendedForLabel": "Pentru cine",
+      "compare": {
+        "title": "Compararea planurilor",
+        "feature": "Caracteristică",
+        "price": "Tarif lunar",
+        "vehicles": "Vehicule",
+        "users": "Utilizatori",
+        "documents": "Documente / lună",
+        "storage": "Stocare"
       }
     },
     "faq": {
