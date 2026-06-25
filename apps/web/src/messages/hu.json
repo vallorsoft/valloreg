@@ -1,4 +1,27 @@
 {
+  "consent": {
+    "title": "Adatvédelem és sütik",
+    "description": "A szolgáltatás működéséhez feltétlenül szükséges mechanizmusokat használunk, és a hozzájárulásoddal további kategóriákat is. Elfogadhatod az összeset, csak a szükségeseket, vagy testreszabhatod a választást.",
+    "cookieLink": "Süti szabályzat",
+    "preferences": "Beállítások",
+    "saveChoices": "Választás mentése",
+    "rejectAll": "Csak a szükségesek",
+    "acceptAll": "Összes elfogadása",
+    "cat": {
+      "necessary": {
+        "title": "Feltétlenül szükséges",
+        "desc": "Bejelentkezés, biztonság és a munkamenet megőrzése. Nem kapcsolható ki."
+      },
+      "functional": {
+        "title": "Funkcionális",
+        "desc": "Megjegyzi a beállításaidat a jobb élményért."
+      },
+      "marketing": {
+        "title": "Marketing / értesítések",
+        "desc": "Push értesítések és kommunikáció, kizárólag hozzájárulás alapján."
+      }
+    }
+  },
   "common": {
     "appName": "Valloreg",
     "tagline": "Szervizszámlából digitális szerviztörténet – OCR és AI segítségével.",
@@ -35,6 +58,8 @@
       "legal": "Jogi",
       "privacy": "Adatvédelem",
       "terms": "Felhasználási feltételek",
+      "cookies": "Sütik",
+      "allLegal": "Összes jogi dokumentum",
       "about": "Rólunk",
       "tagline": "Flottakezelés okosan – kevesebb adminisztráció, több átláthatóság."
     }
