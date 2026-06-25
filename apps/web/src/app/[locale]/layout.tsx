@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
 import { isSupportedLocale, SUPPORTED_LOCALES } from '@valloreg/shared';
+import { ConsentBanner } from '@/components/consent/ConsentBanner';
 import '../globals.css';
 
 export const metadata: Metadata = {
@@ -64,6 +65,7 @@ export default async function LocaleLayout({
       <body className="min-h-screen bg-light font-sans text-anthracite-900 antialiased">
         <NextIntlClientProvider locale={locale} messages={messages}>
           {children}
+          <ConsentBanner />
         </NextIntlClientProvider>
       </body>
     </html>

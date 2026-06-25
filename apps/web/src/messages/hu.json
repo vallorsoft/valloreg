@@ -1018,5 +1018,76 @@
     "disable": "Kikapcsolás",
     "working": "Folyamatban…",
     "error": "Hiba történt, próbáld újra."
+  },
+  "consent": {
+    "title": "Adatvédelem és helyi tárolás",
+    "description": "Csak a működéshez feltétlenül szükséges tárolást használjuk (bejelentkezési munkamenet, PWA). NEM használunk analitikai, hirdetési vagy harmadik féltől származó követő sütiket. A push értesítések opcionálisak és külön kapcsolhatók be. Részletek:",
+    "cookiePolicy": "Süti szabályzat",
+    "privacyPolicy": "Adatvédelmi szabályzat",
+    "settings": "Beállítások",
+    "acceptAll": "Összes elfogadása",
+    "rejectNonEssential": "Csak a szükségesek",
+    "savePreferences": "Beállítások mentése",
+    "versionNote": "Hozzájárulás verziója: {version}. A választásod bármikor módosíthatod az oldal láblécében.",
+    "necessary": {
+      "title": "Feltétlenül szükséges (mindig aktív)",
+      "description": "Bejelentkezési munkamenet, biztonság és alapvető működés. Nem kapcsolható ki."
+    },
+    "functional": {
+      "title": "Funkcionális – push értesítések",
+      "description": "Lehetővé teszi a push értesítések felajánlását. A tényleges bekapcsoláshoz a böngésző engedélye is kell."
+    },
+    "openSettings": "Süti beállítások"
+  },
+  "legal": {
+    "reviewBanner": "Jogi felülvizsgálat alatt álló dokumentum. A végleges változat a társaság ügyvédjének jóváhagyása után jelenik meg.",
+    "lastUpdated": "Utolsó technikai frissítés",
+    "operator": "Adatkezelő",
+    "contact": "Kapcsolat",
+    "backHome": "Vissza a főoldalra",
+    "cookies": {
+      "title": "Süti- és helyitárolás-szabályzat",
+      "intro": "Ez a platform NEM használ analitikai, hirdetési vagy harmadik féltől származó követő sütiket. Kizárólag a működéshez feltétlenül szükséges tárolást és opcionális, hozzájáruláson alapuló push értesítéseket használunk.",
+      "tableTitle": "Helyi tárolás leltára",
+      "colName": "Elem",
+      "colType": "Kategória",
+      "colPurpose": "Cél",
+      "colRetention": "Időtartam",
+      "rows": [
+        [
+          "Munkamenet token (localStorage)",
+          "Feltétlenül szükséges",
+          "A felhasználó bejelentkezve tartása",
+          "Kijelentkezésig / lejáratig"
+        ],
+        [
+          "Hozzájárulás rögzítése (localStorage)",
+          "Feltétlenül szükséges",
+          "A süti-választás tárolása (GDPR 7. cikk bizonyíték)",
+          "A választás módosításáig"
+        ],
+        [
+          "Service Worker / PWA gyorsítótár",
+          "Feltétlenül szükséges",
+          "Offline működés és alkalmazásként telepítés",
+          "A böngésző kezeli"
+        ],
+        [
+          "Push feliratkozás",
+          "Funkcionális (opt-in)",
+          "Emlékeztető/lejárati értesítések küldése",
+          "Leiratkozásig"
+        ]
+      ],
+      "manage": "A választásodat bármikor módosíthatod az alábbi gombbal."
+    },
+    "privacy": {
+      "title": "Adatvédelmi szabályzat",
+      "intro": "A személyes adatokat a GDPR ((EU) 2016/679 rendelet) és a 190/2018. sz. román törvény szerint kezeljük. Ez az oldal átláthatósági összefoglaló; a teljes dokumentumcsomag jogi felülvizsgálat alatt áll.",
+      "rightsTitle": "Jogaid",
+      "rights": "Jogod van a hozzáféréshez, helyesbítéshez, törléshez, korlátozáshoz, hordozhatósághoz és tiltakozáshoz, valamint panaszt tehetsz az ANSPDCP-nél (www.dataprotection.ro). A kérelmeket legfeljebb 30 napon belül teljesítjük.",
+      "dataTitle": "Milyen adatokat kezelünk",
+      "data": "Fiókadatok (e-mail, név, hash-elt jelszó), flottaadatok és az ügyfelek által feltöltött dokumentumok, audit naplók (IP-címmel együtt). Az ügyfelek dokumentumait adatfeldolgozóként kezeljük."
+    }
   }
 }

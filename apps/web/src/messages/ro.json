@@ -1018,5 +1018,76 @@
     "disable": "Dezactivare",
     "working": "Se procesează…",
     "error": "A apărut o eroare, încercați din nou."
+  },
+  "consent": {
+    "title": "Confidențialitate și stocare locală",
+    "description": "Folosim doar stocare strict necesară pentru funcționarea aplicației (sesiune de autentificare, PWA). NU folosim cookie-uri de analiză, publicitate sau urmărire terță. Notificările push sunt opționale și se activează separat. Detalii în:",
+    "cookiePolicy": "Politica privind cookie-urile",
+    "privacyPolicy": "Politica de confidențialitate",
+    "settings": "Setări",
+    "acceptAll": "Acceptă toate",
+    "rejectNonEssential": "Doar necesare",
+    "savePreferences": "Salvează preferințele",
+    "versionNote": "Versiunea consimțământului {version}. Îți poți schimba alegerea oricând din subsolul paginii.",
+    "necessary": {
+      "title": "Strict necesare (mereu active)",
+      "description": "Sesiune de autentificare, securitate și funcționarea de bază a aplicației. Nu pot fi dezactivate."
+    },
+    "functional": {
+      "title": "Funcționale – notificări push",
+      "description": "Permite oferirea notificărilor push în aplicație. Activarea efectivă cere și permisiunea browserului."
+    },
+    "openSettings": "Setări cookie"
+  },
+  "legal": {
+    "reviewBanner": "Document în curs de revizuire juridică. Versiunea finală va fi publicată după validarea de către avocatul societății.",
+    "lastUpdated": "Ultima actualizare tehnică",
+    "operator": "Operator de date",
+    "contact": "Contact",
+    "backHome": "Înapoi la pagina principală",
+    "cookies": {
+      "title": "Politica privind cookie-urile și stocarea locală",
+      "intro": "Această platformă NU folosește cookie-uri de analiză, publicitate sau urmărire din partea unor terți. Folosim exclusiv stocare strict necesară funcționării și notificări push opționale, bazate pe consimțământ.",
+      "tableTitle": "Inventarul stocării locale",
+      "colName": "Element",
+      "colType": "Categorie",
+      "colPurpose": "Scop",
+      "colRetention": "Durată",
+      "rows": [
+        [
+          "Token de sesiune (localStorage)",
+          "Strict necesar",
+          "Menținerea autentificării utilizatorului",
+          "Până la deconectare / expirare"
+        ],
+        [
+          "Înregistrarea consimțământului (localStorage)",
+          "Strict necesar",
+          "Memorarea alegerii privind cookie-urile (dovada art. 7 GDPR)",
+          "Până la schimbarea alegerii"
+        ],
+        [
+          "Service Worker / cache PWA",
+          "Strict necesar",
+          "Funcționare offline și instalare ca aplicație",
+          "Gestionat de browser"
+        ],
+        [
+          "Abonament notificări push",
+          "Funcțional (opt-in)",
+          "Trimiterea notificărilor de reamintire/expirare",
+          "Până la dezabonare"
+        ]
+      ],
+      "manage": "Îți poți schimba alegerea oricând folosind butonul de mai jos."
+    },
+    "privacy": {
+      "title": "Politica de confidențialitate",
+      "intro": "Prelucrăm datele personale conform GDPR (Regulamentul (UE) 2016/679) și Legii 190/2018. Această pagină este un rezumat de transparență; pachetul complet de documente este în curs de revizuire juridică.",
+      "rightsTitle": "Drepturile tale",
+      "rights": "Ai dreptul de acces, rectificare, ștergere, restricționare, portabilitate și opoziție, precum și dreptul de a depune o plângere la ANSPDCP (www.dataprotection.ro). Solicitările se soluționează în maximum 30 de zile.",
+      "dataTitle": "Ce date prelucrăm",
+      "data": "Date de cont (e-mail, nume, parolă stocată ca hash), date despre flotă și documente încărcate de clienți, jurnale de audit (inclusiv adresa IP). Documentele clienților sunt prelucrate de noi în calitate de persoană împuternicită."
+    }
   }
 }

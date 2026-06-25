@@ -1018,5 +1018,76 @@
     "disable": "Disable",
     "working": "Working…",
     "error": "Something went wrong, please try again."
+  },
+  "consent": {
+    "title": "Privacy and local storage",
+    "description": "We use only strictly necessary storage for the app to work (authentication session, PWA). We do NOT use analytics, advertising or third-party tracking cookies. Push notifications are optional and enabled separately. Details in:",
+    "cookiePolicy": "Cookie Policy",
+    "privacyPolicy": "Privacy Policy",
+    "settings": "Settings",
+    "acceptAll": "Accept all",
+    "rejectNonEssential": "Necessary only",
+    "savePreferences": "Save preferences",
+    "versionNote": "Consent version {version}. You can change your choice anytime from the page footer.",
+    "necessary": {
+      "title": "Strictly necessary (always on)",
+      "description": "Authentication session, security and core app functionality. Cannot be disabled."
+    },
+    "functional": {
+      "title": "Functional – push notifications",
+      "description": "Lets us offer in-app push notifications. Actual activation also requires browser permission."
+    },
+    "openSettings": "Cookie settings"
+  },
+  "legal": {
+    "reviewBanner": "Document under legal review. The final version will be published after validation by the company's lawyer.",
+    "lastUpdated": "Last technical update",
+    "operator": "Data controller",
+    "contact": "Contact",
+    "backHome": "Back to home",
+    "cookies": {
+      "title": "Cookie and Local Storage Policy",
+      "intro": "This platform does NOT use analytics, advertising or third-party tracking cookies. We use only storage strictly necessary for operation and optional, consent-based push notifications.",
+      "tableTitle": "Local storage inventory",
+      "colName": "Item",
+      "colType": "Category",
+      "colPurpose": "Purpose",
+      "colRetention": "Duration",
+      "rows": [
+        [
+          "Session token (localStorage)",
+          "Strictly necessary",
+          "Keeping the user authenticated",
+          "Until logout / expiry"
+        ],
+        [
+          "Consent record (localStorage)",
+          "Strictly necessary",
+          "Storing the cookie choice (Art. 7 GDPR proof)",
+          "Until the choice changes"
+        ],
+        [
+          "Service Worker / PWA cache",
+          "Strictly necessary",
+          "Offline operation and app install",
+          "Managed by browser"
+        ],
+        [
+          "Push subscription",
+          "Functional (opt-in)",
+          "Sending reminder/expiry notifications",
+          "Until unsubscribed"
+        ]
+      ],
+      "manage": "You can change your choice anytime using the button below."
+    },
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "We process personal data under the GDPR (Regulation (EU) 2016/679) and Romanian Law 190/2018. This page is a transparency summary; the full document package is under legal review.",
+      "rightsTitle": "Your rights",
+      "rights": "You have the right of access, rectification, erasure, restriction, portability and objection, and the right to lodge a complaint with ANSPDCP (www.dataprotection.ro). Requests are handled within 30 days.",
+      "dataTitle": "What data we process",
+      "data": "Account data (e-mail, name, password stored as a hash), fleet data and documents uploaded by customers, audit logs (including IP address). Customer documents are processed by us as a processor."
+    }
   }
 }

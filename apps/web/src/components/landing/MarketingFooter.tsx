@@ -1,9 +1,11 @@
 import { useTranslations } from 'next-intl';
 import { Link } from '@/i18n/routing';
 import { Logo } from '@/components/Logo';
+import { CookieSettingsButton } from '@/components/consent/CookieSettingsButton';
 
 export function MarketingFooter() {
   const t = useTranslations('common');
+  const tc = useTranslations('consent');
   const year = new Date().getFullYear();
 
   return (
@@ -45,8 +47,20 @@ export function MarketingFooter() {
           <p className="font-semibold text-anthracite-900">
             {t('footer.legal')}
           </p>
-          <span className="block text-anthracite-500">{t('footer.privacy')}</span>
+          <Link
+            href="/legal/privacy"
+            className="block text-anthracite-500 hover:text-anthracite-900"
+          >
+            {t('footer.privacy')}
+          </Link>
+          <Link
+            href="/legal/cookies"
+            className="block text-anthracite-500 hover:text-anthracite-900"
+          >
+            {tc('cookiePolicy')}
+          </Link>
           <span className="block text-anthracite-500">{t('footer.terms')}</span>
+          <CookieSettingsButton label={tc('openSettings')} />
         </nav>
       </div>
 
