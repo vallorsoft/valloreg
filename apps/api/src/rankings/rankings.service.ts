@@ -163,7 +163,7 @@ export class RankingsService {
       // értékeinek MEDIÁNJÁT imputáljuk (a legkevésbé meglepő: a jármű a mezőny
       // közepére kerül, nem a tetejére/aljára).
       const imputedRel = rels.length
-        ? normalizeLowerBetter(median(rels), minRel, maxRel)
+        ? normalizeLowerBetter(median(rels) ?? minRel, minRel, maxRel)
         : 0.5;
 
       const ranked: VehicleRanking[] = members.map((m) => {
