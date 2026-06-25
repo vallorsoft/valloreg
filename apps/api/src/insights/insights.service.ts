@@ -241,11 +241,16 @@ export class InsightsService {
       watch: 1,
       ok: 2,
     };
-    return result.sort(
-      (x, y) =>
-        rank[x.recommendation] - rank[y.recommendation] ||
-        Number(y.totalSpent) - Number(x.totalSpent),
-    );
+    return result.sort((x, y) => {
+      const byRank = rank[x.recommendation] - rank[y.recommendation];
+      if (byRank !== 0) return byRank;
+      // Az összköltséget Decimal-ban hasonlítjuk (a totalSpent string Number()-re
+      // váltása nagy összegeknél pontosságot veszítene / rossz sorrendet adna);
+      // a Decimal az agg-ban él, a vehicleId-vel visszakereshető.
+      const xTotal = agg.get(x.vehicleId)?.total ?? new Prisma.Decimal(0);
+      const yTotal = agg.get(y.vehicleId)?.total ?? new Prisma.Decimal(0);
+      return yTotal.comparedTo(xTotal);
+    });
   }
 
   // ── Detektorok ─────────────────────────────────────────────────────────────
