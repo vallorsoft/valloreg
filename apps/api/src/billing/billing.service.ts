@@ -1,9 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import {
+  BillingInterval,
   effectiveStorageBytes,
   PLAN_CURRENCY,
   PLAN_LIMITS,
-  PLAN_PRICES,
+  planPrice,
   PlanTier,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
@@ -120,11 +121,15 @@ export class BillingService {
     dto: RequestSubscriptionDto,
   ) {
     const planTier = dto.planTier;
-    const amount = PLAN_PRICES[planTier];
+    const interval = dto.interval ?? BillingInterval.MONTHLY;
+    const isYearly = interval === BillingInterval.YEARLY;
+    const amount = planPrice(planTier, interval);
     const currency = PLAN_CURRENCY;
     // Effektív számla-/utalási adatok: a Super Admin DB-beállítása, üresnél env.
     const bank = await this.billingSettings.getEffective();
-    const reference = `VLR-${tenantId.slice(0, 8).toUpperCase()}-${planTier}`;
+    const reference = `VLR-${tenantId.slice(0, 8).toUpperCase()}-${planTier}-${
+      isYearly ? 'Y' : 'M'
+    }`;
 
     const [tenant, user] = await Promise.all([
       this.prisma.system.tenant.findUnique({
@@ -139,18 +144,24 @@ export class BillingService {
 
     const clientEmail = tenant?.email ?? user?.email ?? null;
     const amountLabel = `${amount.toLocaleString('hu-HU')} ${currency}`;
+    const periodLabel = isYearly ? '/ év' : '/ hó';
+    const cycleLabel = isYearly ? 'éves' : 'havi';
 
     // 1) Kliens e-mail: utalási adatok.
     if (clientEmail) {
       await this.mailer.send({
         to: clientEmail,
-        subject: `Valloreg előfizetés – utalási adatok (${planTier})`,
+        subject: `Valloreg előfizetés – utalási adatok (${planTier}, ${cycleLabel})`,
         text: [
           `Köszönjük, hogy a Valloreg ${planTier} csomagot választottad!`,
           ``,
           `Az előfizetés aktiválásához kérjük, utald át a következő összeget:`,
           ``,
-          `Összeg:      ${amountLabel} / hó`,
+          `Csomag:      ${planTier} (${cycleLabel} számlázás)`,
+          `Összeg:      ${amountLabel} ${periodLabel}`,
+          isYearly
+            ? `Kedvezmény:  éves fizetésnél 12 hónap helyett csak 11 havidíj (1 hónap ingyen)`
+            : ``,
           `Kedvezményezett: ${bank.beneficiary || '(beállítás alatt)'}`,
           `IBAN/Számla: ${bank.iban || '(beállítás alatt)'}`,
           `Bank:        ${bank.bankName || '-'}`,
@@ -178,14 +189,15 @@ export class BillingService {
     if (bank.notifyEmail) {
       await this.mailer.send({
         to: bank.notifyEmail,
-        subject: `Új előfizetés-igénylés: ${tenant?.name ?? tenantId} – ${planTier}`,
+        subject: `Új előfizetés-igénylés: ${tenant?.name ?? tenantId} – ${planTier} (${cycleLabel})`,
         text: [
           `Új utalásos előfizetés-igénylés érkezett.`,
           ``,
           `Cég:       ${tenant?.name ?? tenantId}`,
           `Cég e-mail: ${clientEmail ?? '-'}`,
           `Csomag:    ${planTier}`,
-          `Összeg:    ${amountLabel} / hó`,
+          `Ciklus:    ${cycleLabel}`,
+          `Összeg:    ${amountLabel} ${periodLabel}`,
           `Közlemény: ${reference}`,
           ``,
           `Az utalás beérkezése után a Super Admin panelen állítsd a csomagot`,
@@ -203,7 +215,7 @@ export class BillingService {
       admins.map((admin) =>
         this.notifications.sendToUser(admin.id, {
           title: 'Új előfizetés-igénylés',
-          body: `${tenant?.name ?? tenantId} – ${planTier} (${amountLabel})`,
+          body: `${tenant?.name ?? tenantId} – ${planTier} (${cycleLabel}, ${amountLabel})`,
           url: '/admin',
         }),
       ),
@@ -215,11 +227,12 @@ export class BillingService {
       userId,
       action: 'billing.subscription_requested',
       resourceType: 'Subscription',
-      metadata: { planTier, amount, currency, reference },
+      metadata: { planTier, interval, amount, currency, reference },
     });
 
     return {
       plan: planTier,
+      interval,
       amount,
       currency,
       reference,
