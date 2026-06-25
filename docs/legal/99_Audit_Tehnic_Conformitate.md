@@ -124,11 +124,11 @@ Audit de concurență „check-then-act" / time-of-check-to-time-of-use:
 |---|---|
 | F1 | ✅ `.env.example` redactat (placeholdere). **Confirmat de proprietar:** valorile expuse **NU** erau credențiale de producție live — credențialele reale sunt gestionate exclusiv prin variabile de mediu (Render `sync:false` / Neon env), deci rotația **nu** este necesară. Bună practică păstrată: `.env.example` conține doar placeholdere. |
 | F2 | ✅ Reparat — `RateLimitGuard` + `@RateLimit` pe endpoint-urile de auth (login/register/refresh/forgot/reset). |
-| F3 | ✅ Documentație corectată (2FA marcat roadmap). Implementarea TOTP rămâne decizie de produs. |
+| F3 | ✅ **Implementat** — 2FA TOTP (RFC 6238, fără dependențe), endpoint-uri `/auth/2fa/*`, poartă în `login`. Verificat cu vectorii RFC. (Wiring frontend = strat subțire rămas.) |
 | F4 | ✅ `ServerSideEncryption: 'AES256'` adăugat explicit la upload (R2 oricum criptează implicit). |
 | F5 | ✅ Reparat — `CleanupService` + scheduler zilnic (audit/token/scan staging), praguri env. |
 | F6 | ✅ Reparat — `DELETE /tenants/current` (OWNER) cu ștergere obiecte R2 (`deleteByPrefix`) + cascadă DB. |
-| F7 | ✅ Documentație corectată (SupportAccess marcat „modelat, API neimplementat"). Implementarea rămâne roadmap. |
+| F7 | ✅ **Implementat** — API SupportAccess (grant/list/revoke) + aplicare în `TenantGuard` (platform-admin + grant viu → VIEWER read-only) + expirare în cleanup. Verificat pe PostgreSQL real. |
 | F8 | ℹ️ Rămâne decizie juridică/contractuală (transfer AI activat doar la configurare). |
 
 > **Notă de verificare:** în mediul de generare, `prisma generate` și instalarea completă

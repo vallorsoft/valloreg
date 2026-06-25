@@ -15,8 +15,9 @@
 - Jelszavak `argon2`/`bcrypt` hash-sel, soha nem plaintextben.
 - **RBAC**: `OWNER`, `FLEET_MANAGER`, `ADMIN`, `ACCOUNTANT`, `VIEWER` (cég),
   `SUPER_ADMIN` (platform). A guard a `@valloreg/shared` szerepköreit használja.
-- **2FA**: a séma tartalmaz `twoFactorSecret` mezőt, de a TOTP-folyamat (engedélyezés/
-  ellenőrzés) **még nincs implementálva** – tervezett (roadmap). Opcionális Google login szintén tervezett.
+- **2FA (TOTP)**: implementálva, függőség-mentesen (`node:crypto`, RFC 6238).
+  Végpontok: `POST /auth/2fa/{setup,enable,disable}`; a `login` TOTP-kódot kér, ha a
+  fiókon aktív (`twoFactorEnabledAt`). Opcionális Google login továbbra is tervezett.
 - Felhasználók email meghívással kerülnek a céghez.
 
 ## Adatvédelem – az üzemeltető mit lát
@@ -29,9 +30,10 @@ Csak ezeket látja: rendszeradatok, statisztikák, előfizetések, hibák, audit
 
 ### Support access
 
-> **Megjegyzés (állapot):** a `SupportAccess` adatmodell létezik, de a kiszolgáló
-> API (kiadás/visszavonás) és a fogyasztó-oldali kényszerítés (guard) **még nincs
-> implementálva** – tervezett. Az alábbi a CÉLZOTT viselkedés.
+> **Állapot:** implementálva. Végpontok: `POST/GET/DELETE /tenants/current/support-access`
+> (csak OWNER/ADMIN). A `TenantGuard` kényszeríti: tagság nélkül CSAK platform-admin
+> kaphat hozzáférést, és CSAK élő grant esetén, **kizárólag olvasható (VIEWER)** módban.
+> Lejárt grant-eket a napi takarító `EXPIRED`-re billenti.
 
 A cég adminisztrátora **ideiglenes** hozzáférést adhat support célra:
 `1 óra` / `24 óra` / `7 nap`. Minden ilyen hozzáférés:
