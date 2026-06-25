@@ -1,4 +1,27 @@
 {
+  "consent": {
+    "title": "Privacy & cookies",
+    "description": "We use strictly necessary mechanisms to run the service and, with your consent, additional categories. You can accept all, only the necessary ones, or customise your choice.",
+    "cookieLink": "Cookie Policy",
+    "preferences": "Preferences",
+    "saveChoices": "Save choices",
+    "rejectAll": "Only necessary",
+    "acceptAll": "Accept all",
+    "cat": {
+      "necessary": {
+        "title": "Strictly necessary",
+        "desc": "Authentication, security and keeping your session. Cannot be disabled."
+      },
+      "functional": {
+        "title": "Functional",
+        "desc": "Remember your preferences for a better experience."
+      },
+      "marketing": {
+        "title": "Marketing / notifications",
+        "desc": "Push notifications and communications, consent-based only."
+      }
+    }
+  },
   "common": {
     "appName": "Valloreg",
     "tagline": "From service invoice to digital service history – powered by OCR and AI.",
@@ -35,6 +58,8 @@
       "legal": "Legal",
       "privacy": "Privacy",
       "terms": "Terms of Service",
+      "cookies": "Cookies",
+      "allLegal": "All legal documents",
       "about": "About us",
       "tagline": "Smarter fleet management – less admin, more transparency."
     }
