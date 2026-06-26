@@ -296,10 +296,13 @@ export class AuthService {
       metadata: { method: '2fa' },
     });
 
+    // 2FA-bejelentkezésnél a "Remember me" választást az 1. lépés sessionToken-je
+    // nem hordozza – tartós sessiont adunk (a dokumentált alapérték: remember=true).
     const tokens = await this.issueTokens(
       user.id,
       user.email,
       user.isPlatformAdmin,
+      true,
     );
 
     return {

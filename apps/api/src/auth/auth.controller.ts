@@ -20,7 +20,7 @@ import type {
 import { AppConfigService } from '../config/app-config.service';
 import { AppException } from '../common/exceptions/app.exception';
 import { AuthService } from './auth.service';
-import type { AuthResult, AuthTokens } from './auth.service';
+import type { AuthResult, AuthTokens, TwoFactorChallenge } from './auth.service';
 import {
   clearRefreshCookie,
   readRefreshCookie,
@@ -66,8 +66,12 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Req() req: AuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponseBody> {
+  ): Promise<AuthResponseBody | TwoFactorChallenge> {
     const result = await this.authService.login(dto, req.ip);
+    // 2FA aktív: nincs token/cookie, a kliens a kód-bekérő lépésre vált.
+    if ('twoFactorRequired' in result) {
+      return result;
+    }
     return this.respondWithAuth(res, result, dto.rememberMe ?? true);
   }
 
@@ -163,15 +167,18 @@ export class AuthController {
   @Public()
   @Post('2fa/verify-login')
   @HttpCode(HttpStatus.OK)
-  verifyTwoFactorLogin(
+  async verifyTwoFactorLogin(
     @Body() dto: VerifyTwoFactorLoginDto,
     @Req() req: AuthenticatedRequest,
-  ) {
-    return this.authService.verifyTwoFactorLogin(
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseBody> {
+    const result = await this.authService.verifyTwoFactorLogin(
       dto.sessionToken,
       dto.code,
       req.ip,
     );
+    // A refresh token httpOnly cookie-ba (a main token-modellje); 2FA → tartós.
+    return this.respondWithAuth(res, result, true);
   }
 
   // ── Belső segédek ───────────────────────────────────────────────────────
