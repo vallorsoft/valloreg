@@ -172,6 +172,8 @@ export class AuthController {
       dto.code,
       req.ip,
     );
+  }
+
   // ── Belső segédek ───────────────────────────────────────────────────────
 
   /** A refresh tokent httpOnly cookie-ba teszi, és a body-ból kihagyja. */
