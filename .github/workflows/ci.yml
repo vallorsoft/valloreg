@@ -53,3 +53,8 @@ jobs:
 
       - name: Build
         run: pnpm build
+
+      # Unit tesztek (DB nélkül): megosztott kontraktusok, zod sémák, i18n paritás,
+      # domain-logika, guardok. Az integrációs tesztek (élő Postgres) külön jobban.
+      - name: Test (unit)
+        run: pnpm test
