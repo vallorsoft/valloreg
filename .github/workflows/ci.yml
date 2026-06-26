@@ -111,7 +111,7 @@ jobs:
       # adja? Ha eltérés van (pl. szerkesztett séma migráció nélkül), --exit-code
       # 2-vel elbukik. Megfogja a "séma változott, de nincs migráció" hibát.
       - name: Migration drift check
-        run: pnpm --filter @valloreg/api exec prisma migrate diff --from-database-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+        run: pnpm --filter @valloreg/api exec prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
 
       - name: Test (integration)
         run: pnpm --filter @valloreg/api test:int
