@@ -2,11 +2,13 @@ import { Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import { Prisma } from '@prisma/client';
 import {
+  effectiveStorageBytes,
   isAllowedDocumentMimeType,
   isWithinLimit,
   MAX_DOCUMENT_SIZE_BYTES,
   PLAN_LIMITS,
   PlanTier,
+  UNLIMITED,
   VehicleScanStatus,
   type VehicleRegistrationResult,
 } from '@valloreg/shared';
@@ -61,6 +63,21 @@ export interface VehicleScanView {
   error: string | null;
 }
 
+/** Egy beolvasás listaeleme (a feldolgozási „inbox" sora). */
+export interface VehicleScanListItem {
+  id: string;
+  status: VehicleScanStatus;
+  /** Megjelenítendő fájlnév (az első staging fájl neve) + a fájlok száma. */
+  fileName: string;
+  fileCount: number;
+  /** A kiolvasott rendszám (gyors azonosításhoz a listában), ha van. */
+  plate: string | null;
+  matchedVehicleId: string | null;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
+  createdAt: Date;
+}
+
 /** Egy CSV-import sor elemzési eredménye. */
 export interface ImportRowResult {
   /** A sor száma a fájlban (1-alapú, a fejléc utáni). */
@@ -110,12 +127,14 @@ export class VehiclesService {
   list() {
     return this.prisma.scoped.vehicle.findMany({
       orderBy: { createdAt: 'desc' },
+      include: { parties: true },
     });
   }
 
   async getById(id: string) {
     const vehicle = await this.prisma.scoped.vehicle.findFirst({
       where: { id },
+      include: { parties: true },
     });
     if (!vehicle) {
       throw AppException.notFound('A jármű nem található.');
@@ -186,7 +205,7 @@ export class VehiclesService {
   async create(tenantId: string, userId: string, dto: CreateVehicleDto) {
     await this.assertVehicleLimit(tenantId);
 
-    const vehicle = await this.prisma.scoped.vehicle.create({
+    const created = await this.prisma.scoped.vehicle.create({
       // tenantId-t a scoped kliens is injektálja; explicit átadjuk a típus-
       // biztonságért (az érték azonos, így nincs ütközés).
       data: {
@@ -195,20 +214,36 @@ export class VehiclesService {
         vin: dto.vin ?? null,
         make: dto.make ?? null,
         model: dto.model ?? null,
+        vehicleType: dto.vehicleType ?? null,
         year: dto.year ?? null,
         odometerKm: dto.odometerKm ?? null,
+        firstRegistration: parseIsoDate(dto.firstRegistration),
+        category: dto.category ?? null,
+        fleetSegment: dto.fleetSegment ?? null,
+        revenuePerKm: dto.revenuePerKm ?? null,
+        fuelType: dto.fuelType ?? null,
+        engineCm3: dto.engineCm3 ?? null,
+        powerKw: dto.powerKw ?? null,
+        color: dto.color ?? null,
+        seats: dto.seats ?? null,
+        maxMassKg: dto.maxMassKg ?? null,
+        kerbWeightKg: dto.kerbWeightKg ?? null,
+        euroClass: dto.euroClass ?? null,
+        typeApproval: dto.typeApproval ?? null,
       },
     });
+
+    await this.syncParties(tenantId, created.id, dto.parties);
 
     await this.audit.log({
       tenantId,
       userId,
       action: 'vehicle.created',
       resourceType: 'Vehicle',
-      resourceId: vehicle.id,
+      resourceId: created.id,
     });
 
-    return vehicle;
+    return this.getById(created.id);
   }
 
   async update(
@@ -219,17 +254,37 @@ export class VehiclesService {
   ) {
     await this.getById(id); // tenant-scope-olt létezés-ellenőrzés
 
-    const vehicle = await this.prisma.scoped.vehicle.update({
+    await this.prisma.scoped.vehicle.update({
       where: { id },
       data: {
         plate: dto.plate,
         vin: dto.vin,
         make: dto.make,
         model: dto.model,
+        vehicleType: dto.vehicleType,
         year: dto.year,
         odometerKm: dto.odometerKm,
+        // Csak akkor írjuk felül a dátumot, ha a mező szerepel a kérésben.
+        firstRegistration:
+          dto.firstRegistration === undefined
+            ? undefined
+            : parseIsoDate(dto.firstRegistration),
+        category: dto.category,
+        fleetSegment: dto.fleetSegment,
+        revenuePerKm: dto.revenuePerKm,
+        fuelType: dto.fuelType,
+        engineCm3: dto.engineCm3,
+        powerKw: dto.powerKw,
+        color: dto.color,
+        seats: dto.seats,
+        maxMassKg: dto.maxMassKg,
+        kerbWeightKg: dto.kerbWeightKg,
+        euroClass: dto.euroClass,
+        typeApproval: dto.typeApproval,
       },
     });
+
+    await this.syncParties(tenantId, id, dto.parties);
 
     await this.audit.log({
       tenantId,
@@ -239,7 +294,38 @@ export class VehiclesService {
       resourceId: id,
     });
 
-    return vehicle;
+    return this.getById(id);
+  }
+
+  /**
+   * A jármű felei (tulajdonos / üzembentartó) szinkronizálása szerepkör szerint.
+   * Üres fél (név+cím+azonosító mind üres) törli az adott szerepet; egyébként
+   * upsert. `undefined` lista = nincs változás (nem nyúlunk a felekhez).
+   */
+  private async syncParties(
+    tenantId: string,
+    vehicleId: string,
+    parties: CreateVehicleDto['parties'],
+  ): Promise<void> {
+    if (parties === undefined) return;
+    for (const p of parties) {
+      const name = p.name?.trim() || null;
+      const address = p.address?.trim() || null;
+      const idNumber = p.idNumber?.trim() || null;
+      if (!name && !address && !idNumber) {
+        // Minden mező üres → a szerep törlése (ha létezett).
+        await this.prisma.scoped.vehicleParty.deleteMany({
+          where: { vehicleId, role: p.role },
+        });
+        continue;
+      }
+      const partyType = p.partyType ?? 'person';
+      await this.prisma.scoped.vehicleParty.upsert({
+        where: { tenantId_vehicleId_role: { tenantId, vehicleId, role: p.role } },
+        create: { tenantId, vehicleId, role: p.role, partyType, name, address, idNumber },
+        update: { partyType, name, address, idNumber },
+      });
+    }
   }
 
   async remove(tenantId: string, userId: string, id: string): Promise<void> {
@@ -295,11 +381,10 @@ export class VehiclesService {
       throw AppException.validation('Hiányzik a beolvasandó fájl.');
     }
 
-    const scanId = randomUUID();
-    const staged: ScanFileRef[] = [];
-
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]!;
+    // MIME + méret validáció a tárhely-keret ellenőrzése ELŐTT (a beolvasott
+    // fájlok VehicleDocument-ként számítanak a tárhely-használatba a confirm
+    // után, és már a staging is tárhelyet foglal).
+    for (const file of files) {
       const mimeType = file.mimetype || 'application/octet-stream';
       if (!isAllowedDocumentMimeType(mimeType)) {
         throw AppException.unsupportedDocumentType();
@@ -307,7 +392,16 @@ export class VehiclesService {
       if (file.size > MAX_DOCUMENT_SIZE_BYTES) {
         throw AppException.documentTooLarge();
       }
+    }
+    const totalBytes = files.reduce((sum, f) => sum + f.size, 0);
+    await this.assertStorageLimit(tenantId, totalBytes);
 
+    const scanId = randomUUID();
+    const staged: ScanFileRef[] = [];
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]!;
+      const mimeType = file.mimetype || 'application/octet-stream';
       const storageKey = `tenants/${tenantId}/${SCAN_PREFIX}/${scanId}/${i}`;
       await this.storage.upload(storageKey, file.buffer, mimeType);
       staged.push({
@@ -340,6 +434,63 @@ export class VehiclesService {
     });
 
     return { scanId, status: VehicleScanStatus.PENDING };
+  }
+
+  /**
+   * A feldolgozási „inbox": a még meg nem erősített beolvasások (a CONFIRMED-eket
+   * kihagyjuk – azok már járműként mentve). Státusszal, hogy a UI lássa, mikor kész.
+   */
+  async listScans(): Promise<VehicleScanListItem[]> {
+    const scans = await this.prisma.scoped.vehicleScan.findMany({
+      where: { status: { not: VehicleScanStatus.CONFIRMED } },
+      orderBy: { createdAt: 'desc' },
+    });
+    return scans.map((scan) => {
+      const files = (scan.files as unknown as ScanFileRef[]) ?? [];
+      const draft = scan.draft as unknown as VehicleRegistrationResult | null;
+      return {
+        id: scan.id,
+        status: scan.status as VehicleScanStatus,
+        fileName: files[0]?.fileName ?? '—',
+        fileCount: files.length,
+        plate: draft?.plate ?? null,
+        matchedVehicleId: scan.matchedVehicleId,
+        looksLikeRegistration: scan.looksLikeRegistration,
+        error: scan.error,
+        createdAt: scan.createdAt,
+      };
+    });
+  }
+
+  /** Egy beolvasás elvetése (a feldolgozási listából): rekord + staging fájlok törlése. */
+  async deleteScan(tenantId: string, userId: string, scanId: string): Promise<void> {
+    const scan = await this.prisma.scoped.vehicleScan.findFirst({
+      where: { id: scanId },
+    });
+    if (!scan) throw AppException.notFound('A beolvasás nem található.');
+
+    await this.prisma.scoped.vehicleScan.delete({ where: { id: scanId } });
+
+    const files = (scan.files as unknown as ScanFileRef[]) ?? [];
+    for (const f of files) {
+      try {
+        await this.storage.delete(f.storageKey);
+      } catch (err) {
+        this.logger.warn(
+          `Staging fájl törlése sikertelen (${f.storageKey}): ${
+            err instanceof Error ? err.message : String(err)
+          }`,
+        );
+      }
+    }
+
+    await this.audit.log({
+      tenantId,
+      userId,
+      action: 'vehicle.scan_dismissed',
+      resourceType: 'VehicleScan',
+      resourceId: scanId,
+    });
   }
 
   /** Egy beolvasás (job) aktuális állapota és – ha kész – az eredménye. */
@@ -383,8 +534,21 @@ export class VehiclesService {
       vin: dto.vin,
       make: dto.make,
       model: dto.model,
+      vehicleType: dto.vehicleType,
       year: dto.year,
       odometerKm: dto.odometerKm,
+      firstRegistration: dto.firstRegistration,
+      category: dto.category,
+      fuelType: dto.fuelType,
+      engineCm3: dto.engineCm3,
+      powerKw: dto.powerKw,
+      color: dto.color,
+      seats: dto.seats,
+      maxMassKg: dto.maxMassKg,
+      kerbWeightKg: dto.kerbWeightKg,
+      euroClass: dto.euroClass,
+      typeApproval: dto.typeApproval,
+      parties: dto.parties,
     };
 
     const vehicle = dto.vehicleId
@@ -392,6 +556,10 @@ export class VehiclesService {
       : await this.create(tenantId, userId, fields);
 
     if (dto.files && dto.files.length > 0) {
+      // A jármű-dokumentumok mérete a tárhely-használatba számít – a keret-
+      // ellenőrzés a sorok létrehozása ELŐTT (a számla-feltöltési úttal azonos).
+      const totalBytes = dto.files.reduce((sum, f) => sum + f.sizeBytes, 0);
+      await this.assertStorageLimit(tenantId, totalBytes);
       await this.prisma.scoped.vehicleDocument.createMany({
         data: dto.files.map((f) => ({
           tenantId,
@@ -402,6 +570,18 @@ export class VehiclesService {
           sizeBytes: f.sizeBytes,
           storageKey: f.storageKey,
         })),
+      });
+    }
+
+    // A beolvasás kikerül a feldolgozási listából (CONFIRMED), és a létrejött
+    // járműre mutat. updateMany: idempotens, nem dob, ha a scan már nincs meg.
+    if (dto.scanId) {
+      await this.prisma.scoped.vehicleScan.updateMany({
+        where: { id: dto.scanId },
+        data: {
+          status: VehicleScanStatus.CONFIRMED,
+          confirmedVehicleId: vehicle.id,
+        },
       });
     }
 
@@ -654,6 +834,54 @@ export class VehiclesService {
       throw AppException.vehiclesLimitReached();
     }
   }
+
+  /**
+   * Tárhely-keret ellenőrzése jármű-dokumentum (forgalmi-beolvasás) feltöltése
+   * előtt. Az effektív keret = csomag-tárhely + vásárolt extra
+   * (Tenant.extraStorageGb). A használat a tárolt dokumentumok és jármű-
+   * dokumentumok méretének összege (tenant-scope). A számla-feltöltési úttal
+   * (DocumentsService.assertStorageLimit) azonos számítás, hogy a jármű-
+   * dokumentumok ne kerülhessék meg a keretet.
+   */
+  private async assertStorageLimit(
+    tenantId: string,
+    additionalBytes: number,
+  ): Promise<void> {
+    const [subscription, tenant] = await Promise.all([
+      this.prisma.system.subscription.findUnique({
+        where: { tenantId },
+        select: { planTier: true },
+      }),
+      this.prisma.system.tenant.findUnique({
+        where: { id: tenantId },
+        select: { extraStorageGb: true },
+      }),
+    ]);
+    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const effective = effectiveStorageBytes(
+      PLAN_LIMITS[planTier].maxStorageBytes,
+      tenant?.extraStorageGb ?? 0,
+    );
+    if (effective === UNLIMITED) return;
+
+    const [docSize, vehicleDocSize] = await Promise.all([
+      this.prisma.scoped.document.aggregate({ _sum: { sizeBytes: true } }),
+      this.prisma.scoped.vehicleDocument.aggregate({ _sum: { sizeBytes: true } }),
+    ]);
+    const used =
+      (docSize._sum.sizeBytes ?? 0) + (vehicleDocSize._sum.sizeBytes ?? 0);
+
+    if (used + additionalBytes > effective) {
+      throw AppException.storageLimitReached();
+    }
+  }
+}
+
+/** ISO dátum (YYYY-MM-DD) → Date, vagy null ha hiányzik/érvénytelen. */
+function parseIsoDate(value: string | undefined | null): Date | null {
+  if (!value) return null;
+  const d = new Date(value);
+  return isNaN(d.getTime()) ? null : d;
 }
 
 /** Rendszám normalizálása: csak betűk/számok, nagybetű (pl. "ABC-123" → "ABC123"). */

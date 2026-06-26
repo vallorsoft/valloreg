@@ -2,10 +2,14 @@ import { Inject, Injectable, Logger } from '@nestjs/common';
 import { randomUUID } from 'node:crypto';
 import {
   ComplianceType,
+  effectiveStorageBytes,
   isAllowedDocumentMimeType,
   MAX_DOCUMENT_SIZE_BYTES,
+  PLAN_LIMITS,
+  PlanTier,
   ReminderKind,
   ReminderType,
+  UNLIMITED,
 } from '@valloreg/shared';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
@@ -176,6 +180,11 @@ export class VerificationService {
     if (isNaN(due.getTime())) {
       throw AppException.validation('Érvénytelen lejárati dátum.');
     }
+
+    // A jármű-dokumentum mérete a tárhely-használatba számít – a keret-
+    // ellenőrzés a sor létrehozása ELŐTT (a számla-feltöltési úttal azonos
+    // számítás), hogy a compliance-dokumentumok ne kerülhessék meg a keretet.
+    await this.assertStorageLimit(tenantId, file.sizeBytes);
 
     // 1) Emlékeztető beállítása (a típushoz tartozó compliance emlékeztető).
     const reminderType = COMPLIANCE_TO_REMINDER[type];
@@ -409,6 +418,55 @@ export class VerificationService {
           intervalDays: 365,
         },
       });
+    }
+  }
+
+  // ── Tárhely-keret ───────────────────────────────────────────────────────────
+
+  /**
+   * Tárhely-keret ellenőrzése compliance-dokumentum archiválása előtt. Az
+   * effektív keret = csomag-tárhely + vásárolt extra (Tenant.extraStorageGb). A
+   * használat a tárolt dokumentumok és jármű-dokumentumok méretének összege. A
+   * SYSTEM klienst használjuk EXPLICIT tenantId-szűréssel (a service-t a
+   * háttér-ütemező is hívhatja, request-kontextus nélkül) – a számítás a
+   * számla-feltöltési úttal (DocumentsService.assertStorageLimit) azonos.
+   */
+  private async assertStorageLimit(
+    tenantId: string,
+    additionalBytes: number,
+  ): Promise<void> {
+    const [subscription, tenant] = await Promise.all([
+      this.prisma.system.subscription.findUnique({
+        where: { tenantId },
+        select: { planTier: true },
+      }),
+      this.prisma.system.tenant.findUnique({
+        where: { id: tenantId },
+        select: { extraStorageGb: true },
+      }),
+    ]);
+    const planTier = (subscription?.planTier ?? PlanTier.STARTER) as PlanTier;
+    const effective = effectiveStorageBytes(
+      PLAN_LIMITS[planTier].maxStorageBytes,
+      tenant?.extraStorageGb ?? 0,
+    );
+    if (effective === UNLIMITED) return;
+
+    const [docSize, vehicleDocSize] = await Promise.all([
+      this.prisma.system.document.aggregate({
+        _sum: { sizeBytes: true },
+        where: { tenantId },
+      }),
+      this.prisma.system.vehicleDocument.aggregate({
+        _sum: { sizeBytes: true },
+        where: { tenantId },
+      }),
+    ]);
+    const used =
+      (docSize._sum.sizeBytes ?? 0) + (vehicleDocSize._sum.sizeBytes ?? 0);
+
+    if (used + additionalBytes > effective) {
+      throw AppException.storageLimitReached();
     }
   }
 }

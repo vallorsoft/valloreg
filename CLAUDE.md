@@ -228,3 +228,55 @@ free-tier spin-down ellen. Részletek: `docs/DEPLOY.md`.
 - Commitolj világos, leíró üzenettel (igazodj a repó magyar stílusához, ahol természetes).
 - Pushold `git push -u origin <branch>`-csel; hálózati hibánál backoff-fal próbálkozz újra.
 - **Ne nyiss pull requestet, csak ha kifejezetten kérik.**
+
+## Deploy / Git workflow – kanonikus szabályok
+
+- **A Render a `main` ágról deployol** (`valloreg-api` + `valloreg-web`; a Blueprint a
+  `main`-hez kötött). **Minden ág a friss `main`-ről induljon, minden PR a `main`-re menjen**,
+  és oda kell merge-elni; **mindig a `main` a kanonikus ág**. (Ne indíts ágat régi `main`-ről –
+  a divergencia fájdalmas merge-konfliktusokat szül.)
+- **Minden squash-merge commit a PR-számmal KEZDŐDJÖN** a `main`-en (pl. `#30 fix(gemini): …`),
+  hogy a `git log` minden sora egy konkrét PR-hez vezessen.
+
+## Tesztelés
+
+A repó teljes teszt-piramist tartalmaz; a CI (`.github/workflows/ci.yml`) három jobban futtatja.
+
+- **api – Jest** (`apps/api/jest.config.js`, két project): `pnpm --filter @valloreg/api test`
+  (unit, DB nélkül) és `test:int` (integráció, élő Postgres). Unit: megosztott kontraktusok,
+  zod sémák, i18n paritás, guardok, stub providerek, `TENANT_SCOPED_MODELS`↔séma konzisztencia.
+  Integráció: tenant-izoláció (fail-closed), `TenantGuard`, enum-paritás, matching,
+  reminder-sürgősség, dokumentum-pipeline, DB-kényszerek (unique/cascade/SetNull).
+- **web – Vitest + RTL** (`apps/web/vitest.config.ts`): `pnpm --filter @valloreg/web test`.
+- **web E2E – Playwright** (`apps/web/playwright.config.ts`): `pnpm --filter @valloreg/web e2e`
+  — valódi (headless Chromium) böngészővel a publikus felület.
+- A teszt-fájlok **kívül esnek a `tsc` typecheck hatókörén** (a `tsconfig` `exclude`-ja),
+  így nem érintik a build-kaput.
+
+## AI / Gemini (INGYENES szint)
+
+- **Ingyenes Gemini API** (`GEMINI_API_KEY`) mind a számla-, mind a jármű-beolvasásnál.
+- **Csak ingyenes modellek** kerülhetnek a láncba (`gemini-2.0-flash`, `-flash-lite`,
+  `gemini-2.5-flash`, `-flash-lite`). **NE használj `gemini-1.5-*`-ot** (kivezetve, 404). A
+  providerek `404/429/500/503`-ra a **következő modellre váltanak**.
+- A `render.yaml` `value: gemini`-vel kényszeríti (OCR + EXTRACTION) – **ne állítsd `stub`-ra**.
+
+## Web + API topológia + Auth buktatók
+
+- **Két külön Render-szolgáltatás, KÜLÖN aldomainen** (`valloreg-api` `/api` prefixszel,
+  `valloreg-web`). A két aldomain **CROSS-SITE** (az `onrender.com` a Public Suffix List-en van).
+- **Token-modell:** rövid access token (15 perc) a kliensben (`localStorage` ha „Remember me",
+  egyébként `sessionStorage`); refresh token **httpOnly cookie**-ban (`valloreg_rt`). 401-re a
+  kliens csendben frissít (`credentials: 'include'`).
+- **⚠️ Cross-site cookie (fő buktató):** a refresh cookie csak `SameSite=None; Secure`-rel megy
+  át (prod). Ha romlik: `NODE_ENV=production` az API-n, PONTOS `CORS_ORIGINS` + `credentials: true`.
+- **2FA (TOTP):** opcionális; a login 2FA-challenge-et adhat, a kliens a kód-lépésre vált
+  (`verifyTwoFactorLogin`).
+
+## Nyitott feladat – TOCTOU a limit-ellenőrzéseken (külön PR + teszt)
+
+A csomag-limit ellenőrzések „count/aggregate → create" mintát követnek **tranzakció nélkül**, így
+két egyidejű kérés túlléphet a kereten. Érintett: `documents.service.ts`, `vehicles.service.ts`,
+`users.service.ts`. **Teendő:** a „count → create" párokat egy `prisma.$transaction`-be
+(`Serializable`), a limitet a tranzakción belül újraszámolni; **integrációs teszt kell**
+(párhuzamos create a limit körül).

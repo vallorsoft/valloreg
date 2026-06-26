@@ -84,6 +84,17 @@ services:
       # (Ha üres, a CORS_ORIGINS első elemére esik vissza.)
       - key: WEB_APP_URL
         value: https://valloreg-web.onrender.com
+      # KAPCSOLÓ (auth cookie): same-origin auth proxy. Ha "true", a refresh
+      # cookie SameSite=Lax (first-party). EGYÜTT kell bekapcsolni a web
+      # NEXT_PUBLIC_SAME_ORIGIN_AUTH-tal. Alap: false (cross-site, SameSite=None).
+      - key: SAME_ORIGIN_FRONTEND
+        value: "true"
+      # Háttér-ütemezők (reminders/reports/verification/benchmark). 1 instance
+      # (Render free) esetén marad "true". Több instance-ra skálázva állítsd
+      # "false"-ra MINDEN instance-on, KIVÉVE egyet, hogy a jobok ne fussanak
+      # többször (duplikált e-mail/push).
+      - key: SCHEDULER_ENABLED
+        value: "true"
       # Cloudflare R2 (S3-kompatibilis) – kézzel állítsd be:
       - key: S3_ENDPOINT
         sync: false # https://<ACCOUNT_ID>.r2.cloudflarestorage.com
@@ -97,11 +108,15 @@ services:
         value: valloreg-documents
       - key: S3_FORCE_PATH_STYLE
         value: "true"
-      # AI / OCR – Fázis 1-ben stub; Fázis 2-ben állítsd `gemini`-re + add meg a kulcsot:
+      # AI / OCR – Gemini Vision (valódi olvasás). FONTOS: ezek `value`-k, ezért a
+      # Blueprint MINDEN szinkronnál ráírja a szolgáltatásra – tehát itt KELL
+      # `gemini`-nek lennie, különben a sync visszaállítja stubra a dashboardon
+      # kézzel beállított értéket (ez okozta a „nem olvas” hibát).
       - key: EXTRACTION_PROVIDER
-        value: stub
+        value: gemini
       - key: OCR_PROVIDER
-        value: stub
+        value: gemini
+      # A Gemini API-kulcs titok – a Render dashboardon kell beállítani:
       - key: GEMINI_API_KEY
         sync: false
       # RO megfelelőség-ellenőrzés (ITP/RCA/rovinietă). Alap: stub (álladat).
@@ -119,6 +134,9 @@ services:
         sync: false
       - key: MAIL_FROM
         sync: false
+      # A feladó megjelenített neve (módosítható). Alap: Valloreg.
+      - key: MAIL_FROM_NAME
+        value: Valloreg
       # Web Push (VAPID) – opcionális:
       - key: VAPID_PUBLIC_KEY
         sync: false
@@ -153,9 +171,20 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      # Build-idő: kikapcsolt telemetria (kicsivel kevesebb memória/zaj a buildben).
+      - key: NEXT_TELEMETRY_DISABLED
+        value: "1"
       # A build-időben beépül a bundle-be; igazítsd, ha más az API URL:
       - key: NEXT_PUBLIC_API_URL
         value: https://valloreg-api.onrender.com/api
+      # KAPCSOLÓ (auth cookie): same-origin auth proxy. Ha "true", a Next a
+      # /api/auth/* hívásokat a saját originjáról proxyzza az API-ra → a refresh
+      # cookie first-party (SameSite=Lax), nincs harmadik-fél-cookie gond.
+      # EGYÜTT kell bekapcsolni az API SAME_ORIGIN_FRONTEND-jével (mindkettő
+      # "true"). Build-időben épül be, ezért váltás után újra kell deployolni a
+      # webet. Alap: false (a mostani cross-site működés marad).
+      - key: NEXT_PUBLIC_SAME_ORIGIN_AUTH
+        value: "true"
       - key: NEXT_PUBLIC_APP_NAME
         value: Valloreg
       - key: NEXT_PUBLIC_VAPID_PUBLIC_KEY

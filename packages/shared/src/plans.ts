@@ -27,10 +27,10 @@ const GB = 1024 * 1024 * 1024;
 
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
   [PlanTier.STARTER]: {
-    maxVehicles: 2,
+    maxVehicles: 3,
     maxUsers: 3,
-    maxStorageBytes: 2 * GB,
-    maxDocumentsPerMonth: 50,
+    maxStorageBytes: 1 * GB,
+    maxDocumentsPerMonth: 75,
     features: [
       FeatureKey.OCR,
       FeatureKey.AI_PROCESSING,
@@ -39,10 +39,10 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     ],
   },
   [PlanTier.STANDARD]: {
-    maxVehicles: 5,
-    maxUsers: 5,
-    maxStorageBytes: 10 * GB,
-    maxDocumentsPerMonth: 200,
+    maxVehicles: 15,
+    maxUsers: 10,
+    maxStorageBytes: 5 * GB,
+    maxDocumentsPerMonth: 400,
     features: [
       FeatureKey.OCR,
       FeatureKey.AI_PROCESSING,
@@ -54,10 +54,10 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     ],
   },
   [PlanTier.PROFESSIONAL]: {
-    maxVehicles: 20,
-    maxUsers: 20,
-    maxStorageBytes: 50 * GB,
-    maxDocumentsPerMonth: 1000,
+    maxVehicles: UNLIMITED,
+    maxUsers: UNLIMITED,
+    maxStorageBytes: 15 * GB,
+    maxDocumentsPerMonth: UNLIMITED,
     features: ALL_FEATURE_KEYS,
   },
   [PlanTier.BUSINESS]: {
@@ -79,14 +79,85 @@ export function isWithinLimit(current: number, limit: number): boolean {
  * Csomag-árak (havi, nettó) az utalásos előfizetéshez. A `PLAN_CURRENCY` a
  * pénznem. Ezek alapértelmezett értékek – az üzemeltető igazíthatja.
  */
-export const PLAN_CURRENCY = 'HUF';
+export const PLAN_CURRENCY = 'RON';
 
+// Havi nettó árak LEJ-ben (RON). Ajánlott alapértékek – az üzemeltető igazíthatja.
 export const PLAN_PRICES: Record<PlanTier, number> = {
-  [PlanTier.STARTER]: 9900,
-  [PlanTier.STANDARD]: 19900,
-  [PlanTier.PROFESSIONAL]: 39900,
-  [PlanTier.BUSINESS]: 79900,
+  [PlanTier.STARTER]: 49,
+  [PlanTier.STANDARD]: 129,
+  [PlanTier.PROFESSIONAL]: 299,
+  [PlanTier.BUSINESS]: 399,
 };
+
+/**
+ * Számlázási ciklus. Éves előfizetésnél 12 hónap helyett csak
+ * `ANNUAL_MONTHS_CHARGED` (= 11) havidíjat számlázunk → 1 hónap ingyen,
+ * minden csomagnál.
+ */
+export const BillingInterval = {
+  MONTHLY: 'MONTHLY',
+  YEARLY: 'YEARLY',
+} as const;
+
+export type BillingInterval =
+  (typeof BillingInterval)[keyof typeof BillingInterval];
+
+/** Éves előfizetésnél felszámolt havidíjak száma (12 helyett). */
+export const ANNUAL_MONTHS_CHARGED = 11;
+
+/** A csomag fizetendő összege a választott ciklusra (havi díj vagy 11×havi díj). */
+export function planPrice(
+  tier: PlanTier,
+  interval: BillingInterval = BillingInterval.MONTHLY,
+): number {
+  const monthly = PLAN_PRICES[tier];
+  return interval === BillingInterval.YEARLY
+    ? monthly * ANNUAL_MONTHS_CHARGED
+    : monthly;
+}
+
+/** Az éves előfizetés teljes díja (11×havi díj). */
+export function annualPrice(tier: PlanTier): number {
+  return PLAN_PRICES[tier] * ANNUAL_MONTHS_CHARGED;
+}
+
+/** Éves fizetésnél megtakarított összeg (1 havi díj). */
+export function annualSavings(tier: PlanTier): number {
+  return PLAN_PRICES[tier] * (12 - ANNUAL_MONTHS_CHARGED);
+}
+
+/**
+ * Vásárolható extra tárhely-csomagok (havi add-on). A megvett GB hozzáadódik a
+ * csomag tárhelyéhez (a tárhely TELJES kapacitás, nem havi reset). Az aktiválás
+ * – mint a csomag – utalás után, a Super Admin panelen történik.
+ */
+export interface StoragePack {
+  /** Plusz tárhely byte-ban. */
+  bytes: number;
+  /** Havi ár (PLAN_CURRENCY). */
+  price: number;
+}
+
+export const STORAGE_PACKS: readonly StoragePack[] = [
+  { bytes: 5 * GB, price: 19 },
+  { bytes: 10 * GB, price: 29 },
+  { bytes: 25 * GB, price: 59 },
+] as const;
+
+/** 1 GB byte-ban (a tárhely-számításokhoz). */
+export const BYTES_PER_GB = GB;
+
+/**
+ * Effektív tárhely-keret: a csomag-tárhely + a vásárolt extra (GB). Korlátlan
+ * csomag-tárhelynél korlátlan marad.
+ */
+export function effectiveStorageBytes(
+  baseBytes: number,
+  extraGb: number,
+): number {
+  if (baseBytes === UNLIMITED) return UNLIMITED;
+  return baseBytes + Math.max(0, extraGb) * GB;
+}
 
 /** A próbaidőszak hossza napokban (a regisztráció ennyit ad ingyen). */
 export const TRIAL_DAYS = 14;

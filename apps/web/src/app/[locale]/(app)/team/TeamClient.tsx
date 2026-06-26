@@ -14,6 +14,7 @@ import { getActiveTenantId } from '@/lib/auth';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const MANAGER_ROLES = new Set<string>([TenantRole.OWNER, TenantRole.ADMIN]);
 
@@ -26,6 +27,7 @@ export function TeamClient() {
   const [canManage, setCanManage] = useState(false);
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
   const [inviteEmail, setInviteEmail] = useState('');
   const [inviteRole, setInviteRole] = useState<string>(TenantRole.VIEWER);
@@ -39,6 +41,7 @@ export function TeamClient() {
   );
 
   const load = useCallback(async () => {
+    setLoadError(false);
     try {
       const me = await authApi.me();
       setCurrentUserId(me.user.id);
@@ -53,12 +56,18 @@ export function TeamClient() {
       if (manage) {
         setInvitations(await usersApi.listInvitations());
       }
-    } catch {
-      // 401 → AppShell redirect
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    void load();
+  }, [load]);
 
   useEffect(() => {
     void load();
@@ -121,6 +130,15 @@ export function TeamClient() {
       <div className="flex items-center justify-center py-16 text-sm text-anthracite-500">
         {t('loading')}
       </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <>
+        <PageHeading title={t('title')} subtitle={t('subtitle')} />
+        <LoadErrorState onRetry={reload} />
+      </>
     );
   }
 

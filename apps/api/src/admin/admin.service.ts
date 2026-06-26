@@ -2,9 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { PlanTier as DbPlanTier } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
+import { MailerService } from '../storage/mailer.service';
+import { BillingSettingsService } from '../billing/billing-settings.service';
 import { AppException } from '../common/exceptions/app.exception';
 import type { SetSubscriptionDto } from './dto/set-subscription.dto';
 import type { SetFeatureOverrideDto } from './dto/set-feature-override.dto';
+import type { SetBillingSettingsDto } from './dto/set-billing-settings.dto';
 
 /**
  * Super Admin (platform) műveletek a cégek (tenantek) felett.
@@ -19,6 +22,8 @@ export class AdminService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
+    private readonly mailer: MailerService,
+    private readonly billingSettings: BillingSettingsService,
   ) {}
 
   /** Cégek listája aggregátumokkal és előfizetéssel. */
@@ -84,6 +89,7 @@ export class AdminService {
       contactName: tenant.contactName,
       email: tenant.email,
       phone: tenant.phone,
+      extraStorageGb: tenant.extraStorageGb,
       createdAt: tenant.createdAt,
       subscription: tenant.subscription,
       members: tenant.memberships.map((m) => ({
@@ -128,6 +134,67 @@ export class AdminService {
     });
 
     return subscription;
+  }
+
+  /** Számla-/utalási adatok lekérése (effektív: DB ∪ env-tartalék). */
+  getBillingSettings() {
+    return this.billingSettings.getEffective();
+  }
+
+  /**
+   * Teszt-email a Brevo-konfiguráció ellenőrzéséhez. Visszaadja a küldés
+   * eredményét (ok/hiba), hogy a Super Admin lássa, jó-e a kulcs + feladó.
+   */
+  async sendTestEmail(actorUserId: string, to: string) {
+    const result = await this.mailer.send({
+      to,
+      subject: 'Valloreg – teszt e-mail (Brevo)',
+      text:
+        'Ez egy teszt e-mail a Valloreg rendszerből (Brevo).\n\n' +
+        'Ha ezt megkaptad, a rendszer-emailek kézbesítése működik.',
+    });
+    await this.audit.log({
+      userId: actorUserId,
+      action: 'admin.test_email_sent',
+      resourceType: 'Mailer',
+      resourceId: to,
+      metadata: { ok: result.ok, status: result.status ?? null },
+    });
+    return result;
+  }
+
+  /** Számla-/utalási adatok mentése (csak Super Admin). */
+  async setBillingSettings(actorUserId: string, dto: SetBillingSettingsDto) {
+    const result = await this.billingSettings.update(dto);
+    await this.audit.log({
+      userId: actorUserId,
+      action: 'admin.billing_settings_set',
+      resourceType: 'BillingSettings',
+      resourceId: 'default',
+    });
+    return result;
+  }
+
+  /** Vásárolt extra tárhely (GB) beállítása egy cégre (utalás után). */
+  async setExtraStorage(actorUserId: string, tenantId: string, gb: number) {
+    await this.assertTenantExists(tenantId);
+
+    const tenant = await this.prisma.system.tenant.update({
+      where: { id: tenantId },
+      data: { extraStorageGb: gb },
+      select: { id: true, extraStorageGb: true },
+    });
+
+    await this.audit.log({
+      tenantId,
+      userId: actorUserId,
+      action: 'admin.extra_storage_set',
+      resourceType: 'Tenant',
+      resourceId: tenantId,
+      metadata: { extraStorageGb: gb },
+    });
+
+    return tenant;
   }
 
   /** Feature flag override be/kikapcsolása egy cégre. */

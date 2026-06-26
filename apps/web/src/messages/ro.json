@@ -63,6 +63,11 @@
       "allLegal": "Toate documentele legale",
       "about": "Despre noi",
       "tagline": "Gestionarea flotei inteligent – mai puțină birocrație, mai multă transparență."
+    },
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "Pagina căutată nu a fost găsită.",
+      "backHome": "Înapoi la pagina principală"
     }
   },
   "landing": {
@@ -210,25 +215,58 @@
       "usersUnlimited": "Utilizatori nelimitați",
       "documents": "{count} documente / lună",
       "documentsUnlimited": "Documente nelimitate / lună",
+      "storage": "{gb} GB stocare",
+      "compareButton": "Compară pachetele",
       "mostPopular": "Cel mai popular",
       "cta": "Alege",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "Pentru flote mici, pentru primii pași."
         },
         "STANDARD": {
-          "name": "Standard",
-          "description": "Pentru flote în creștere, cu rapoarte și export."
+          "name": "Pro",
+          "description": "Pentru flote în creștere: rapoarte, export, memento-uri, service complex."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "Pentru gestionarea activă a flotei, cu set complet de funcții."
+          "name": "Fleet",
+          "description": "Inteligență completă a flotei: clasament, durabilitate, calitatea furnizorilor."
         },
         "BUSINESS": {
           "name": "Business",
           "description": "Pentru flote mari, fără limite."
         }
+      },
+      "billingMonthly": "Lunar",
+      "billingYearly": "Anual",
+      "perYear": "/ an",
+      "yearlyNote": "La plata anuală plătești doar 11 luni în loc de 12 – o lună gratuit.",
+      "monthFree": "O lună gratuit"
+    },
+    "compare": {
+      "title": "Compară pachetele",
+      "subtitle": "Ce poate fiecare pachet – într-un singur tabel.",
+      "feature": "Funcție",
+      "note": "Stocarea este capacitate totală (nu se resetează lunar); se poate cumpăra stocare suplimentară pentru orice pachet.",
+      "storagePacks": "Stocare suplimentară (lunar): {list}",
+      "limits": {
+        "vehicles": "Vehicule",
+        "users": "Utilizatori",
+        "documents": "Documente / lună",
+        "storage": "Stocare"
+      },
+      "rows": {
+        "ocrAi": "Procesare OCR + AI",
+        "serviceBook": "Carnet de service digital + bibliotecă",
+        "dashboard": "Panou de costuri",
+        "reports": "Rapoarte + export CSV/PDF",
+        "reminders": "Memento-uri (revizii timp/km)",
+        "majorParts": "Manoperă + service complex + cronologie",
+        "insights": "Insights (anomalii, TCO, benchmark european)",
+        "durability": "Durabilitate învățată + mentenanță predictivă",
+        "rankings": "Clasament + insigne + sfat de înlocuire",
+        "supplier": "Calitatea furnizorilor",
+        "extraStorage": "Stocare suplimentară opțională"
       }
     },
     "faq": {
@@ -269,7 +307,10 @@
       "message": "Mesaj",
       "messagePlaceholder": "Cu ce vă putem ajuta?",
       "submit": "Trimite mesajul",
-      "note": "Vă răspundem în curând. Conectarea formularului va veni într-o fază ulterioară."
+      "note": "Vom deschide aplicația dumneavoastră de e-mail cu mesajul precompletat. Vă răspundem în curând.",
+      "mailtoSubject": "Valloreg – cerere de contact",
+      "success": "Am deschis aplicația dumneavoastră de e-mail cu mesajul precompletat. Dacă nu s-a deschis, scrieți direct la {email}.",
+      "errorNoMessage": "Vă rugăm să introduceți mesajul."
     }
   },
   "auth": {
@@ -291,7 +332,8 @@
       "submit": "Autentificare",
       "noAccount": "Nu aveți cont?",
       "registerLink": "Înregistrați-vă",
-      "forgotPassword": "Ați uitat parola?"
+      "forgotPassword": "Ați uitat parola?",
+      "rememberMe": "Ține-mă conectat"
     },
     "register": {
       "title": "Înregistrare",
@@ -364,6 +406,22 @@
       "success": "Parola a fost schimbată cu succes. Acum vă puteți autentifica cu noua parolă.",
       "goToLogin": "Autentificare",
       "invalidLink": "Linkul de resetare este invalid sau lipsește. Solicitați unul nou."
+    },
+    "acceptInvite": {
+      "title": "Acceptați invitația",
+      "subtitle": "Configurați-vă contul pentru a vă alătura companiei.",
+      "name": "Nume",
+      "namePlaceholder": "Numele dumneavoastră",
+      "password": "Parolă",
+      "passwordPlaceholder": "Cel puțin 8 caractere",
+      "confirmPassword": "Confirmați parola",
+      "confirmPasswordPlaceholder": "Introduceți din nou parola",
+      "submit": "Acceptă invitația",
+      "backToLogin": "Înapoi la autentificare",
+      "success": "Invitația a fost acceptată. Acum vă puteți autentifica.",
+      "goToLogin": "Autentificare",
+      "invalidLink": "Linkul invitației este invalid sau lipsește. Solicitați unul nou de la compania dumneavoastră.",
+      "hint": "Dacă aveți deja un cont cu această adresă de e-mail, puteți accepta invitația fără a introduce o parolă."
     }
   },
   "app": {
@@ -374,6 +432,7 @@
       "reminders": "Mementouri",
       "reports": "Rapoarte",
       "insights": "Anomalii",
+      "rankings": "Clasament",
       "team": "Echipă",
       "billing": "Abonament",
       "account": "Cont",
@@ -428,10 +487,21 @@
       "plate": "Număr de înmatriculare",
       "make": "Marcă",
       "model": "Model",
+      "segment": "Segment",
       "year": "An fabricație",
       "odometer": "Kilometraj",
       "cost": "Cost total",
       "actions": "Acțiuni"
+    },
+    "segments": {
+      "all": "Toate",
+      "van": "Furgonetă (< 3,5 t)",
+      "light_truck": "Camion ușor (3,5–7,5 t)",
+      "truck_7_5_18": "Camion mediu (7,5–18 t)",
+      "truck_18_plus": "Cap tractor (18 t+)",
+      "semi_trailer": "Semiremorcă",
+      "trailer": "Remorcă",
+      "other": "Altele"
     },
     "empty": {
       "title": "Niciun vehicul încă",
@@ -487,6 +557,64 @@
         "item": "Articol",
         "category": "Categorie",
         "amount": "Sumă"
+      }
+    },
+    "fields": {
+      "sectionTech": "Date tehnice",
+      "sectionOwner": "Proprietar",
+      "sectionUser": "Utilizator / utilizator în leasing",
+      "vehicleType": "Tip/variantă (D.2)",
+      "firstRegistration": "Prima înmatriculare",
+      "category": "Categoria vehiculului (J)",
+      "fleetSegment": "Segment de flotă",
+      "fleetSegmentAuto": "Automat (din talon)",
+      "revenuePerKm": "Venit/km (opțional)",
+      "fuelType": "Combustibil",
+      "engineCm3": "Capacitate cilindrică (cm³)",
+      "powerKw": "Putere (kW)",
+      "color": "Culoare",
+      "seats": "Număr de locuri",
+      "maxMassKg": "Masa maximă autorizată (kg)",
+      "kerbWeightKg": "Masa proprie (kg)",
+      "euroClass": "Clasă de emisii (Euro)",
+      "typeApproval": "Număr omologare de tip (K)",
+      "party": {
+        "type": "Tip",
+        "person": "Persoană fizică",
+        "company": "Firmă",
+        "name": "Nume",
+        "address": "Adresă",
+        "cnp": "CNP",
+        "cui": "CUI"
+      }
+    },
+    "scans": {
+      "title": "Scanări talon",
+      "subtitle": "Încarcă talonul (1–2 pagini) — după procesare îl poți salva ca vehicul.",
+      "uploadHint": "Trage aici poza/PDF-ul talonului sau alege un fișier (max. 2 pagini).",
+      "choose": "Alege fișier",
+      "uploading": "Se încarcă…",
+      "loading": "Se încarcă…",
+      "empty": "Nicio scanare în curs.",
+      "pages": "({count} pagini)",
+      "saveAsVehicle": "Salvează ca vehicul",
+      "updateVehicle": "Actualizează existentul",
+      "dismiss": "Renunță",
+      "dismissing": "Se renunță…",
+      "errorUpload": "Încărcarea a eșuat, încearcă din nou.",
+      "table": {
+        "file": "Fișier / număr",
+        "uploadedAt": "Încărcat",
+        "status": "Stare",
+        "actions": "Acțiuni"
+      },
+      "status": {
+        "PENDING": "În coadă",
+        "OCR_RUNNING": "Recunoaștere text",
+        "EXTRACTING": "Extragere date",
+        "DONE": "Gata",
+        "FAILED": "Eșuat",
+        "CONFIRMED": "Salvat"
       }
     },
     "scanRegistration": "Scanare talon",
@@ -667,7 +795,19 @@
         "price": "Preț",
         "empty": "Niciun articol.",
         "unassigned": "Neatribuit",
-        "assignError": "Atribuirea a eșuat."
+        "assignError": "Atribuirea a eșuat.",
+        "addLaborTitle": "Adăugare manoperă",
+        "laborNamePlaceholder": "Denumire (ex. Manoperă)",
+        "laborAmountPlaceholder": "Sumă",
+        "addLabor": "Adaugă",
+        "adding": "Se adaugă…",
+        "laborInvalid": "Introdu o denumire și o sumă pozitivă.",
+        "laborError": "Adăugarea liniei a eșuat.",
+        "delete": "Șterge",
+        "deleting": "Se șterge…",
+        "deleteError": "Ștergerea liniei a eșuat.",
+        "confirmDelete": "Sigur ștergi această linie?",
+        "uncertain": "Nesigur"
       }
     },
     "actions": {
@@ -696,6 +836,62 @@
       "confirmOverwrite": "Suprascrieți factura originală? Documentul original, factura și pozițiile sale vor fi șterse definitiv.",
       "errorOverwrite": "Suprascrierea a eșuat, încercați din nou.",
       "orDelete": "sau ștergeți această încărcare cu butonul Ștergere de mai sus."
+    }
+  },
+  "majorComponents": {
+    "title": "Service complex",
+    "subtitle": "Cronologia service-urilor complexe (înlocuiri/revizii).",
+    "forecastTitle": "Prognoză durabilitate",
+    "nextDue": "Scadență estimată",
+    "estCost": "Cost estimat",
+    "expected": "estimat",
+    "status": {
+      "ok": "În regulă",
+      "watch": "De urmărit",
+      "due": "Scadent",
+      "overdue": "Depășit"
+    },
+    "source": {
+      "empirical": "învățat",
+      "seed": "bază",
+      "manual": "manual"
+    },
+    "add": "Adaugă",
+    "cancel": "Anulează",
+    "save": "Salvează",
+    "saving": "Se salvează…",
+    "loading": "Se încarcă…",
+    "empty": "Încă nu există evenimente de service complex.",
+    "delete": "Șterge",
+    "confirmDelete": "Sigur ștergi acest eveniment?",
+    "addError": "Înregistrarea a eșuat.",
+    "deleteError": "Ștergerea a eșuat.",
+    "component": "Componentă",
+    "kind": "Tip",
+    "titleField": "Denumire",
+    "titlePlaceholder": "ex. Revizie cutie de viteze",
+    "odometerKm": "Kilometraj (la înlocuire)",
+    "date": "Dată",
+    "partsCost": "Cost piese",
+    "laborCost": "Manoperă",
+    "notes": "Observații",
+    "kinds": {
+      "replacement": "Înlocuire",
+      "refurbishment": "Revizie"
+    },
+    "components": {
+      "turbo": "Turbosuflantă",
+      "engine_overhaul": "Revizie motor",
+      "injection": "Injecție",
+      "clutch": "Ambreiaj",
+      "driveshaft": "Cardan",
+      "gearbox_overhaul": "Revizie cutie de viteze",
+      "differential": "Diferențial",
+      "dpf_egr": "DPF / EGR",
+      "air_compressor": "Compresor de aer",
+      "steering": "Casetă de direcție",
+      "cooling": "Sistem de răcire",
+      "other": "Altele"
     }
   },
   "reminders": {
@@ -933,6 +1129,88 @@
       "title": "Rechemări",
       "subtitle": "Notificări publice de rechemare pentru vehiculele flotei tale (din sursă gratuită).",
       "remedy": "De făcut"
+    },
+    "itemCategories": {
+      "brakes": "Frâne",
+      "engine": "Motor",
+      "filters": "Filtre",
+      "tires": "Anvelope",
+      "suspension": "Suspensie",
+      "electrical": "Electric",
+      "transmission": "Transmisie",
+      "body": "Caroserie",
+      "fluids": "Lichide",
+      "brake_pads": "Plăcuțe de frână",
+      "timing_belt": "Curea de distribuție",
+      "oil_change": "Schimb de ulei",
+      "other": "Altele"
+    },
+    "durability": {
+      "title": "Studiu de durabilitate (pe segment)",
+      "subtitle": "Durata de viață diferă pe categorie (furgonetă vs. cap tractor vs. remorcă). Valoarea estimată poate fi setată și manual, pe lângă cea implicită (învățată/de bază).",
+      "segment": "Segment",
+      "component": "Componentă",
+      "expectedKm": "Durată estimată",
+      "source": "Sursă",
+      "samples": "Mostre",
+      "override": "Suprascriere manuală (km)",
+      "save": "Salvează",
+      "clear": "Șterge",
+      "loading": "Se încarcă…",
+      "saveError": "Salvarea a eșuat.",
+      "sources": {
+        "manual": "manual",
+        "empirical": "învățat",
+        "seed": "bază"
+      }
+    }
+  },
+  "rankings": {
+    "title": "Clasament",
+    "subtitle": "Clasamentul vehiculelor după eficiență de cost și fiabilitate, pe segmente și pe marcă/model.",
+    "loading": "Se încarcă…",
+    "unavailable": "Această funcție nu este disponibilă în planul tău.",
+    "empty": "Încă nu există suficiente date pentru clasament.",
+    "exportCsv": "Export CSV",
+    "exportPdf": "PDF",
+    "replaceAdvice": "De înlocuit",
+    "tabs": {
+      "segment": "După segment",
+      "model": "După marcă/model",
+      "suppliers": "Furnizori"
+    },
+    "suppliers": {
+      "empty": "Încă nu există date de service complex legate de furnizori.",
+      "supplier": "Furnizor",
+      "component": "Componentă",
+      "medianCost": "Cost median",
+      "medianLife": "Durată mediană",
+      "events": "Evenimente"
+    },
+    "table": {
+      "vehicle": "Vehicul",
+      "score": "Scor",
+      "costPerKm": "Cost/km",
+      "profitPerKm": "Profit/km",
+      "bigPartsDue": "Service complex scadent",
+      "badges": "Insigne"
+    },
+    "badges": {
+      "segment_champion": "Campion segment",
+      "model_champion": "Campion model",
+      "lowest_cost_km": "Cel mai ieftin km",
+      "most_reliable": "Cel mai fiabil"
+    },
+    "csv": {
+      "group": "Grup",
+      "vehicle": "Vehicul",
+      "score": "Scor",
+      "costPerKm": "Cost/km",
+      "revenuePerKm": "Venit/km",
+      "profitPerKm": "Profit/km",
+      "majorEvents": "Servicii complexe",
+      "bigPartsDue": "Service complex scadent",
+      "replaceAdvice": "De înlocuit"
     }
   },
   "admin": {
@@ -953,9 +1231,9 @@
       "invoices": "Facturi"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -964,6 +1242,33 @@
       "PAST_DUE": "Plată restantă",
       "CANCELED": "Anulat"
     },
+    "billing": {
+      "title": "Date de facturare / plată",
+      "subtitle": "Aceste date sunt trimise de sistem în e-mailul de solicitare a abonamentului. Câmpurile goale folosesc setarea serverului (env) ca rezervă.",
+      "loading": "Se încarcă…",
+      "save": "Salvează",
+      "saving": "Se salvează…",
+      "saved": "Salvat.",
+      "error": "Salvarea a eșuat.",
+      "fields": {
+        "companyName": "Emitent (nume firmă)",
+        "taxNumber": "Cod fiscal",
+        "address": "Adresă",
+        "beneficiary": "Beneficiar",
+        "iban": "IBAN / Cont",
+        "bankName": "Bancă",
+        "swift": "SWIFT",
+        "notifyEmail": "E-mail de notificare (solicitare nouă)"
+      },
+      "test": {
+        "title": "E-mail de test (verificare configurare Brevo)",
+        "placeholder": "Adresa de e-mail destinație",
+        "send": "Trimite test",
+        "sending": "Se trimite…",
+        "ok": "Trimis către {to}. Dacă nu ajunge, verifică expeditorul validat în Brevo.",
+        "fail": "Eșuat: {error}. Verifică cheia API Brevo și expeditorul validat."
+      }
+    },
     "subscription": {
       "title": "Abonament",
       "plan": "Plan",
@@ -971,6 +1276,13 @@
       "save": "Salvare",
       "saving": "Se salvează…",
       "saved": "Abonamentul a fost salvat.",
+      "error": "Salvarea a eșuat."
+    },
+    "storage": {
+      "label": "Stocare extra (GB)",
+      "save": "Salvează stocarea",
+      "saving": "Se salvează…",
+      "saved": "Stocarea extra a fost salvată.",
       "error": "Salvarea a eșuat."
     },
     "features": {
@@ -984,6 +1296,24 @@
       "forceOn": "Pornit",
       "forceOff": "Oprit",
       "error": "Actualizarea a eșuat."
+    },
+    "featureKeys": {
+      "OCR": "Recunoaștere text OCR",
+      "AI_PROCESSING": "Procesare AI",
+      "DASHBOARD": "Tablou de bord",
+      "REPORTS": "Rapoarte",
+      "API": "Acces API",
+      "EXPORT": "Export",
+      "REMINDERS": "Memento-uri",
+      "DOCUMENT_LIBRARY": "Bibliotecă documente",
+      "ANALYTICS": "Analitică premium"
+    },
+    "roles": {
+      "OWNER": "Proprietar",
+      "FLEET_MANAGER": "Manager de flotă",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Contabil",
+      "VIEWER": "Vizualizator"
     },
     "members": {
       "title": "Membri",
@@ -1018,12 +1348,17 @@
       "bank": "Bancă",
       "swift": "SWIFT",
       "reference": "Detalii plată",
-      "referenceHint": "Vă rugăm includeți acest cod: {reference}"
+      "referenceHint": "Vă rugăm includeți acest cod: {reference}",
+      "monthly": "Lunar",
+      "yearly": "Anual",
+      "perYear": "/ an",
+      "yearlyNote": "La plata anuală plătești doar 11 luni în loc de 12 – o lună gratuit.",
+      "monthFree": "O lună gratuit"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -1036,11 +1371,27 @@
       "title": "Utilizare",
       "vehicles": "Vehicule",
       "users": "Utilizatori",
-      "documents": "Documente (luna aceasta)"
+      "documents": "Documente (luna aceasta)",
+      "storage": "Stocare",
+      "includesExtra": "include {gb} GB extra",
+      "storageNote": "Stocarea este capacitate totală (nu se resetează lunar).",
+      "storagePacks": "Stocare suplimentară (lunar): {list}",
+      "buyStorageTitle": "Cumpără stocare suplimentară (lunar, prin transfer):"
     },
     "features": {
       "title": "Funcții disponibile",
-      "none": "Nicio funcție activată."
+      "none": "Nicio funcție activată.",
+      "keys": {
+        "OCR": "Recunoaștere text OCR",
+        "AI_PROCESSING": "Procesare AI",
+        "DASHBOARD": "Tablou de bord",
+        "REPORTS": "Rapoarte",
+        "API": "Acces API",
+        "EXPORT": "Export",
+        "REMINDERS": "Memento-uri",
+        "DOCUMENT_LIBRARY": "Bibliotecă documente",
+        "ANALYTICS": "Analitică premium"
+      }
     }
   },
   "account": {
@@ -1097,5 +1448,61 @@
     "working": "Se procesează…",
     "error": "A apărut o eroare, încercați din nou.",
     "consentRequired": "Activează mai întâi consimțământul pentru marketing/notificări (bannerul de cookie-uri)."
+  },
+  "legal": {
+    "lastUpdated": "Ultima actualizare: 1 iunie 2025",
+    "backToHome": "Înapoi la pagina principală",
+    "privacy": {
+      "title": "Politica de confidențialitate",
+      "intro": "Această politică descrie modul în care Valloreg prelucrează datele cu caracter personal furnizate în timpul utilizării serviciului. Prelucrarea se realizează în conformitate cu Regulamentul general privind protecția datelor (GDPR) al Uniunii Europene.",
+      "sections": [
+        {
+          "heading": "Operatorul de date",
+          "body": "Serviciul este operat de Valloreg. Pentru întrebări privind confidențialitatea, ne puteți contacta la {email}."
+        },
+        {
+          "heading": "Ce date prelucrăm",
+          "body": "Date de cont și de contact (nume, adresă de e-mail, date ale companiei), precum și documentele și datele despre vehicule încărcate în timpul utilizării serviciului. Jurnalele automate pot conține date tehnice (adresă IP, tip de browser) în scop de securitate și operare."
+        },
+        {
+          "heading": "Scopul și temeiul prelucrării",
+          "body": "Prelucrăm datele pentru furnizarea serviciului, executarea contractului, facturare și îndeplinirea obligațiilor legale. Temeiul juridic îl constituie executarea contractului, interesul legitim sau obligația legală."
+        },
+        {
+          "heading": "Stocarea și transferul datelor",
+          "body": "Păstrăm datele atât timp cât contul este activ sau cât prevede legea. În calitate de persoane împuternicite, folosim furnizori de găzduire, e-mail și AI, doar în măsura necesară pentru funcționarea serviciului."
+        },
+        {
+          "heading": "Drepturile dumneavoastră",
+          "body": "Aveți dreptul de acces, rectificare, ștergere, restricționare a prelucrării și de portabilitate a datelor personale. Cererea o puteți transmite la {email}."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Termeni și condiții",
+      "intro": "Prin utilizarea serviciului Valloreg acceptați următorii termeni. Vă rugăm să îi citiți cu atenție înainte de utilizare.",
+      "sections": [
+        {
+          "heading": "Serviciul",
+          "body": "Valloreg oferă un software de gestionare a flotei care prelucrează documentele și datele despre vehicule încărcate cu ajutorul OCR și al inteligenței artificiale. Serviciul este furnizat conform condițiilor planului de abonament în vigoare."
+        },
+        {
+          "heading": "Contul și responsabilitatea",
+          "body": "Sunteți responsabil pentru păstrarea în siguranță a datelor de acces și pentru activitățile desfășurate prin contul dumneavoastră. Serviciul poate fi utilizat exclusiv în scopuri legale."
+        },
+        {
+          "heading": "Conținut și date",
+          "body": "Conținutul încărcat de dumneavoastră rămâne proprietatea dumneavoastră. Sunteți responsabil să dețineți dreptul de a încărca și prelucra datele. Rezultatul prelucrării bazate pe AI are caracter informativ, de aceea recomandăm verificarea datelor importante."
+        },
+        {
+          "heading": "Limitarea răspunderii",
+          "body": "Serviciul este furnizat „ca atare”. În măsura permisă de lege, nu ne asumăm răspunderea pentru daune indirecte rezultate din utilizarea serviciului."
+        },
+        {
+          "heading": "Contact",
+          "body": "Pentru întrebări legate de acești termeni, ne puteți scrie la {email}."
+        }
+      ]
+    }
   }
 }

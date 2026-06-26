@@ -163,27 +163,34 @@ export class InsightsService {
       }),
     ]);
 
-    // Aggregálás járművenként.
+    // Aggregálás járművenként. A pénzösszegeket Prisma.Decimal-ban gyűjtjük
+    // (nem float), hogy ne halmozódjon kerekítési hiba; számra csak a végén,
+    // az arányokhoz/megjelenítéshez váltunk (mint a ReportsService).
     const agg = new Map<
       string,
-      { total: number; recent: number; prior: number; currency: string | null }
+      {
+        total: Prisma.Decimal;
+        recent: Prisma.Decimal;
+        prior: Prisma.Decimal;
+        currency: string | null;
+      }
     >();
     for (const item of items) {
       if (!item.vehicleId) continue;
-      const price = item.price.toNumber();
+      const price = item.price;
       const date = item.invoice?.date ?? null;
       const cur = item.invoice?.currency ?? null;
       const a = agg.get(item.vehicleId) ?? {
-        total: 0,
-        recent: 0,
-        prior: 0,
+        total: new Prisma.Decimal(0),
+        recent: new Prisma.Decimal(0),
+        prior: new Prisma.Decimal(0),
         currency: null,
       };
-      a.total += price;
+      a.total = a.total.add(price);
       if (!a.currency && cur) a.currency = cur;
       if (date) {
-        if (date >= recentStart) a.recent += price;
-        else if (date >= priorStart) a.prior += price;
+        if (date >= recentStart) a.recent = a.recent.add(price);
+        else if (date >= priorStart) a.prior = a.prior.add(price);
       }
       agg.set(item.vehicleId, a);
     }
@@ -191,13 +198,18 @@ export class InsightsService {
     const result: VehicleTco[] = [];
     for (const v of vehicles) {
       const a = agg.get(v.id);
-      if (!a || a.total <= 0) continue;
+      if (!a || a.total.lte(0)) continue;
+
+      // Arányokhoz/megjelenítéshez váltunk számra (a Decimal-akkumuláció után).
+      const total = a.total.toNumber();
+      const recent = a.recent.toNumber();
+      const prior = a.prior.toNumber();
 
       const trendPct =
-        a.prior > 0 ? Math.round((a.recent / a.prior - 1) * 100) : null;
+        prior > 0 ? Math.round((recent / prior - 1) * 100) : null;
       const costPerKm =
         v.odometerKm && v.odometerKm > 0
-          ? (a.total / v.odometerKm).toFixed(2)
+          ? (total / v.odometerKm).toFixed(2)
           : null;
 
       let recommendation: TcoRecommendation = TcoRecommendation.OK;
@@ -229,11 +241,16 @@ export class InsightsService {
       watch: 1,
       ok: 2,
     };
-    return result.sort(
-      (x, y) =>
-        rank[x.recommendation] - rank[y.recommendation] ||
-        Number(y.totalSpent) - Number(x.totalSpent),
-    );
+    return result.sort((x, y) => {
+      const byRank = rank[x.recommendation] - rank[y.recommendation];
+      if (byRank !== 0) return byRank;
+      // Az összköltséget Decimal-ban hasonlítjuk (a totalSpent string Number()-re
+      // váltása nagy összegeknél pontosságot veszítene / rossz sorrendet adna);
+      // a Decimal az agg-ban él, a vehicleId-vel visszakereshető.
+      const xTotal = agg.get(x.vehicleId)?.total ?? new Prisma.Decimal(0);
+      const yTotal = agg.get(y.vehicleId)?.total ?? new Prisma.Decimal(0);
+      return yTotal.comparedTo(xTotal);
+    });
   }
 
   // ── Detektorok ─────────────────────────────────────────────────────────────

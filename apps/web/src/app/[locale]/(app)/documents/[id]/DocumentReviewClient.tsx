@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
@@ -17,6 +17,7 @@ import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { DocumentStatusBadge } from '@/components/app/DocumentStatusBadge';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const CONFIRMABLE = new Set<string>([DocumentStatus.AUTO_OK, DocumentStatus.NEEDS_REVIEW]);
 
@@ -49,8 +50,14 @@ function vehicleLabel(v: Vehicle): string {
 
 export function DocumentReviewClient({ id }: { id: string }) {
   const t = useTranslations('documents');
+  const tCat = useTranslations('reports.categories');
   const locale = useLocale();
   const router = useRouter();
+
+  const categoryLabel = (category: string): string =>
+    tCat.has(category as Parameters<typeof tCat>[0])
+      ? tCat(category as Parameters<typeof tCat>[0])
+      : tCat('other');
   const [doc, setDoc] = useState<DocumentDetail | null>(null);
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -58,16 +65,35 @@ export function DocumentReviewClient({ id }: { id: string }) {
   const [overwriting, setOverwriting] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
   const [savingItemId, setSavingItemId] = useState<string | null>(null);
   const [itemError, setItemError] = useState<string | null>(null);
+  // Kézi munkadíj-hozzáadás állapota.
+  const [laborName, setLaborName] = useState('');
+  const [laborAmount, setLaborAmount] = useState('');
+  const [laborVehicleId, setLaborVehicleId] = useState('');
+  const [addingLabor, setAddingLabor] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
-  useEffect(() => {
-    documentsApi
-      .getById(id)
-      .then(setDoc)
-      .catch(() => setError(t('review.notFound')))
-      .finally(() => setLoading(false));
+  const loadDoc = useCallback(async () => {
+    setLoadError(false);
+    try {
+      setDoc(await documentsApi.getById(id));
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
+      else setError(t('review.notFound'));
+    } finally {
+      setLoading(false);
+    }
   }, [id, t]);
+
+  const reloadDoc = useCallback(() => {
+    setLoading(true);
+    void loadDoc();
+  }, [loadDoc]);
+
+  useEffect(() => { void loadDoc(); }, [loadDoc]);
 
   useEffect(() => {
     vehiclesApi
@@ -155,10 +181,74 @@ export function DocumentReviewClient({ id }: { id: string }) {
     }
   }
 
+  async function handleAddLabor(invoiceId: string) {
+    const amount = Number(laborAmount.replace(',', '.').replace(/\s/g, ''));
+    if (!laborName.trim() || !Number.isFinite(amount) || amount <= 0) {
+      setItemError(t('review.items.laborInvalid'));
+      return;
+    }
+    setAddingLabor(true);
+    setItemError(null);
+    try {
+      const created = await invoicesApi.addItem(invoiceId, {
+        name: laborName.trim(),
+        price: amount,
+        category: 'labor',
+        type: 'vehicle',
+        vehicleId: laborVehicleId || null,
+      });
+      setDoc((prev) => {
+        if (!prev?.invoice) return prev;
+        return {
+          ...prev,
+          invoice: { ...prev.invoice, items: [...prev.invoice.items, created] },
+        };
+      });
+      setLaborName('');
+      setLaborAmount('');
+      setLaborVehicleId('');
+    } catch (err) {
+      setItemError(err instanceof ApiError ? err.message : t('review.items.laborError'));
+    } finally {
+      setAddingLabor(false);
+    }
+  }
+
+  async function handleDeleteItem(itemId: string) {
+    if (!window.confirm(t('review.items.confirmDelete'))) return;
+    setDeletingItemId(itemId);
+    setItemError(null);
+    try {
+      await invoicesApi.deleteItem(itemId);
+      setDoc((prev) => {
+        if (!prev?.invoice) return prev;
+        return {
+          ...prev,
+          invoice: {
+            ...prev.invoice,
+            items: prev.invoice.items.filter((it) => it.id !== itemId),
+          },
+        };
+      });
+    } catch (err) {
+      setItemError(err instanceof ApiError ? err.message : t('review.items.deleteError'));
+    } finally {
+      setDeletingItemId(null);
+    }
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-16 text-sm text-anthracite-500">
         {t('loading')}
+      </div>
+    );
+  }
+
+  if (loadError) {
+    return (
+      <div className="py-8">
+        <LoadErrorState onRetry={reloadDoc} />
       </div>
     );
   }
@@ -363,6 +453,7 @@ export function DocumentReviewClient({ id }: { id: string }) {
                       <th className="px-4 py-3 font-semibold">{t('review.items.vehicle')}</th>
                       <th className="px-4 py-3 font-semibold">{t('review.items.quantity')}</th>
                       <th className="px-4 py-3 font-semibold text-right">{t('review.items.price')}</th>
+                      <th className="px-4 py-3" />
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-anthracite-100">
@@ -371,12 +462,17 @@ export function DocumentReviewClient({ id }: { id: string }) {
                         <td className="px-4 py-3 font-medium text-anthracite-900">
                           {item.name}
                           {item.confidence < 0.7 && (
-                            <span className="ml-1.5 text-xs text-yellow-500" title="Bizonytalan">
+                            <span
+                              className="ml-1.5 text-xs text-yellow-500"
+                              title={t('review.items.uncertain')}
+                            >
                               ⚠
                             </span>
                           )}
                         </td>
-                        <td className="px-4 py-3 text-anthracite-600">{item.category}</td>
+                        <td className="px-4 py-3 text-anthracite-600">
+                          {categoryLabel(item.category)}
+                        </td>
                         <td className="px-4 py-3 text-anthracite-600">
                           <select
                             value={item.vehicleId ?? ''}
@@ -399,12 +495,67 @@ export function DocumentReviewClient({ id }: { id: string }) {
                           {fmt(item.price, locale)}
                           {invoice.currency ? ` ${invoice.currency}` : ''}
                         </td>
+                        <td className="px-4 py-3 text-right">
+                          <button
+                            className="text-sm text-red-500 hover:underline disabled:opacity-50"
+                            disabled={deletingItemId === item.id}
+                            onClick={() => void handleDeleteItem(item.id)}
+                          >
+                            {deletingItemId === item.id
+                              ? t('review.items.deleting')
+                              : t('review.items.delete')}
+                          </button>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
+
+            {/* Kézi munkadíj hozzáadása (összeggel, járműhöz köthetően). */}
+            <div className="border-t border-anthracite-100 bg-anthracite-50/50 px-4 py-3">
+              <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-anthracite-500">
+                {t('review.items.addLaborTitle')}
+              </p>
+              <div className="flex flex-wrap items-end gap-2">
+                <input
+                  type="text"
+                  value={laborName}
+                  onChange={(e) => setLaborName(e.target.value)}
+                  placeholder={t('review.items.laborNamePlaceholder')}
+                  className="min-w-[160px] flex-1 rounded-lg border border-anthracite-200 bg-white px-3 py-1.5 text-sm text-anthracite-900"
+                />
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={laborAmount}
+                  onChange={(e) => setLaborAmount(e.target.value)}
+                  placeholder={t('review.items.laborAmountPlaceholder')}
+                  className="w-32 rounded-lg border border-anthracite-200 bg-white px-3 py-1.5 text-sm text-anthracite-900"
+                />
+                <select
+                  value={laborVehicleId}
+                  onChange={(e) => setLaborVehicleId(e.target.value)}
+                  className="max-w-[180px] rounded-lg border border-anthracite-200 bg-white px-2 py-1.5 text-sm text-anthracite-900"
+                >
+                  <option value="">{t('review.items.unassigned')}</option>
+                  {vehicles.map((v) => (
+                    <option key={v.id} value={v.id}>
+                      {vehicleLabel(v)}
+                    </option>
+                  ))}
+                </select>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={addingLabor}
+                  onClick={() => void handleAddLabor(invoice.id)}
+                >
+                  {addingLabor ? t('review.items.adding') : t('review.items.addLabor')}
+                </Button>
+              </div>
+            </div>
           </Card>
         </>
       )}

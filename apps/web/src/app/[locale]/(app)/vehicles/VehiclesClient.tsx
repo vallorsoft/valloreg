@@ -1,15 +1,21 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import {
+  ALL_FLEET_SEGMENTS,
+  fleetSegmentOf,
+  type FleetSegment,
+} from '@valloreg/shared';
 import { vehiclesApi, ApiError, type Vehicle } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
 import { PageHeading } from '@/components/app/PageHeading';
 import { VehicleFormModal } from '@/components/app/VehicleFormModal';
-import { VehicleScanModal } from '@/components/app/VehicleScanModal';
+import { RegistrationScans } from '@/components/app/RegistrationScans';
 import { VehicleImportModal } from '@/components/app/VehicleImportModal';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 export function VehiclesClient() {
   const t = useTranslations('vehicles');
@@ -17,23 +23,31 @@ export function VehiclesClient() {
   const router = useRouter();
   const [vehicles, setVehicles] = useState<Vehicle[]>([]);
   const [loading, setLoading] = useState(true);
-  const [scanOpen, setScanOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Vehicle | null>(null);
   const [deleteId, setDeleteId] = useState<string | null>(null);
   const [deleting, setDeleting] = useState(false);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState(false);
+  const [segmentFilter, setSegmentFilter] = useState<FleetSegment | 'all'>('all');
 
   const refresh = useCallback(async () => {
+    setLoadError(false);
     try {
       setVehicles(await vehiclesApi.list());
-    } catch {
-      // 401 → AppShell redirect
+    } catch (err) {
+      // 401 → AppShell redirect; minden más valódi hiba → hibaállapot.
+      if (isRealLoadError(err)) setLoadError(true);
     } finally {
       setLoading(false);
     }
   }, []);
+
+  const reload = useCallback(() => {
+    setLoading(true);
+    void refresh();
+  }, [refresh]);
 
   useEffect(() => { void refresh(); }, [refresh]);
 
@@ -77,7 +91,21 @@ export function VehiclesClient() {
     }
   }
 
-  const COLUMNS = ['plate', 'make', 'model', 'year', 'odometer', 'actions'] as const;
+  // Csak azok a szegmensek jelenjenek meg szűrőként, amelyekre van jármű.
+  const presentSegments = useMemo(() => {
+    const set = new Set(vehicles.map((v) => fleetSegmentOf(v)));
+    return ALL_FLEET_SEGMENTS.filter((s) => set.has(s));
+  }, [vehicles]);
+
+  const visibleVehicles = useMemo(
+    () =>
+      segmentFilter === 'all'
+        ? vehicles
+        : vehicles.filter((v) => fleetSegmentOf(v) === segmentFilter),
+    [vehicles, segmentFilter],
+  );
+
+  const COLUMNS = ['plate', 'make', 'model', 'segment', 'year', 'odometer', 'actions'] as const;
 
   return (
     <>
@@ -89,9 +117,6 @@ export function VehiclesClient() {
             <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
               {t('import.button')}
             </Button>
-            <Button variant="outline" size="sm" onClick={() => setScanOpen(true)}>
-              {t('scanRegistration')}
-            </Button>
             <Button size="sm" onClick={openAdd}>
               {t('addVehicle')}
             </Button>
@@ -101,6 +126,35 @@ export function VehiclesClient() {
 
       {deleteError && (
         <p className="mb-4 text-sm text-red-600">{deleteError}</p>
+      )}
+
+      <RegistrationScans
+        onConfirmed={(vehicleId) => {
+          void refresh();
+          router.push(`/${locale}/vehicles/${vehicleId}`);
+        }}
+      />
+
+      {presentSegments.length > 1 && (
+        <div className="mb-4 flex flex-wrap gap-2">
+          {(['all', ...presentSegments] as const).map((seg) => {
+            const active = segmentFilter === seg;
+            return (
+              <button
+                key={seg}
+                onClick={() => setSegmentFilter(seg)}
+                className={
+                  'rounded-full border px-3 py-1 text-xs font-medium transition ' +
+                  (active
+                    ? 'border-primary-600 bg-primary-600 text-white'
+                    : 'border-anthracite-200 bg-white text-anthracite-600 hover:bg-anthracite-50')
+                }
+              >
+                {seg === 'all' ? t('segments.all') : t(`segments.${seg}`)}
+              </button>
+            );
+          })}
+        </div>
       )}
 
       <Card className="overflow-hidden p-0">
@@ -122,7 +176,13 @@ export function VehiclesClient() {
                     {t('loading')}
                   </td>
                 </tr>
-              ) : vehicles.length === 0 ? (
+              ) : loadError ? (
+                <tr>
+                  <td colSpan={COLUMNS.length} className="px-4 py-6">
+                    <LoadErrorState onRetry={reload} />
+                  </td>
+                </tr>
+              ) : visibleVehicles.length === 0 ? (
                 <tr>
                   <td colSpan={COLUMNS.length} className="px-4 py-16">
                     <div className="mx-auto max-w-sm text-center">
@@ -135,7 +195,7 @@ export function VehiclesClient() {
                   </td>
                 </tr>
               ) : (
-                vehicles.map((v) => (
+                visibleVehicles.map((v) => (
                   <tr key={v.id} className="hover:bg-anthracite-50">
                     <td className="px-4 py-3 font-medium">
                       <button
@@ -147,6 +207,7 @@ export function VehiclesClient() {
                     </td>
                     <td className="px-4 py-3 text-anthracite-600">{v.make ?? '-'}</td>
                     <td className="px-4 py-3 text-anthracite-600">{v.model ?? '-'}</td>
+                    <td className="px-4 py-3 text-anthracite-600">{t(`segments.${fleetSegmentOf(v)}`)}</td>
                     <td className="px-4 py-3 text-anthracite-600">{v.year ?? '-'}</td>
                     <td className="px-4 py-3 text-anthracite-600">
                       {v.odometerKm != null ? v.odometerKm.toLocaleString() + ' km' : '-'}
@@ -187,17 +248,6 @@ export function VehiclesClient() {
           vehicle={editing}
           onClose={() => { setModalOpen(false); setEditing(null); }}
           onSaved={handleSaved}
-        />
-      )}
-
-      {scanOpen && (
-        <VehicleScanModal
-          onClose={() => setScanOpen(false)}
-          onSaved={(vehicleId) => {
-            setScanOpen(false);
-            void refresh();
-            router.push(`/${locale}/vehicles/${vehicleId}`);
-          }}
         />
       )}
 

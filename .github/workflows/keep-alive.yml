@@ -1,25 +1,38 @@
 name: keep-alive
 
-# Az API (valloreg-api) ébren tartása a Render free tier 15 perces spin-down-ja
-# ellen. CSAK az API-t pingeljük, hogy beleférjünk a 750 instance-óra/hó free
-# keretbe (két szolgáltatás 24/7 ezt túllépné). A health check egyúttal a DB-t
-# és a Redist is "melegen" tartja (a Neon free is auto-suspendel).
+# Az API ÉS a WEB ébren tartása a Render free tier ~15 perces spin-down-ja ellen,
+# de CSAK egy "munkaidős" ablakban, hogy beleférjünk a 750 instance-óra/hó keretbe.
 #
-# A cél URL felülírható egy `API_HEALTH_URL` repo-változóval
-# (Settings → Secrets and variables → Actions → Variables).
+# Kvóta-matek: két szolgáltatás 24/7 ~1460 óra/hó → túllépné a 750-et. Egy ~11
+# órás napi ablak két szolgáltatásra ~669 óra/hó, marad ~80 óra fejtér az
+# organikus forgalomra (ami szintén ébren tartja a szolgáltatást).
 #
-# Megjegyzés: az ütemezett GitHub Actions CSAK a default branch-ről fut, és nagy
-# terhelésnél késhet pár percet; tartós inaktivitásnál (60 nap) a GitHub
-# kikapcsolja. Megbízhatóbb kiegészítő lehet egy külső pinger (cron-job.org /
-# UptimeRobot) ugyanerre az URL-re.
+# Az ablak UTC-ben van (a GitHub cron MINDIG UTC): 05:00–15:59 UTC ≈ közép-/
+# kelet-európai munkaidő (nyáron ~07–18 HU / ~08–19 RO, télen ~06–17 / ~07–18).
+# Igazítsd a `schedule` cron óráit, ha más ablak kell. Az ablakon KÍVÜL a
+# szolgáltatások leállnak; az első kérés ilyenkor 30–60 mp-ig cold start lehet
+# (a web api-kliense backoff-fal újrapróbál).
+#
+# A health egyúttal a DB-t és a Redist is "melegen" tartja (Neon/Upstash free
+# auto-suspendel).
+#
+# Cél-URL-ek felülírhatók repo-változókkal (Settings → Secrets and variables →
+# Actions → Variables):
+#   API_HEALTH_URL (alap: https://valloreg-api.onrender.com/api/health)
+#   WEB_HEALTH_URL (alap: https://valloreg-web.onrender.com/api/health)
+#
+# Megjegyzés: az ütemezett GitHub Actions CSAK a default (main) branch-ről fut,
+# nagy terhelésnél késhet pár percet, és 60 nap repo-inaktivitás után a GitHub
+# kikapcsolja. Megbízhatóbb kiegészítő egy külső pinger (cron-job.org /
+# UptimeRobot) ugyanezekre az URL-ekre, szintén munkaidős ütemezéssel.
 
 on:
   schedule:
-    # ~14 percenként (a Render 15 perc inaktivitás után állítja le).
-    - cron: "*/14 * * * *"
+    # Minden ~14 percben, 05:00–15:59 UTC között, minden nap.
+    - cron: "*/14 5-15 * * *"
   workflow_dispatch: {}
 
-# Egyszerre csak egy ping fusson; a régebbi futás megszakítható.
+# Egyszerre csak egy futás; a régebbi megszakítható.
 concurrency:
   group: keep-alive
   cancel-in-progress: true
@@ -27,21 +40,31 @@ concurrency:
 jobs:
   ping:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
-      - name: Ping API health
+      - name: Ping API + Web health
         run: |
-          URL="${{ vars.API_HEALTH_URL || 'https://valloreg-api.onrender.com/api/health' }}"
-          echo "Pinging $URL"
-          # Cold start akár ~60 mp is lehet → több próbálkozás hosszabb timeout-tal.
-          for i in 1 2 3 4; do
-            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$URL" || echo 000)
-            echo "Attempt $i → HTTP $code"
-            if [ "$code" = "200" ]; then
-              echo "API awake."
-              exit 0
-            fi
-            sleep 15
-          done
-          echo "API did not return HTTP 200 after retries (last: $code)."
-          exit 1
+          API_URL="${{ vars.API_HEALTH_URL || 'https://valloreg-api.onrender.com/api/health' }}"
+          WEB_URL="${{ vars.WEB_HEALTH_URL || 'https://valloreg-web.onrender.com/api/health' }}"
+
+          # Egy szolgáltatás pingelése több próbával (a cold start akár ~60 mp).
+          ping_service() {
+            name="$1"; url="$2"; code=000
+            echo "[$name] $url"
+            for i in 1 2 3 4; do
+              code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 60 "$url" || echo 000)
+              echo "[$name] kísérlet $i → HTTP $code"
+              if [ "$code" = "200" ]; then
+                echo "[$name] ébren."
+                return 0
+              fi
+              sleep 15
+            done
+            echo "[$name] NEM adott 200-at a próbák után (utolsó: $code)."
+            return 1
+          }
+
+          rc=0
+          ping_service "API" "$API_URL" || rc=1
+          ping_service "WEB" "$WEB_URL" || rc=1
+          exit $rc

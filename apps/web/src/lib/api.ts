@@ -5,7 +5,9 @@ import type { ApiErrorBody } from '@valloreg/shared';
 import {
   getAccessToken,
   getActiveTenantId,
-  setTokens,
+  getRememberMe,
+  setAccessToken,
+  clearTokens,
   resolveActiveTenant,
   type AuthTokens,
   type AuthSession,
@@ -19,12 +21,26 @@ import {
  * - Base URL comes from NEXT_PUBLIC_API_URL.
  * - Attaches `Authorization: Bearer <access>` and `x-tenant-id` when available.
  * - Parses the shared `ApiErrorBody` shape and throws a typed `ApiError`.
- *
- * TODO (later phase): automatic refresh-token rotation on 401.
+ * - Transparent refresh-token rotation on 401: ha a (rövid életű) access token
+ *   lejár, a tárolt refresh tokennel csendben új tokeneket kérünk és újrapróbáljuk
+ *   a kérést – így a felhasználó az eszközön bejelentkezve marad (a refresh token
+ *   élettartamáig, ami minden használatkor gördül előre).
  */
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+
+/**
+ * KAPCSOLÓ: same-origin auth. Ha be van kapcsolva, az AUTH-végpontokat (login/
+ * register/refresh/logout – ezekhez kell a httpOnly refresh cookie) a saját
+ * originról hívjuk (`/api`), amit a Next az API-ra proxyz → first-party cookie,
+ * nincs harmadik-fél-cookie gond. Minden MÁS hívás marad az API_BASE_URL-en
+ * (cross-origin, access tokennel). Kikapcsolva minden a mostani módon megy.
+ */
+const SAME_ORIGIN_AUTH =
+  process.env.NEXT_PUBLIC_SAME_ORIGIN_AUTH === 'true' ||
+  process.env.NEXT_PUBLIC_SAME_ORIGIN_AUTH === '1';
+const AUTH_BASE_URL = SAME_ORIGIN_AUTH ? '/api' : API_BASE_URL;
 
 /** Typed error carrying the machine-readable code for i18n mapping. */
 export class ApiError extends Error {
@@ -86,6 +102,8 @@ interface RequestOptions extends Omit<RequestInit, 'body'> {
   form?: FormData;
   /** Skip attaching the Authorization header (e.g. login/register). */
   anonymous?: boolean;
+  /** Bázis-URL felülírása (pl. az auth-végpontok same-origin proxyjához). */
+  baseUrl?: string;
 }
 
 function buildHeaders(options: RequestOptions): Headers {
@@ -117,13 +135,17 @@ async function parseError(response: Response): Promise<ApiError> {
 }
 
 /**
- * Hálózati hiba (fetch dobott) utáni várakozások ms-ben. Az ingyenes (Render
- * free) háttér ~15 perc tétlenség után leáll; ilyenkor az ELSŐ kérés a hideg
- * indítás közben kapcsolat-szinten elbukhat ("Failed to fetch"). Egy-két
- * újrapróba a backoff alatt felébreszti a szolgáltatást, és a kérés átmegy.
- * Csak NETWORK_ERROR-ra próbálkozunk újra (a válasszal érkező HTTP-hibákra nem).
+ * Hideg indítás (Render free) utáni újrapróba-várakozások ms-ben. A háttér ~15
+ * perc tétlenség után leáll; az ELSŐ kérés ilyenkor vagy kapcsolat-szinten bukik
+ * ("Failed to fetch"), VAGY – jellemzőbben – a Render routere 30–60 mp ébredés
+ * után 502/503/504-et ad, mert a boot tovább tart a router-timeoutnál. Mindkettő
+ * ÁTMENETI: pár újrapróbával, elég hosszú ablakkal (~70 mp összes várakozás) a
+ * szolgáltatás felébred és a kérés átmegy.
  */
-const NETWORK_RETRY_DELAYS_MS = [1500, 4000, 8000];
+const NETWORK_RETRY_DELAYS_MS = [2000, 5000, 10000, 15000, 18000, 20000];
+
+/** Hideg indításra utaló átmeneti HTTP-státuszok (Render gateway ébredés közben). */
+const COLD_START_STATUSES = new Set([502, 503, 504]);
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -160,13 +182,17 @@ async function performRequest<T>(
   return (await response.json()) as T;
 }
 
-/** Core request helper. Returns parsed JSON, or `undefined` for 204. */
-export async function apiRequest<T>(
+/**
+ * Egy kérés a hideg-indítás (Render free) elleni backoff-újrapróbával, de
+ * token-refresh NÉLKÜL. A refresh-réteget az `apiRequest` adja köré.
+ */
+async function sendRequest<T>(
   path: string,
-  options: RequestOptions = {},
+  options: RequestOptions,
 ): Promise<T> {
-  const { json, form, anonymous: _anonymous, ...init } = options;
-  const url = path.startsWith('http') ? path : `${API_BASE_URL}${path}`;
+  const { json, form, anonymous: _anonymous, baseUrl, ...init } = options;
+  const base = baseUrl ?? API_BASE_URL;
+  const url = path.startsWith('http') ? path : `${base}${path}`;
 
   const body =
     form !== undefined
@@ -187,10 +213,12 @@ export async function apiRequest<T>(
       return await performRequest<T>(url, options, body, init);
     } catch (err) {
       lastError = err;
-      // Csak hálózati hibára (nincs válasz) próbálkozunk újra; a HTTP-hibákat
-      // (4xx/5xx, amelyek CORS-fejléccel jönnek) azonnal továbbdobjuk.
+      // Újrapróba CSAK átmeneti hideg-indítás-hibára: (a) nincs válasz
+      // (NETWORK_ERROR / "Failed to fetch"), vagy (b) a Render gateway 502/503/504-e
+      // ébredés közben. A valódi 4xx/5xx alkalmazás-hibákat azonnal továbbdobjuk.
       const retriable =
-        err instanceof ApiError && err.code === 'NETWORK_ERROR';
+        err instanceof ApiError &&
+        (err.code === 'NETWORK_ERROR' || COLD_START_STATUSES.has(err.status));
       const hasMore = attempt < maxAttempts - 1;
       if (!retriable || !hasMore) break;
       await sleep(NETWORK_RETRY_DELAYS_MS[attempt]!);
@@ -199,11 +227,81 @@ export async function apiRequest<T>(
   throw lastError;
 }
 
+/**
+ * Egyszerre futó ("single-flight") refresh: ha több kérés is 401-et kap az access
+ * token lejárta miatt, MIND ugyanarra az egy refresh-hívásra vár, hogy ne
+ * forgassuk feleslegesen (és egymást érvénytelenítve) a refresh tokent.
+ */
+let refreshInFlight: Promise<boolean> | null = null;
+
+function tryRefreshTokens(): Promise<boolean> {
+  if (refreshInFlight) return refreshInFlight;
+
+  refreshInFlight = (async () => {
+    try {
+      // A refresh token httpOnly cookie-ban van: a böngésző automatikusan küldi
+      // (credentials: 'include'), a kérés body-jában NINCS token. A hívás anonim
+      // (nem megy át a refresh-rétegen, különben 401-nél önmagát hívná).
+      const tokens = await sendRequest<AuthTokens>('/auth/refresh', {
+        method: 'POST',
+        anonymous: true,
+        credentials: 'include',
+        baseUrl: AUTH_BASE_URL,
+      });
+      setAccessToken(tokens.accessToken, getRememberMe());
+      return true;
+    } catch {
+      // A refresh cookie lejárt/visszavont/hiányzik: tiszta kijelentkeztetés. A
+      // következő védett oldal-betöltéskor az AppShell a login oldalra irányít.
+      clearTokens();
+      return false;
+    } finally {
+      refreshInFlight = null;
+    }
+  })();
+
+  return refreshInFlight;
+}
+
+/**
+ * Core request helper. Returns parsed JSON, or `undefined` for 204.
+ *
+ * Ha egy védett (nem `anonymous`) kérés 401-et kap és van tárolt refresh token,
+ * EGYSZER csendben frissítünk és újrapróbáljuk a kérést. Így a rövid életű access
+ * token lejárta nem jelentkezteti ki a felhasználót.
+ */
+export async function apiRequest<T>(
+  path: string,
+  options: RequestOptions = {},
+): Promise<T> {
+  try {
+    return await sendRequest<T>(path, options);
+  } catch (err) {
+    // A refresh token httpOnly cookie-ban van (JS-ből nem látható), ezért a
+    // meglévő access token alapján döntünk: ha van session, megpróbálunk
+    // frissíteni (a cookie a böngészővel automatikusan megy a refreshhez).
+    const isAuthExpiry =
+      err instanceof ApiError &&
+      err.status === 401 &&
+      !options.anonymous &&
+      getAccessToken() !== null;
+    if (!isAuthExpiry) throw err;
+
+    const refreshed = await tryRefreshTokens();
+    if (!refreshed) throw err;
+
+    // Új access tokennel (a buildHeaders újraolvassa) még egyszer megpróbáljuk.
+    return await sendRequest<T>(path, options);
+  }
+}
+
 // ── Typed endpoint helpers (Phase 1 contracts; backend wiring later) ─────────
 
 export interface LoginPayload {
   email: string;
   password: string;
+  /** "Remember me": tartós (eszközön maradó) vagy csak munkamenetnyi belépés. */
+  rememberMe: boolean;
 }
 
 export interface RegisterPayload {
@@ -213,6 +311,7 @@ export interface RegisterPayload {
   email: string;
   phone: string;
   password: string;
+  rememberMe: boolean;
 }
 
 export interface AuthResponse extends AuthTokens {
@@ -246,6 +345,9 @@ export const authApi = {
       method: 'POST',
       json: payload,
       anonymous: true,
+      // credentials: a böngésző fogadja és tárolja a refresh httpOnly cookie-t.
+      credentials: 'include',
+      baseUrl: AUTH_BASE_URL,
     });
   },
   /** 2FA bejelentkezés második lépése (challenge token + kód). */
@@ -284,6 +386,8 @@ export const authApi = {
       // A backend `taxNumber` mezőt vár (a DB oszlop neve), a form `taxId`-t használ.
       json: { ...rest, taxNumber: taxId },
       anonymous: true,
+      credentials: 'include',
+      baseUrl: AUTH_BASE_URL,
     });
   },
   me(): Promise<AuthSession> {
@@ -305,14 +409,27 @@ export const authApi = {
       anonymous: true,
     });
   },
+  /**
+   * Kijelentkezés: a refresh token szerveroldali visszavonása. A token a httpOnly
+   * cookie-ból jön (credentials: 'include'), nem a body-ból.
+   */
+  logout(): Promise<void> {
+    return apiRequest<void>('/auth/logout', {
+      method: 'POST',
+      anonymous: true,
+      credentials: 'include',
+      baseUrl: AUTH_BASE_URL,
+    });
+  },
 };
 
-/** Persist tokens and select the active tenant after a successful auth call. */
-export function storeAuth(response: AuthResponse): void {
-  setTokens({
-    accessToken: response.accessToken,
-    refreshToken: response.refreshToken,
-  });
+/**
+ * Az access token és az aktív cég eltárolása sikeres bejelentkezés/regisztráció
+ * után. A `rememberMe` dönti el a token tárhelyét (localStorage vs sessionStorage);
+ * a refresh token a backend által beállított httpOnly cookie-ban van.
+ */
+export function storeAuth(response: AuthResponse, rememberMe: boolean): void {
+  setAccessToken(response.accessToken, rememberMe);
   resolveActiveTenant(response.memberships);
 }
 
@@ -460,6 +577,20 @@ export interface UpdateInvoiceItemPayload {
   partType?: string | null;
 }
 
+/** Kézi tétel (tipikusan munkadíj) hozzáadása egy számlához. */
+export interface AddInvoiceItemPayload {
+  name: string;
+  /** A tétel teljes összege. */
+  price: number;
+  /** Alapból `labor` (munkadíj). */
+  category?: string;
+  type?: string;
+  partType?: string | null;
+  vehicleId?: string | null;
+  quantity?: number;
+  unitPrice?: number;
+}
+
 export const invoicesApi = {
   updateItem(itemId: string, payload: UpdateInvoiceItemPayload) {
     return apiRequest<InvoiceItem>(`/invoices/items/${itemId}`, {
@@ -467,9 +598,194 @@ export const invoicesApi = {
       json: payload,
     });
   },
+  addItem(invoiceId: string, payload: AddInvoiceItemPayload) {
+    return apiRequest<InvoiceItem>(`/invoices/${invoiceId}/items`, {
+      method: 'POST',
+      json: payload,
+    });
+  },
+  deleteItem(itemId: string) {
+    return apiRequest<{ id: string }>(`/invoices/items/${itemId}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ── Komplex szerviz események ─────────────────────────────────────────────────
+
+export interface MajorComponentEvent {
+  id: string;
+  vehicleId: string;
+  component: string;
+  kind: string;
+  title: string | null;
+  odometerKm: number | null;
+  date: string | null;
+  partsCost: string | null;
+  laborCost: string | null;
+  totalCost: string | null;
+  currency: string | null;
+  invoiceId: string | null;
+  itemIds: string[] | null;
+  notes: string | null;
+  createdAt: string;
+}
+
+export interface CreateMajorComponentEventPayload {
+  component: string;
+  kind?: string;
+  title?: string;
+  odometerKm?: number;
+  date?: string;
+  partsCost?: number;
+  laborCost?: number;
+  currency?: string;
+  invoiceId?: string;
+  itemIds?: string[];
+  notes?: string;
+}
+
+export const majorComponentsApi = {
+  listForVehicle(vehicleId: string) {
+    return apiRequest<MajorComponentEvent[]>(
+      `/vehicles/${vehicleId}/major-components`,
+    );
+  },
+  create(vehicleId: string, payload: CreateMajorComponentEventPayload) {
+    return apiRequest<MajorComponentEvent>(
+      `/vehicles/${vehicleId}/major-components`,
+      { method: 'POST', json: payload },
+    );
+  },
+  remove(id: string) {
+    return apiRequest<{ id: string }>(`/major-components/${id}`, {
+      method: 'DELETE',
+    });
+  },
+};
+
+// ── Tartósság (élettartam-felmérés + előrejelzés) ────────────────────────────
+
+export interface DurabilitySurveyRow {
+  segment: string;
+  component: string;
+  expectedKm: number;
+  source: 'manual' | 'empirical' | 'seed';
+  sampleCount: number;
+  seedKm: number;
+  overrideKm: number | null;
+}
+
+export interface VehicleComponentForecast {
+  component: string;
+  lastEventKm: number | null;
+  kmSince: number | null;
+  expectedKm: number;
+  source: 'manual' | 'empirical' | 'seed';
+  status: 'ok' | 'watch' | 'due' | 'overdue';
+  estimatedNextDueKm: number | null;
+  estimatedCost: string | null;
+  currency: string | null;
+}
+
+export const durabilityApi = {
+  forecastForVehicle(vehicleId: string) {
+    return apiRequest<VehicleComponentForecast[]>(
+      `/vehicles/${vehicleId}/durability`,
+    );
+  },
+  survey() {
+    return apiRequest<DurabilitySurveyRow[]>(`/durability/survey`);
+  },
+  setBaseline(segment: string, component: string, expectedKm: number) {
+    return apiRequest<unknown>(`/durability/baselines`, {
+      method: 'POST',
+      json: { segment, component, expectedKm },
+    });
+  },
+  clearBaseline(segment: string, component: string) {
+    return apiRequest<unknown>(
+      `/durability/baselines/${segment}/${component}`,
+      { method: 'DELETE' },
+    );
+  },
+};
+
+// ── Ranglista ────────────────────────────────────────────────────────────────
+
+export interface VehicleRanking {
+  vehicleId: string;
+  label: string;
+  segment: string;
+  makeModel: string;
+  currency: string | null;
+  totalSpent: string;
+  odometerKm: number | null;
+  costPerKm: string | null;
+  revenuePerKm: string | null;
+  profitPerKm: string | null;
+  majorEventCount: number;
+  bigPartsDue: number;
+  economyScore: number;
+  replaceAdvice: boolean;
+  badges: string[];
+}
+
+export interface RankingGroup {
+  key: string;
+  vehicles: VehicleRanking[];
+}
+
+export interface RankingsResult {
+  bySegment: RankingGroup[];
+  byModel: RankingGroup[];
+}
+
+export interface SupplierQualityRow {
+  supplierId: string;
+  supplierName: string;
+  component: string;
+  eventCount: number;
+  medianCost: string | null;
+  currency: string | null;
+  medianIntervalKm: number | null;
+  intervalSamples: number;
+}
+
+export const rankingsApi = {
+  get() {
+    return apiRequest<RankingsResult>(`/rankings`);
+  },
+  suppliers() {
+    return apiRequest<SupplierQualityRow[]>(`/rankings/suppliers`);
+  },
 };
 
 // ── Vehicles ──────────────────────────────────────────────────────────────────
+
+/** Egy jármű-fél szerepe és típusa. */
+export type VehiclePartyRole = 'owner' | 'user';
+export type VehiclePartyType = 'person' | 'company';
+
+/** Tulajdonos (C.2) vagy üzembentartó/lízingbevevő (C.1) – DB-rekord. */
+export interface VehicleParty {
+  id: string;
+  role: VehiclePartyRole;
+  partyType: VehiclePartyType;
+  name: string | null;
+  address: string | null;
+  /** CNP (magánszemély) vagy CUI (cég). */
+  idNumber: string | null;
+}
+
+/** Egy fél írásakor küldött payload (id nélkül). */
+export interface VehiclePartyPayload {
+  role: VehiclePartyRole;
+  partyType?: VehiclePartyType;
+  name?: string;
+  address?: string;
+  idNumber?: string;
+}
 
 export interface Vehicle {
   id: string;
@@ -477,8 +793,25 @@ export interface Vehicle {
   vin: string | null;
   make: string | null;
   model: string | null;
+  vehicleType: string | null;
   year: number | null;
   odometerKm: number | null;
+  firstRegistration: string | null;
+  category: string | null;
+  /** Flotta-szegmens KÉZI felülírása; ha null, a forgalmiból vezetjük le. */
+  fleetSegment: string | null;
+  /** Opcionális bevétel/km a valós rentabilitás ranglistához. */
+  revenuePerKm: string | null;
+  fuelType: string | null;
+  engineCm3: number | null;
+  powerKw: number | null;
+  color: string | null;
+  seats: number | null;
+  maxMassKg: number | null;
+  kerbWeightKg: number | null;
+  euroClass: string | null;
+  typeApproval: string | null;
+  parties?: VehicleParty[];
   createdAt: string;
   updatedAt: string;
 }
@@ -488,8 +821,23 @@ export interface CreateVehiclePayload {
   vin?: string;
   make?: string;
   model?: string;
+  vehicleType?: string;
   year?: number;
   odometerKm?: number;
+  firstRegistration?: string;
+  category?: string;
+  fleetSegment?: string;
+  revenuePerKm?: number;
+  fuelType?: string;
+  engineCm3?: number;
+  powerKw?: number;
+  color?: string;
+  seats?: number;
+  maxMassKg?: number;
+  kerbWeightKg?: number;
+  euroClass?: string;
+  typeApproval?: string;
+  parties?: VehiclePartyPayload[];
 }
 
 export interface ServiceHistoryItem extends InvoiceItem {
@@ -522,6 +870,7 @@ export interface VehicleRegistrationDraft {
   vin: string | null;
   make: string | null;
   model: string | null;
+  vehicleType: string | null;
   year: number | null;
   firstRegistration: string | null;
   fuelType: string | null;
@@ -529,7 +878,19 @@ export interface VehicleRegistrationDraft {
   powerKw: number | null;
   color: string | null;
   category: string | null;
+  seats: number | null;
+  maxMassKg: number | null;
+  kerbWeightKg: number | null;
+  euroClass: string | null;
+  typeApproval: string | null;
   ownerName: string | null;
+  ownerAddress: string | null;
+  ownerType: string | null;
+  ownerIdNumber: string | null;
+  userName: string | null;
+  userAddress: string | null;
+  userType: string | null;
+  userIdNumber: string | null;
   confidence: number;
   uncertainFields: { path: string; reason: string; confidence: number }[];
 }
@@ -547,7 +908,8 @@ export type VehicleScanStatus =
   | 'OCR_RUNNING'
   | 'EXTRACTING'
   | 'DONE'
-  | 'FAILED';
+  | 'FAILED'
+  | 'CONFIRMED';
 
 /** A beolvasás indításának eredménye: ezzel pollingol a kliens. */
 export interface StartScanResult {
@@ -566,15 +928,24 @@ export interface VehicleScanView {
   error: string | null;
 }
 
-export interface ConfirmScanPayload {
+export interface ConfirmScanPayload extends CreateVehiclePayload {
   vehicleId?: string;
-  plate?: string;
-  vin?: string;
-  make?: string;
-  model?: string;
-  year?: number;
-  odometerKm?: number;
+  /** A beolvasás id-je – mentés után a háttér CONFIRMED-re állítja. */
+  scanId?: string;
   files?: ScanFileRef[];
+}
+
+/** Egy beolvasás listaeleme (feldolgozási „inbox" sor). */
+export interface VehicleScanListItem {
+  id: string;
+  status: VehicleScanStatus;
+  fileName: string;
+  fileCount: number;
+  plate: string | null;
+  matchedVehicleId: string | null;
+  looksLikeRegistration: boolean | null;
+  error: string | null;
+  createdAt: string;
 }
 
 export interface VehicleDocumentItem {
@@ -645,9 +1016,17 @@ export const vehiclesApi = {
       form,
     });
   },
+  /** A feldolgozási „inbox": a még meg nem erősített beolvasások státusszal. */
+  listScans() {
+    return apiRequest<VehicleScanListItem[]>('/vehicles/scans');
+  },
   /** Egy beolvasás aktuális állapota és – ha kész – az eredménye (polling). */
   getScan(scanId: string) {
     return apiRequest<VehicleScanView>(`/vehicles/scan/${scanId}`);
+  },
+  /** Egy beolvasás elvetése a feldolgozási listából. */
+  deleteScan(scanId: string) {
+    return apiRequest<void>(`/vehicles/scan/${scanId}`, { method: 'DELETE' });
   },
   /** A beolvasott (ellenőrzött) adatok mentése. */
   confirmScan(payload: ConfirmScanPayload) {
@@ -966,6 +1345,17 @@ export const usersApi = {
       json: payload,
     });
   },
+  /**
+   * Meghívó elfogadása a tokennel. @Public végpont (a felhasználó még nem tag):
+   * anonim hívás, nem fűzünk hozzá Authorization fejlécet. Új fiókhoz `name` +
+   * `password` kell; meglévő fióknál ezek elhagyhatók.
+   */
+  acceptInvite(payload: { token: string; name?: string; password?: string }) {
+    return apiRequest<{ tenantId: string; userId: string; role: string }>(
+      '/users/accept-invite',
+      { method: 'POST', json: payload, anonymous: true },
+    );
+  },
   listInvitations() {
     return apiRequest<PendingInvitation[]>('/users/invitations');
   },
@@ -1070,6 +1460,7 @@ export interface AdminTenantDetail {
   email: string | null;
   phone: string | null;
   createdAt: string;
+  extraStorageGb: number;
   subscription: AdminSubscription | null;
   members: {
     membershipId: string;
@@ -1078,6 +1469,18 @@ export interface AdminTenantDetail {
   }[];
   featureOverrides: { key: string; enabled: boolean }[];
   counts: { members: number; vehicles: number; documents: number; invoices: number };
+}
+
+/** Platform-szintű számla-/utalási adatok (csak Super Admin szerkeszti). */
+export interface BillingSettings {
+  companyName: string;
+  taxNumber: string;
+  address: string;
+  beneficiary: string;
+  iban: string;
+  bankName: string;
+  swift: string;
+  notifyEmail: string;
 }
 
 export const adminApi = {
@@ -1092,6 +1495,27 @@ export const adminApi = {
       method: 'PUT',
       json: payload,
     });
+  },
+  setExtraStorage(id: string, gb: number) {
+    return apiRequest<{ id: string; extraStorageGb: number }>(
+      `/admin/tenants/${id}/extra-storage`,
+      { method: 'PUT', json: { gb } },
+    );
+  },
+  getBillingSettings() {
+    return apiRequest<BillingSettings>('/admin/billing-settings');
+  },
+  setBillingSettings(payload: BillingSettings) {
+    return apiRequest<BillingSettings>('/admin/billing-settings', {
+      method: 'PUT',
+      json: payload,
+    });
+  },
+  sendTestEmail(to: string) {
+    return apiRequest<{ ok: boolean; status?: number; error?: string }>(
+      '/admin/test-email',
+      { method: 'POST', json: { to } },
+    );
   },
   setFeature(id: string, key: string, enabled: boolean) {
     return apiRequest<{ key: string; enabled: boolean }>(
@@ -1119,12 +1543,20 @@ export interface BillingOverview {
     maxDocumentsPerMonth: number;
     maxStorageBytes: number;
   };
-  usage: { vehicles: number; users: number; documentsThisMonth: number };
+  usage: {
+    vehicles: number;
+    users: number;
+    documentsThisMonth: number;
+    storageBytes: number;
+  };
+  /** Vásárolt extra tárhely GB-ban (a csomag-tárhely fölött). */
+  extraStorageGb: number;
   features: string[];
 }
 
 export interface SubscriptionRequestResult {
   plan: string;
+  interval: string;
   amount: number;
   currency: string;
   reference: string;
@@ -1136,10 +1568,17 @@ export const billingApi = {
   getOverview() {
     return apiRequest<BillingOverview>('/billing/overview');
   },
-  requestSubscription(planTier: string) {
+  requestSubscription(planTier: string, interval?: string) {
     return apiRequest<SubscriptionRequestResult>('/billing/request-subscription', {
       method: 'POST',
-      json: { planTier },
+      json: { planTier, interval },
+    });
+  },
+  /** Extra tárhely igénylése (a `bytes` egy STORAGE_PACKS csomag mérete). */
+  requestStorage(bytes: number) {
+    return apiRequest<SubscriptionRequestResult>('/billing/request-storage', {
+      method: 'POST',
+      json: { bytes },
     });
   },
 };

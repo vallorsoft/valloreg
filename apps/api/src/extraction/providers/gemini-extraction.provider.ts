@@ -15,8 +15,9 @@ import type {
 const GEMINI_BASE =
   'https://generativelanguage.googleapis.com/v1beta/models';
 
-/** Ezeken a HTTP státuszokon érdemes a következő modellre váltani. */
-const FALLBACK_STATUSES = new Set([429, 500, 503]);
+/** Ezeken a HTTP státuszokon érdemes a következő modellre váltani.
+ *  404: kivezetett/ismeretlen modellnév – lépjünk a következőre, ne hasaljon el. */
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
 
 /**
  * Google Gemini alapú extraction. OCR szövegből előállítja a shared
@@ -80,10 +81,11 @@ export class GeminiExtractionProvider implements ExtractionProvider {
     prompt: string,
     apiKey: string,
   ): Promise<unknown> {
-    const url = `${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+    const url = `${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      signal: AbortSignal.timeout(30_000),
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: {
@@ -141,7 +143,7 @@ export class GeminiExtractionProvider implements ExtractionProvider {
       '  "documentType": "invoice"|"registration"|"compliance"|"other",',
       '  "invoice": {',
       '    "supplier": string, "date": "YYYY-MM-DD"|"", "invoiceNumber": string,',
-      '    "currency": "HUF"|"RON"|"EUR"|..., "odometerKm": number|null,',
+      '    "currency": "RON"|"EUR"|"HUF"|..., "odometerKm": number|null,',
       '    "netTotal": number|null, "taxTotal": number|null, "grossTotal": number|null,',
       '    "vehicleCandidates": [{ "plate": string|null, "vin": string|null,',
       '      "vehicleId": null, "source": "plate"|"vin"|"supplier_pattern"|"history"|"manual",',
@@ -152,6 +154,7 @@ export class GeminiExtractionProvider implements ExtractionProvider {
       `    "category": one of [${categories}],`,
       `    "partType": one of [${partTypes}] or null,`,
       `    "type": one of [${types}],`,
+      '    "articleNumber": string|null,',
       '    "vehicleId": null, "quantity": number, "unitPrice": number|null,',
       '    "price": number, "confidence": 0..1 }],',
       '  "uncertainFields": [{ "path": string, "reason": string, "confidence": 0..1 }]',
@@ -163,6 +166,8 @@ export class GeminiExtractionProvider implements ExtractionProvider {
       '- Bizonytalan/hiányzó mező: tedd az uncertainFields-be (pl. "invoice.date").',
       '- A "type" "vehicle", ha a tétel konkrét járműhöz tartozik; "tool" szerszám/',
       '  műhelyfelszerelés; "general" általános/iroda/flotta költség.',
+      '- "articleNumber": az alkatrész cikkszáma/cikkkódja (OEM- vagy gyártói szám),',
+      '  PONTOSAN ahogy a számlán szerepel; ha nincs ilyen, null. Ne a megnevezés.',
       '- A confidence 0 és 1 között a saját biztonságodat tükrözze.',
       locale ? `- Elsődleges nyelvi hint: ${locale}.` : '',
       '',

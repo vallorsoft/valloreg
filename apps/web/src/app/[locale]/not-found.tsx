@@ -7,9 +7,9 @@ export default function LocaleNotFound() {
   return (
     <main className="flex min-h-[60vh] flex-col items-center justify-center gap-6 px-4 text-center">
       <p className="text-6xl font-bold text-primary-600">404</p>
-      <p className="max-w-md text-anthracite-600">{t('tagline')}</p>
+      <p className="max-w-md text-anthracite-600">{t('notFound.message')}</p>
       <Link href="/">
-        <Button>{t('nav.dashboard')}</Button>
+        <Button>{t('notFound.backHome')}</Button>
       </Link>
     </main>
   );

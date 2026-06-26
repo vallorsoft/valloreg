@@ -90,14 +90,15 @@ describe('LoginForm', () => {
     await waitFor(() => {
       expect(loginMock).toHaveBeenCalledTimes(1);
     });
-    // Az email trim-elve, a jelszó nyersen.
+    // Az email trim-elve, a jelszó nyersen; a "Remember me" alapból bepipált.
     expect(loginMock).toHaveBeenCalledWith({
       email: 'user@example.com',
       password: 'secret123',
+      rememberMe: true,
     });
 
     await waitFor(() => {
-      expect(storeAuthMock).toHaveBeenCalledWith(authResult);
+      expect(storeAuthMock).toHaveBeenCalledWith(authResult, true);
     });
     expect(pushMock).toHaveBeenCalledWith('/dashboard');
   });
@@ -150,7 +151,7 @@ describe('LoginForm', () => {
       );
     });
     await waitFor(() => {
-      expect(storeAuthMock).toHaveBeenCalledWith(authResult);
+      expect(storeAuthMock).toHaveBeenCalledWith(authResult, true);
     });
     expect(pushMock).toHaveBeenCalledWith('/dashboard');
   });

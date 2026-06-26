@@ -20,6 +20,7 @@ import { JwtAuthGuard } from '../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../common/guards/tenant.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { FeatureGuard } from '../common/guards/feature.guard';
+import { SubscriptionGuard } from '../common/guards/subscription.guard';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RequireFeature } from '../common/decorators/require-feature.decorator';
 import { CurrentTenant } from '../common/decorators/current-tenant.decorator';
@@ -103,6 +104,7 @@ export class VehiclesController {
    * eredményre – így a hosszú OCR+AI nem a HTTP-kérés idejét terheli.
    */
   @Post('scan')
+  @UseGuards(SubscriptionGuard)
   @RequireFeature(FeatureKey.AI_PROCESSING)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   @UseInterceptors(
@@ -122,6 +124,14 @@ export class VehiclesController {
     );
   }
 
+  /** A feldolgozási „inbox": a még meg nem erősített beolvasások státusszal. */
+  @Get('scans')
+  @RequireFeature(FeatureKey.AI_PROCESSING)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  listScans() {
+    return this.vehiclesService.listScans();
+  }
+
   /** Egy beolvasás (job) állapota és – ha kész – az eredménye (polling). */
   @Get('scan/:scanId')
   @RequireFeature(FeatureKey.AI_PROCESSING)
@@ -130,8 +140,22 @@ export class VehiclesController {
     return this.vehiclesService.getScan(scanId);
   }
 
+  /** Egy beolvasás elvetése a feldolgozási listából (rekord + staging fájlok). */
+  @Delete('scan/:scanId')
+  @RequireFeature(FeatureKey.AI_PROCESSING)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deleteScan(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Param('scanId') scanId: string,
+  ): Promise<void> {
+    await this.vehiclesService.deleteScan(tenant.tenantId, user.userId, scanId);
+  }
+
   /** A beolvasott (ellenőrzött) adatok mentése: új jármű vagy meglévő frissítése. */
   @Post('scan/confirm')
+  @UseGuards(SubscriptionGuard)
   @RequireFeature(FeatureKey.AI_PROCESSING)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   confirmScan(
@@ -198,6 +222,7 @@ export class VehiclesController {
 
   /** Létrehozás – OWNER, FLEET_MANAGER, ADMIN. */
   @Post()
+  @UseGuards(SubscriptionGuard)
   @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
   create(
     @CurrentTenant() tenant: ActiveTenant,

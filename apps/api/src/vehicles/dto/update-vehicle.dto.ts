@@ -1,41 +1,7 @@
-import {
-  IsInt,
-  IsOptional,
-  IsString,
-  Max,
-  MaxLength,
-  Min,
-} from 'class-validator';
+import { CreateVehicleDto } from './create-vehicle.dto';
 
-export class UpdateVehicleDto {
-  @IsOptional()
-  @IsString()
-  @MaxLength(20)
-  plate?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  vin?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  make?: string;
-
-  @IsOptional()
-  @IsString()
-  @MaxLength(64)
-  model?: string;
-
-  @IsOptional()
-  @IsInt()
-  @Min(1900)
-  @Max(2100)
-  year?: number;
-
-  @IsOptional()
-  @IsInt()
-  @Min(0)
-  odometerKm?: number;
-}
+/**
+ * Jármű módosítása. Minden mező opcionális (a CreateVehicleDto-ból örökölve);
+ * a megadott mezők frissülnek, a `parties` megadva felülírja a feleket.
+ */
+export class UpdateVehicleDto extends CreateVehicleDto {}

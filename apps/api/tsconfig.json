@@ -1,14 +1,14 @@
 {
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
-    "module": "CommonJS",
-    "moduleResolution": "Node",
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "outDir": "dist",
     "rootDir": "src",
     "baseUrl": ".",
-    "types": ["node"],
+    "types": ["node", "jest"],
     "declaration": false,
     "declarationMap": false,
     "sourceMap": true,

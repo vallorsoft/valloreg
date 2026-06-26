@@ -63,6 +63,11 @@
       "allLegal": "All legal documents",
       "about": "About us",
       "tagline": "Smarter fleet management – less admin, more transparency."
+    },
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "The page you're looking for could not be found.",
+      "backHome": "Back to home"
     }
   },
   "landing": {
@@ -210,25 +215,58 @@
       "usersUnlimited": "Unlimited users",
       "documents": "{count} documents / mo",
       "documentsUnlimited": "Unlimited documents / mo",
+      "storage": "{gb} GB storage",
+      "compareButton": "Compare plans",
       "mostPopular": "Most popular",
       "cta": "Choose",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "For smaller fleets, to get started."
         },
         "STANDARD": {
-          "name": "Standard",
-          "description": "For growing fleets, with reports and export."
+          "name": "Pro",
+          "description": "For growing fleets: reports, export, reminders, complex services."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "For active fleet management, with the full feature set."
+          "name": "Fleet",
+          "description": "Full fleet intelligence: rankings, durability, supplier quality."
         },
         "BUSINESS": {
           "name": "Business",
           "description": "For large fleets, with no limits."
         }
+      },
+      "billingMonthly": "Monthly",
+      "billingYearly": "Yearly",
+      "perYear": "/ yr",
+      "yearlyNote": "Pay only 11 months instead of 12 — 1 month free.",
+      "monthFree": "1 month free"
+    },
+    "compare": {
+      "title": "Compare plans",
+      "subtitle": "Exactly what each plan can do – in one table.",
+      "feature": "Feature",
+      "note": "Storage is total capacity (does not reset monthly); extra storage can be purchased for any plan.",
+      "storagePacks": "Extra storage (monthly): {list}",
+      "limits": {
+        "vehicles": "Vehicles",
+        "users": "Users",
+        "documents": "Documents / mo",
+        "storage": "Storage"
+      },
+      "rows": {
+        "ocrAi": "OCR + AI processing",
+        "serviceBook": "Digital service book + library",
+        "dashboard": "Cost dashboard",
+        "reports": "Reports + CSV/PDF export",
+        "reminders": "Reminders (time/km maintenance)",
+        "majorParts": "Labor + complex services + timeline",
+        "insights": "Insights (anomalies, TCO, European benchmark)",
+        "durability": "Learned durability + predictive maintenance",
+        "rankings": "Rankings + badges + replacement advice",
+        "supplier": "Supplier quality",
+        "extraStorage": "Optional extra storage"
       }
     },
     "faq": {
@@ -269,7 +307,10 @@
       "message": "Message",
       "messagePlaceholder": "How can we help?",
       "submit": "Send message",
-      "note": "We'll get back to you soon. Form wiring lands in a later phase."
+      "note": "We'll open your email app with the message pre-filled. We'll get back to you soon.",
+      "mailtoSubject": "Valloreg – contact request",
+      "success": "We opened your email app with the message pre-filled. If it didn't open, write to us directly at {email}.",
+      "errorNoMessage": "Please enter your message."
     }
   },
   "auth": {
@@ -291,7 +332,8 @@
       "submit": "Log in",
       "noAccount": "Don't have an account?",
       "registerLink": "Sign up",
-      "forgotPassword": "Forgot password?"
+      "forgotPassword": "Forgot password?",
+      "rememberMe": "Stay logged in"
     },
     "register": {
       "title": "Sign up",
@@ -364,6 +406,22 @@
       "success": "Your password has been changed. You can now log in with your new password.",
       "goToLogin": "Log in",
       "invalidLink": "The reset link is invalid or missing. Please request a new one."
+    },
+    "acceptInvite": {
+      "title": "Accept invitation",
+      "subtitle": "Set up your account to join the company.",
+      "name": "Name",
+      "namePlaceholder": "Your name",
+      "password": "Password",
+      "passwordPlaceholder": "At least 8 characters",
+      "confirmPassword": "Confirm password",
+      "confirmPasswordPlaceholder": "Re-enter your password",
+      "submit": "Accept invitation",
+      "backToLogin": "Back to login",
+      "success": "Your invitation has been accepted. You can now log in.",
+      "goToLogin": "Log in",
+      "invalidLink": "The invitation link is invalid or missing. Please request a new one from your company.",
+      "hint": "If you already have an account with this email, you can accept the invitation without entering a password."
     }
   },
   "app": {
@@ -374,6 +432,7 @@
       "reminders": "Reminders",
       "reports": "Reports",
       "insights": "Insights",
+      "rankings": "Rankings",
       "team": "Team",
       "billing": "Billing",
       "account": "Account",
@@ -408,8 +467,8 @@
       "automationRate": "Automation"
     },
     "units": {
-      "currency": "HUF",
-      "perKm": "HUF/km",
+      "currency": "RON",
+      "perKm": "RON/km",
       "items": "pcs",
       "events": "events"
     },
@@ -428,10 +487,21 @@
       "plate": "Plate",
       "make": "Make",
       "model": "Model",
+      "segment": "Segment",
       "year": "Year",
       "odometer": "Odometer",
       "cost": "Total cost",
       "actions": "Actions"
+    },
+    "segments": {
+      "all": "All",
+      "van": "Van (< 3.5 t)",
+      "light_truck": "Light truck (3.5–7.5 t)",
+      "truck_7_5_18": "Medium truck (7.5–18 t)",
+      "truck_18_plus": "Tractor unit (18 t+)",
+      "semi_trailer": "Semi-trailer",
+      "trailer": "Trailer",
+      "other": "Other"
     },
     "empty": {
       "title": "No vehicles yet",
@@ -487,6 +557,64 @@
         "item": "Item",
         "category": "Category",
         "amount": "Amount"
+      }
+    },
+    "fields": {
+      "sectionTech": "Technical data",
+      "sectionOwner": "Owner",
+      "sectionUser": "Operator / lessee",
+      "vehicleType": "Type/variant (D.2)",
+      "firstRegistration": "First registration",
+      "category": "Vehicle category (J)",
+      "fleetSegment": "Fleet segment",
+      "fleetSegmentAuto": "Automatic (from registration)",
+      "revenuePerKm": "Revenue/km (optional)",
+      "fuelType": "Fuel type",
+      "engineCm3": "Engine displacement (cc)",
+      "powerKw": "Power (kW)",
+      "color": "Colour",
+      "seats": "Number of seats",
+      "maxMassKg": "Max permissible mass (kg)",
+      "kerbWeightKg": "Kerb weight (kg)",
+      "euroClass": "Emission class (Euro)",
+      "typeApproval": "Type approval number (K)",
+      "party": {
+        "type": "Type",
+        "person": "Individual",
+        "company": "Company",
+        "name": "Name",
+        "address": "Address",
+        "cnp": "CNP (personal ID)",
+        "cui": "CUI (tax ID)"
+      }
+    },
+    "scans": {
+      "title": "Registration scans",
+      "subtitle": "Upload the registration (1–2 pages) — once processed you can save it as a vehicle.",
+      "uploadHint": "Drop the registration photo/PDF here, or pick a file (max 2 pages).",
+      "choose": "Choose file",
+      "uploading": "Uploading…",
+      "loading": "Loading…",
+      "empty": "No scans in progress yet.",
+      "pages": "({count} pages)",
+      "saveAsVehicle": "Save as vehicle",
+      "updateVehicle": "Update existing",
+      "dismiss": "Dismiss",
+      "dismissing": "Dismissing…",
+      "errorUpload": "Upload failed, please try again.",
+      "table": {
+        "file": "File / plate",
+        "uploadedAt": "Uploaded",
+        "status": "Status",
+        "actions": "Actions"
+      },
+      "status": {
+        "PENDING": "Queued",
+        "OCR_RUNNING": "Text recognition",
+        "EXTRACTING": "Extracting data",
+        "DONE": "Ready",
+        "FAILED": "Failed",
+        "CONFIRMED": "Saved"
       }
     },
     "scanRegistration": "Scan registration",
@@ -667,7 +795,19 @@
         "price": "Price",
         "empty": "No items.",
         "unassigned": "Unassigned",
-        "assignError": "Assignment failed."
+        "assignError": "Assignment failed.",
+        "addLaborTitle": "Add labor cost",
+        "laborNamePlaceholder": "Name (e.g. Labor)",
+        "laborAmountPlaceholder": "Amount",
+        "addLabor": "Add",
+        "adding": "Adding…",
+        "laborInvalid": "Enter a name and a positive amount.",
+        "laborError": "Failed to add the line.",
+        "delete": "Delete",
+        "deleting": "Deleting…",
+        "deleteError": "Failed to delete the line.",
+        "confirmDelete": "Delete this line?",
+        "uncertain": "Uncertain"
       }
     },
     "actions": {
@@ -696,6 +836,62 @@
       "confirmOverwrite": "Overwrite the original invoice? The original document, its invoice and line items will be permanently deleted.",
       "errorOverwrite": "Overwrite failed, please try again.",
       "orDelete": "or delete this upload with the Delete button above."
+    }
+  },
+  "majorComponents": {
+    "title": "Complex services",
+    "subtitle": "Timeline of complex services (replacements/overhauls).",
+    "forecastTitle": "Durability forecast",
+    "nextDue": "Est. due",
+    "estCost": "Est. cost",
+    "expected": "expected",
+    "status": {
+      "ok": "OK",
+      "watch": "Watch",
+      "due": "Due",
+      "overdue": "Overdue"
+    },
+    "source": {
+      "empirical": "learned",
+      "seed": "baseline",
+      "manual": "manual"
+    },
+    "add": "Add",
+    "cancel": "Cancel",
+    "save": "Save",
+    "saving": "Saving…",
+    "loading": "Loading…",
+    "empty": "No complex services recorded yet.",
+    "delete": "Delete",
+    "confirmDelete": "Delete this event?",
+    "addError": "Failed to record the event.",
+    "deleteError": "Failed to delete.",
+    "component": "Component",
+    "kind": "Kind",
+    "titleField": "Name",
+    "titlePlaceholder": "e.g. Gearbox overhaul",
+    "odometerKm": "Odometer (at replacement)",
+    "date": "Date",
+    "partsCost": "Parts cost",
+    "laborCost": "Labor cost",
+    "notes": "Notes",
+    "kinds": {
+      "replacement": "Replacement",
+      "refurbishment": "Overhaul"
+    },
+    "components": {
+      "turbo": "Turbocharger",
+      "engine_overhaul": "Engine overhaul",
+      "injection": "Injection",
+      "clutch": "Clutch",
+      "driveshaft": "Driveshaft",
+      "gearbox_overhaul": "Gearbox overhaul",
+      "differential": "Differential",
+      "dpf_egr": "DPF / EGR",
+      "air_compressor": "Air compressor",
+      "steering": "Steering",
+      "cooling": "Cooling system",
+      "other": "Other"
     }
   },
   "reminders": {
@@ -933,6 +1129,88 @@
       "title": "Recalls",
       "subtitle": "Public recall notices for your fleet's vehicles (from a free source).",
       "remedy": "Action"
+    },
+    "itemCategories": {
+      "brakes": "Brakes",
+      "engine": "Engine",
+      "filters": "Filters",
+      "tires": "Tires",
+      "suspension": "Suspension",
+      "electrical": "Electrical",
+      "transmission": "Transmission",
+      "body": "Body",
+      "fluids": "Fluids",
+      "brake_pads": "Brake pads",
+      "timing_belt": "Timing belt",
+      "oil_change": "Oil change",
+      "other": "Other"
+    },
+    "durability": {
+      "title": "Durability survey (per segment)",
+      "subtitle": "Lifetime differs by category (van vs. tractor unit vs. trailer). The expected value can also be set manually, alongside the default (learned/seed).",
+      "segment": "Segment",
+      "component": "Component",
+      "expectedKm": "Expected lifetime",
+      "source": "Source",
+      "samples": "Samples",
+      "override": "Manual override (km)",
+      "save": "Save",
+      "clear": "Clear",
+      "loading": "Loading…",
+      "saveError": "Save failed.",
+      "sources": {
+        "manual": "manual",
+        "empirical": "learned",
+        "seed": "baseline"
+      }
+    }
+  },
+  "rankings": {
+    "title": "Rankings",
+    "subtitle": "Vehicle ranking by cost-efficiency and reliability, by segment and by make/model.",
+    "loading": "Loading…",
+    "unavailable": "This feature is not available on your plan.",
+    "empty": "Not enough data for the ranking yet.",
+    "exportCsv": "Export CSV",
+    "exportPdf": "PDF",
+    "replaceAdvice": "Replace advised",
+    "tabs": {
+      "segment": "By segment",
+      "model": "By make/model",
+      "suppliers": "Suppliers"
+    },
+    "suppliers": {
+      "empty": "No supplier-linked complex service data yet.",
+      "supplier": "Supplier",
+      "component": "Component",
+      "medianCost": "Median cost",
+      "medianLife": "Median life",
+      "events": "Events"
+    },
+    "table": {
+      "vehicle": "Vehicle",
+      "score": "Score",
+      "costPerKm": "Cost/km",
+      "profitPerKm": "Profit/km",
+      "bigPartsDue": "Complex service due",
+      "badges": "Badges"
+    },
+    "badges": {
+      "segment_champion": "Segment champion",
+      "model_champion": "Model champion",
+      "lowest_cost_km": "Lowest cost/km",
+      "most_reliable": "Most reliable"
+    },
+    "csv": {
+      "group": "Group",
+      "vehicle": "Vehicle",
+      "score": "Score",
+      "costPerKm": "Cost/km",
+      "revenuePerKm": "Revenue/km",
+      "profitPerKm": "Profit/km",
+      "majorEvents": "Complex services",
+      "bigPartsDue": "Complex service due",
+      "replaceAdvice": "Replace advised"
     }
   },
   "admin": {
@@ -953,9 +1231,9 @@
       "invoices": "Invoices"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -964,6 +1242,33 @@
       "PAST_DUE": "Past due",
       "CANCELED": "Canceled"
     },
+    "billing": {
+      "title": "Billing / transfer details",
+      "subtitle": "The system sends these in the subscription request email. Empty fields fall back to the server (env) setting.",
+      "loading": "Loading…",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Saved.",
+      "error": "Save failed.",
+      "fields": {
+        "companyName": "Issuer (company name)",
+        "taxNumber": "Tax number",
+        "address": "Address",
+        "beneficiary": "Beneficiary",
+        "iban": "IBAN / Account",
+        "bankName": "Bank",
+        "swift": "SWIFT",
+        "notifyEmail": "Notification email (new request)"
+      },
+      "test": {
+        "title": "Test email (verify Brevo configuration)",
+        "placeholder": "Destination email address",
+        "send": "Send test",
+        "sending": "Sending…",
+        "ok": "Sent to {to}. If it doesn't arrive, check the verified sender in Brevo.",
+        "fail": "Failed: {error}. Check the Brevo API key and the verified sender."
+      }
+    },
     "subscription": {
       "title": "Subscription",
       "plan": "Plan",
@@ -971,6 +1276,13 @@
       "save": "Save",
       "saving": "Saving…",
       "saved": "Subscription saved.",
+      "error": "Save failed."
+    },
+    "storage": {
+      "label": "Extra storage (GB)",
+      "save": "Save storage",
+      "saving": "Saving…",
+      "saved": "Extra storage saved.",
       "error": "Save failed."
     },
     "features": {
@@ -984,6 +1296,24 @@
       "forceOn": "On",
       "forceOff": "Off",
       "error": "Update failed."
+    },
+    "featureKeys": {
+      "OCR": "OCR text recognition",
+      "AI_PROCESSING": "AI processing",
+      "DASHBOARD": "Dashboard",
+      "REPORTS": "Reports",
+      "API": "API access",
+      "EXPORT": "Export",
+      "REMINDERS": "Reminders",
+      "DOCUMENT_LIBRARY": "Document library",
+      "ANALYTICS": "Premium analytics"
+    },
+    "roles": {
+      "OWNER": "Owner",
+      "FLEET_MANAGER": "Fleet manager",
+      "ADMIN": "Administrator",
+      "ACCOUNTANT": "Accountant",
+      "VIEWER": "Viewer"
     },
     "members": {
       "title": "Members",
@@ -1018,12 +1348,17 @@
       "bank": "Bank",
       "swift": "SWIFT",
       "reference": "Reference",
-      "referenceHint": "Please include this reference: {reference}"
+      "referenceHint": "Please include this reference: {reference}",
+      "monthly": "Monthly",
+      "yearly": "Yearly",
+      "perYear": "/ yr",
+      "yearlyNote": "Pay only 11 months instead of 12 — 1 month free.",
+      "monthFree": "1 month free"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -1036,11 +1371,27 @@
       "title": "Usage",
       "vehicles": "Vehicles",
       "users": "Users",
-      "documents": "Documents (this month)"
+      "documents": "Documents (this month)",
+      "storage": "Storage",
+      "includesExtra": "includes {gb} GB extra",
+      "storageNote": "Storage is total capacity (does not reset monthly).",
+      "storagePacks": "Extra storage (monthly): {list}",
+      "buyStorageTitle": "Buy extra storage (monthly, by bank transfer):"
     },
     "features": {
       "title": "Available features",
-      "none": "No features enabled."
+      "none": "No features enabled.",
+      "keys": {
+        "OCR": "OCR text recognition",
+        "AI_PROCESSING": "AI processing",
+        "DASHBOARD": "Dashboard",
+        "REPORTS": "Reports",
+        "API": "API access",
+        "EXPORT": "Export",
+        "REMINDERS": "Reminders",
+        "DOCUMENT_LIBRARY": "Document library",
+        "ANALYTICS": "Premium analytics"
+      }
     }
   },
   "account": {
@@ -1097,5 +1448,61 @@
     "working": "Working…",
     "error": "Something went wrong, please try again.",
     "consentRequired": "Enable marketing/notification consent first (cookie banner)."
+  },
+  "legal": {
+    "lastUpdated": "Last updated: 1 June 2025",
+    "backToHome": "Back to home",
+    "privacy": {
+      "title": "Privacy Policy",
+      "intro": "This policy explains how Valloreg processes the personal data you provide while using the service. Processing is carried out in accordance with the European Union's General Data Protection Regulation (GDPR).",
+      "sections": [
+        {
+          "heading": "Data controller",
+          "body": "The service is operated by Valloreg. For privacy questions, you can reach us at {email}."
+        },
+        {
+          "heading": "What data we process",
+          "body": "Account and contact details (name, email address, company information), as well as the documents and vehicle data you upload while using the service. Automatic logs may contain technical data (IP address, browser type) for security and operational purposes."
+        },
+        {
+          "heading": "Purpose and legal basis",
+          "body": "We process data to provide the service, perform the contract, handle billing, and meet legal obligations. The legal basis is contract performance, legitimate interest, or legal obligation."
+        },
+        {
+          "heading": "Data storage and transfer",
+          "body": "We retain data for as long as the account is active or as required by law. As processors, we use hosting, email, and AI providers, only to the extent necessary to operate the service."
+        },
+        {
+          "heading": "Your rights",
+          "body": "You have the right to access, rectify, erase, restrict the processing of, and port your personal data. You can submit your request at {email}."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "intro": "By using the Valloreg service you accept the following terms. Please read them carefully before use.",
+      "sections": [
+        {
+          "heading": "The service",
+          "body": "Valloreg provides fleet management software that processes uploaded documents and vehicle data using OCR and artificial intelligence. The service is provided according to the terms of your current subscription plan."
+        },
+        {
+          "heading": "Account and responsibility",
+          "body": "You are responsible for keeping your account credentials secure and for the activities carried out through your account. The service may be used only for lawful purposes."
+        },
+        {
+          "heading": "Content and data",
+          "body": "Content you upload remains your property. You are responsible for having the right to upload and process the data. The output of AI-based processing is for guidance only, so we recommend verifying important data."
+        },
+        {
+          "heading": "Limitation of liability",
+          "body": "The service is provided \"as is\". To the extent permitted by law, we are not liable for indirect damages arising from the use of the service."
+        },
+        {
+          "heading": "Contact",
+          "body": "For questions about these terms, please write to us at {email}."
+        }
+      ]
+    }
   }
 }

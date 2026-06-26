@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { adminApi, ApiError, type AdminTenantListItem } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
+import { BillingSettingsCard } from '@/components/app/BillingSettingsCard';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 export function AdminClient() {
   const t = useTranslations('admin');
@@ -14,18 +16,29 @@ export function AdminClient() {
   const [tenants, setTenants] = useState<AdminTenantListItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [forbidden, setForbidden] = useState(false);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoadError(false);
+    setForbidden(false);
+    setLoading(true);
     adminApi
       .listTenants()
       .then(setTenants)
       .catch((err) => {
-        if (err instanceof ApiError && (err.status === 403 || err.status === 401)) {
+        // 401 → AppShell redirect; 403 → tiltott állapot; egyéb → hibaállapot.
+        if (err instanceof ApiError && err.status === 403) {
           setForbidden(true);
+        } else if (isRealLoadError(err)) {
+          setLoadError(true);
         }
       })
       .finally(() => setLoading(false));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   if (loading) {
     return (
@@ -43,9 +56,20 @@ export function AdminClient() {
     );
   }
 
+  if (loadError) {
+    return (
+      <>
+        <PageHeading title={t('title')} subtitle={t('subtitle')} />
+        <LoadErrorState onRetry={load} />
+      </>
+    );
+  }
+
   return (
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
+
+      <BillingSettingsCard />
 
       <Card className="overflow-hidden p-0">
         <div className="overflow-x-auto">

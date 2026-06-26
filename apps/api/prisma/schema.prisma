@@ -86,6 +86,9 @@ model Tenant {
   // A benchmark CSAK aggregátum, k-anonimitási küszöbbel; kikapcsolva nem
   // számít bele az aggregátumba (de továbbra is láthatja a piaci összevetést).
   benchmarkOptIn Boolean @default(true)
+  // Vásárolt EXTRA tárhely GB-ban (a csomag-tárhely fölé adódik). A tárhely
+  // teljes kapacitás (nem havi reset); a Super Admin állítja az utalás után.
+  extraStorageGb Int @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
@@ -103,9 +106,12 @@ model Tenant {
   supplierVehicleMappings SupplierVehicleMapping[]
   itemCategoryMappings ItemCategoryMapping[]
   reminders            Reminder[]
+  majorComponentEvents MajorComponentEvent[]
+  durabilityBaselines  DurabilityBaseline[]
   vehicleDocuments     VehicleDocument[]
   vehicleVerifications VehicleVerification[]
   vehicleScans         VehicleScan[]
+  vehicleParties       VehicleParty[]
 
   @@map("tenants")
 }
@@ -282,6 +288,27 @@ model Vehicle {
   model      String?
   year       Int?
   odometerKm Int?
+  // Forgalmi engedélyből kiolvasott bővített műszaki adatok (mind opcionális,
+  // EU-egységes kódok zárójelben). A meglévő járművek nem törnek el (null).
+  firstRegistration DateTime? // B/I – első forgalomba helyezés
+  vehicleType       String? // D.2 – típus/variáns/verzió
+  category          String? // J – jármű-kategória (M1, N1, …)
+  // Flotta-szegmens KÉZI felülírása (van / truck_7_5_18 / truck_18_plus /
+  // semi_trailer / trailer / other). Alapból null → a szegmenst a forgalmiból
+  // vezetjük le (`fleetSegmentOf`). Csak akkor töltsd, ha az auto-besorolás téved.
+  fleetSegment      String?
+  // Opcionális bevétel/km (a felhasználó adja meg) a VALÓS rentabilitás
+  // (nyereség/km = bevétel/km − költség/km) ranglistához. Null = nincs megadva.
+  revenuePerKm      Decimal?
+  fuelType          String? // P.3 – üzemanyag
+  engineCm3         Int? // P.1 – hengerűrtartalom (cm³)
+  powerKw           Int? // P.2 – teljesítmény (kW)
+  color             String? // R – szín
+  seats             Int? // S.1 – ülőhelyek száma
+  maxMassKg         Int? // F.1 – megengedett legnagyobb tömeg (kg)
+  kerbWeightKg      Int? // G – saját tömeg (kg)
+  euroClass         String? // V.9 – emissziós osztály (Euro)
+  typeApproval      String? // K – típusjóváhagyási szám
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
@@ -289,12 +316,44 @@ model Vehicle {
   invoiceItems InvoiceItem[]
   supplierVehicleMappings SupplierVehicleMapping[]
   reminders    Reminder[]
+  majorComponentEvents MajorComponentEvent[]
   documents    VehicleDocument[]
   verification VehicleVerification?
+  parties      VehicleParty[]
 
   @@index([tenantId])
   @@index([tenantId, plate])
   @@map("vehicles")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Jármű felei: tulajdonos (C.2) és üzembentartó / lízingbevevő (C.1).
+// Lízing esetén a tulajdonos a lízingcég, a használó (üzembentartó) a cég/személy,
+// aki a járművet üzemelteti. `partyType` dönti el, hogy az `idNumber` CNP
+// (magánszemély) vagy CUI (cég). A névhez/címhez SZEMÉLYES ADAT tartozhat – csak
+// a tenanton belül elérhető (tenant-scope).
+// TODO(GDPR – később): ezt a részt (név, cím, CNP/CUI) be kell vonni a GDPR-
+// kezelésbe (adatkezelési tájékoztató, hozzáférés/törlés, megőrzési idő).
+// ──────────────────────────────────────────────────────────────────────────
+model VehicleParty {
+  id        String   @id @default(uuid())
+  tenantId  String
+  vehicleId String
+  role      String // "owner" (tulajdonos) | "user" (üzembentartó/lízingbevevő)
+  partyType String   @default("person") // "person" | "company"
+  name      String?
+  address   String?
+  idNumber  String? // CNP (magánszemély) vagy CUI (cég)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, vehicleId, role])
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@map("vehicle_parties")
 }
 
 model Document {
@@ -366,7 +425,18 @@ model InvoiceItem {
   category   String // ItemCategory string union (part, labor, …)
   partType   String? // PartType string union (brakes, engine, …)
   type       String // ItemType string union (vehicle, tool, general)
+  // A számlán szereplő alkatrész cikkszám/cikkkód (ha van) + a belőle (vagy a
+  // típus+név alapján) képzett normalizált alkatrész-identitás. A partKey-re
+  // épül a jármű-javaslat (mely járművekre lett már felrakva ugyanez).
+  articleNumber String?
+  partKey       String?
   vehicleId  String?
+  // AI-JAVASLAT: melyik járműhöz tartozhat ez a tétel a csere-előzmény alapján
+  // (a legrégebben cserélt jelölt). Csak javaslat – a felhasználó dönt; a hard
+  // vehicleId ettől független.
+  suggestedVehicleId   String?
+  suggestionConfidence Float?
+  suggestionReason     String?
   quantity   Float    @default(1)
   unitPrice  Decimal?
   price      Decimal  @default(0)
@@ -379,6 +449,8 @@ model InvoiceItem {
 
   @@index([tenantId])
   @@index([invoiceId])
+  // A jármű-javaslat előzmény-lekérdezéséhez (tenant + alkatrész-identitás).
+  @@index([tenantId, partKey])
   @@map("invoice_items")
 }
 
@@ -546,6 +618,8 @@ model VehicleScan {
   matchedVehicleId      String?
   // Forgalmi engedélynek tűnik-e (van rendszám/VIN).
   looksLikeRegistration Boolean?
+  // Ha a felhasználó már mentette járműként (status=CONFIRMED): a létrejött/frissített jármű id-je.
+  confirmedVehicleId    String?
   // Hibaüzenet, ha FAILED.
   error                 String?
   createdAt             DateTime @default(now())
@@ -601,4 +675,86 @@ model FleetBenchmark {
 
   @@unique([makeModel, itemCategory, kmBucket, currency])
   @@map("fleet_benchmarks")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Nagy alkatrész esemény: egy fődarab cseréje vagy felújítása (turbó, motor,
+// kuplung, sebességváltó stb.). Több apró számlatételből „összerakható" egy
+// felújítás (itemIds). Ebből épül a jármű nagy-alkatrész idővonala és (Fázis D)
+// a tanuló tartósság-felmérés. A `component`/`kind` String (a @valloreg/shared
+// MajorComponent/MajorEventKind string-union értékeivel azonosan).
+// ──────────────────────────────────────────────────────────────────────────
+model MajorComponentEvent {
+  id              String   @id @default(uuid())
+  tenantId        String
+  vehicleId       String
+  component       String // MajorComponent: turbo | clutch | gearbox_overhaul | …
+  kind            String   @default("replacement") // replacement | refurbishment
+  title           String?
+  // Cserekori odométer-állás (a tartósság-számítás alapja) és a munka dátuma.
+  odometerKm      Int?
+  date            DateTime?
+  // Költségbontás: alkatrész + munkadíj = összes.
+  partsCost       Decimal?
+  laborCost       Decimal?
+  totalCost       Decimal?
+  currency        String?
+  // Forrás-számla (ha egy számlából jött) és az „összerakott" tételek azonosítói.
+  invoiceId       String?
+  itemIds         Json? // string[] – mely számlatételekből állt össze
+  notes           String?
+  createdById     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  tenant  Tenant  @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([tenantId, vehicleId])
+  @@index([tenantId, component])
+  @@map("major_component_events")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Platform-szintű SZÁMLA-/UTALÁSI adatok (egyetlen sor, id = "default"). CSAK a
+// Super Admin (developer) szerkeszti; a rendszer ezt teszi az előfizetés-igénylő
+// e-mailbe. Üres mezőnél a billing az env-tartalékra esik vissza.
+// ──────────────────────────────────────────────────────────────────────────
+model BillingSettings {
+  id          String   @id @default("default")
+  // Eladó / számlakibocsátó adatai (a számlaadatokhoz).
+  companyName String   @default("")
+  taxNumber   String   @default("")
+  address     String   @default("")
+  // Utalási adatok (az e-mailbe).
+  beneficiary String   @default("")
+  iban        String   @default("")
+  bankName    String   @default("")
+  swift       String   @default("")
+  // Fejlesztői értesítő e-mail (új igénylésről).
+  notifyEmail String   @default("")
+  updatedAt   DateTime @updatedAt
+
+  @@map("billing_settings")
+}
+
+// ──────────────────────────────────────────────────────────────────────────
+// Tartósság KÉZI felülírás: cégenként a várható élettartam (km) egy adott
+// szegmens + fődarab párra. Ha létezik, ez FELÜLÍRJA a seedet és a tanultat.
+// (segment a @valloreg/shared FleetSegment, component a MajorComponent stringje.)
+// ──────────────────────────────────────────────────────────────────────────
+model DurabilityBaseline {
+  id         String   @id @default(uuid())
+  tenantId   String
+  segment    String
+  component  String
+  expectedKm Int
+  updatedAt  DateTime @updatedAt
+
+  tenant Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, segment, component])
+  @@index([tenantId])
+  @@map("durability_baselines")
 }

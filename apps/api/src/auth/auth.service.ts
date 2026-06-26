@@ -29,6 +29,17 @@ export interface AuthTokens {
   refreshToken: string;
 }
 
+/** A refresh végpont eredménye: az új tokenek + a "Remember me" megőrzendő flag. */
+export interface RefreshResult extends AuthTokens {
+  remember: boolean;
+}
+
+/** A refresh token JWT payloadja (az access payload + rotációs jti + remember). */
+interface RefreshTokenPayload extends AccessTokenPayload {
+  jti?: string;
+  remember?: boolean;
+}
+
 export interface AuthResult extends AuthTokens {
   user: {
     id: string;
@@ -136,7 +147,12 @@ export class AuthService {
       ip,
     });
 
-    const tokens = await this.issueTokens(user.id, user.email, user.isPlatformAdmin);
+    const tokens = await this.issueTokens(
+      user.id,
+      user.email,
+      user.isPlatformAdmin,
+      dto.rememberMe ?? true,
+    );
 
     return {
       ...tokens,
@@ -202,7 +218,12 @@ export class AuthService {
       ip,
     });
 
-    const tokens = await this.issueTokens(user.id, user.email, user.isPlatformAdmin);
+    const tokens = await this.issueTokens(
+      user.id,
+      user.email,
+      user.isPlatformAdmin,
+      dto.rememberMe ?? true,
+    );
 
     return {
       ...tokens,
@@ -503,10 +524,10 @@ export class AuthService {
    * Refresh token rotáció: a régi tokent visszavonja, újat ad ki.
    * A refresh token JWT-ként érkezik; a tárolt hash-t is ellenőrizzük.
    */
-  async refresh(refreshToken: string): Promise<AuthTokens> {
-    let payload: AccessTokenPayload;
+  async refresh(refreshToken: string): Promise<RefreshResult> {
+    let payload: RefreshTokenPayload;
     try {
-      payload = await this.jwt.verifyAsync<AccessTokenPayload>(refreshToken, {
+      payload = await this.jwt.verifyAsync<RefreshTokenPayload>(refreshToken, {
         secret: this.config.jwt.refreshSecret,
       });
     } catch {
@@ -518,7 +539,19 @@ export class AuthService {
       where: { tokenHash },
     });
 
-    if (!stored || stored.revokedAt || stored.expiresAt < new Date()) {
+    if (!stored || stored.expiresAt < new Date()) {
+      throw AppException.tokenExpired();
+    }
+
+    // Reuse-detektálás: ha a tokent MÁR visszavonták (rotáció során), de újra
+    // bemutatják, az ellopott-majd-rotált tokenre utal → biztonsági okból a
+    // felhasználó ÖSSZES aktív refresh tokenjét visszavonjuk (a tolvaj és a
+    // jogos kliens is újra-bejelentkezésre kényszerül).
+    if (stored.revokedAt) {
+      await this.prisma.system.refreshToken.updateMany({
+        where: { userId: stored.userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
       throw AppException.tokenExpired();
     }
 
@@ -536,7 +569,15 @@ export class AuthService {
       throw AppException.tokenInvalid();
     }
 
-    return this.issueTokens(user.id, user.email, user.isPlatformAdmin);
+    // A "Remember me" jellemzőt a tokenből visszük tovább (régi tokeneknél true).
+    const remember = payload.remember ?? true;
+    const tokens = await this.issueTokens(
+      user.id,
+      user.email,
+      user.isPlatformAdmin,
+      remember,
+    );
+    return { ...tokens, remember };
   }
 
   /** Kijelentkezés: a megadott refresh token visszavonása. */
@@ -583,6 +624,7 @@ export class AuthService {
     userId: string,
     email: string,
     isPlatformAdmin: boolean,
+    remember: boolean,
   ): Promise<AuthTokens> {
     const payload: AccessTokenPayload = { sub: userId, email, isPlatformAdmin };
 
@@ -592,7 +634,7 @@ export class AuthService {
     });
 
     const refreshToken = await this.jwt.signAsync(
-      { ...payload, jti: randomBytes(16).toString('hex') },
+      { ...payload, jti: randomBytes(16).toString('hex'), remember },
       {
         secret: this.config.jwt.refreshSecret,
         expiresIn: this.config.jwt.refreshTtl,

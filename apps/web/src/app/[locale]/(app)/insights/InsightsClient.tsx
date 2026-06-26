@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import {
@@ -18,6 +18,8 @@ import {
 import { Card } from '@/components/ui/Card';
 import { Badge, type BadgeTone } from '@/components/ui/Badge';
 import { PageHeading } from '@/components/app/PageHeading';
+import { DurabilityBaselines } from '@/components/app/DurabilityBaselines';
+import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 
 const SEVERITY_TONE: Record<AnomalySeverityValue, BadgeTone> = {
   high: 'danger',
@@ -53,13 +55,17 @@ export function InsightsClient() {
   const [recalls, setRecalls] = useState<VehicleRecall[]>([]);
   const [loading, setLoading] = useState(true);
   const [available, setAvailable] = useState(true);
+  const [loadError, setLoadError] = useState(false);
 
-  useEffect(() => {
+  const load = useCallback(() => {
+    setLoading(true);
+    setLoadError(false);
     insightsApi
       .getAnomalies()
       .then(setAnomalies)
       .catch((err) => {
         if (err instanceof ApiError && err.status === 403) setAvailable(false);
+        else if (isRealLoadError(err)) setLoadError(true);
       })
       .finally(() => setLoading(false));
     insightsApi
@@ -75,6 +81,10 @@ export function InsightsClient() {
       .then(setRecalls)
       .catch(() => setRecalls([]));
   }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   function kmBucketLabel(bucket: number): string {
     if (bucket < 0) return t('benchmark.kmUnknown');
@@ -103,6 +113,11 @@ export function InsightsClient() {
     return t('message.unusual_amount', { pct: a.deltaPct ?? 0 });
   }
 
+  function itemCategoryLabel(category: string): string {
+    const key = `itemCategories.${category}` as Parameters<typeof t>[0];
+    return t.has(key) ? t(key) : category;
+  }
+
   function meta(a: Anomaly): string {
     const parts: string[] = [];
     if (a.supplier) parts.push(a.supplier);
@@ -120,6 +135,8 @@ export function InsightsClient() {
 
       {loading ? (
         <p className="py-10 text-center text-sm text-anthracite-500">{t('loading')}</p>
+      ) : loadError ? (
+        <LoadErrorState onRetry={load} />
       ) : !available ? (
         <Card className="py-16">
           <p className="text-center text-sm text-anthracite-500">{t('unavailable')}</p>
@@ -296,7 +313,8 @@ export function InsightsClient() {
                               {b.makeModel}
                             </p>
                             <p className="text-xs text-anthracite-500">
-                              {b.itemCategory} · {kmBucketLabel(b.kmBucket)} ·{' '}
+                              {itemCategoryLabel(b.itemCategory)} ·{' '}
+                              {kmBucketLabel(b.kmBucket)} ·{' '}
                               {t('benchmark.sample', { n: b.sampleVehicles })}
                             </p>
                           </td>
@@ -366,6 +384,9 @@ export function InsightsClient() {
               </Card>
             </section>
           )}
+
+          {/* Tartósság-felmérés szegmensenként + kézi felülírás */}
+          <DurabilityBaselines />
         </div>
       )}
     </>

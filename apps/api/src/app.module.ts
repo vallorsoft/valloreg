@@ -26,6 +26,8 @@ import { VerificationModule } from './verification/verification.module';
 import { BenchmarkModule } from './benchmark/benchmark.module';
 import { DsrModule } from './dsr/dsr.module';
 import { DataRetentionModule } from './data-retention/data-retention.module';
+import { MajorComponentsModule } from './major-components/major-components.module';
+import { RankingsModule } from './rankings/rankings.module';
 
 /**
  * Gyökér modul. A globális modulok (config, prisma, audit, storage,
@@ -64,6 +66,8 @@ import { DataRetentionModule } from './data-retention/data-retention.module';
     BenchmarkModule,
     DsrModule,
     DataRetentionModule,
+    MajorComponentsModule,
+    RankingsModule,
   ],
 })
 export class AppModule implements NestModule {

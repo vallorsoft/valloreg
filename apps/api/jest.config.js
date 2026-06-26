@@ -1,17 +1,20 @@
-import type { Config } from 'jest';
-
 /**
  * Két jest „project":
  *  - `unit`        : gyors, DB nélkül. `*.spec.ts` (kivéve `*.int.spec.ts`).
  *                    Ez fut alapból (`pnpm test`) és a CI fő kapujában.
  *  - `integration` : `*.int.spec.ts`. Élő Postgres + generált Prisma kliens kell
  *                    (`prisma generate` + `migrate deploy`). A CI külön jobban futtatja.
+ *
+ * Plain CommonJS (NEM .ts) – így a Jest nem ts-node-dal tölti be a configot, és
+ * független a projekt `tsconfig` module/moduleResolution beállításától. A teszt-
+ * fájlok fordítását a ts-jest inline `module: commonjs` override intézi.
+ *
+ * @type {import('jest').Config}
  */
-const tsTransform: Config['transform'] = {
+const tsTransform = {
   '^.+\\.ts$': [
     'ts-jest',
     {
-      // A jest CommonJS-t vár; a NodeNext modul-beállítást felülírjuk.
       tsconfig: {
         module: 'commonjs',
         moduleResolution: 'node',
@@ -22,7 +25,7 @@ const tsTransform: Config['transform'] = {
   ],
 };
 
-const config: Config = {
+module.exports = {
   rootDir: '.',
   projects: [
     {
@@ -44,5 +47,3 @@ const config: Config = {
     },
   ],
 };
-
-export default config;

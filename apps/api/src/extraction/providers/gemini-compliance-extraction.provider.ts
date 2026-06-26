@@ -8,7 +8,8 @@ import type {
 } from '../compliance-extraction.provider';
 
 const GEMINI_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
-const FALLBACK_STATUSES = new Set([429, 500, 503]);
+// 404 is fallback: kivezetett/ismeretlen modellnévnél lépjünk a következőre.
+const FALLBACK_STATUSES = new Set([404, 429, 500, 503]);
 
 /**
  * Gemini alapú megfelelőség-kiolvasás: ITP/RCA/rovinietă igazolás OCR
@@ -55,10 +56,11 @@ export class GeminiComplianceExtractionProvider
     prompt: string,
     apiKey: string,
   ): Promise<unknown> {
-    const url = `${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent?key=${apiKey}`;
+    const url = `${GEMINI_BASE}/${encodeURIComponent(model)}:generateContent`;
     const res = await fetch(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'x-goog-api-key': apiKey },
+      signal: AbortSignal.timeout(30_000),
       body: JSON.stringify({
         contents: [{ parts: [{ text: prompt }] }],
         generationConfig: { responseMimeType: 'application/json', temperature: 0 },

@@ -22,6 +22,11 @@ export class AppConfigService {
     return this.nodeEnv === 'production';
   }
 
+  /** Igaz, ha ez az instance futtatja a háttér-ütemezőket (több-instance dedup). */
+  get schedulerEnabled(): boolean {
+    return this.get('SCHEDULER_ENABLED');
+  }
+
   get apiPort(): number {
     return this.get('API_PORT');
   }
@@ -55,6 +60,37 @@ export class AppConfigService {
     const explicit = this.get('WEB_APP_URL').trim();
     const url = explicit || this.corsOrigins[0] || 'http://localhost:3000';
     return url.replace(/\/+$/, '');
+  }
+
+  /**
+   * KAPCSOLÓ: a frontend same-origin proxyn éri-e el az auth-végpontokat. Ha igen,
+   * a refresh cookie first-party → `SameSite=Lax` mehet.
+   */
+  get sameOriginFrontend(): boolean {
+    return this.get('SAME_ORIGIN_FRONTEND');
+  }
+
+  /**
+   * A refresh token httpOnly cookie beállításai.
+   *  - Production + CROSS-SITE (alap): `SameSite=None; Secure` kell, hogy a
+   *    böngésző a külön web/api domain közt elküldje.
+   *  - Production + SAME-ORIGIN (kapcsoló be): a cookie first-party →
+   *    `SameSite=Lax; Secure` (nem érinti a harmadik-fél-cookie korlátozás).
+   *  - Helyi fejlesztés (http, azonos site): `Lax`, Secure nélkül.
+   * A cookie csak az auth-útvonalakra megy (`/<prefix>/auth`).
+   */
+  get refreshCookie(): {
+    secure: boolean;
+    sameSite: 'lax' | 'none';
+    path: string;
+  } {
+    const sameSite: 'lax' | 'none' =
+      this.isProduction && !this.sameOriginFrontend ? 'none' : 'lax';
+    return {
+      secure: this.isProduction,
+      sameSite,
+      path: `/${this.apiGlobalPrefix}/auth`,
+    };
   }
 
   /** Jelszó-visszaállító token élettartama másodpercben. */
@@ -185,13 +221,14 @@ export class AppConfigService {
    * a GEMINI_MODEL csak a lánc ELEJÉRE kerül (a többi marad tartaléknak).
    */
   get gemini(): { apiKey: string; models: string[] } {
+    // A Google kivezette a gemini-1.5-* modelleket a v1beta generateContent API-ból
+    // (404). Csak aktuális, támogatott modellek; a provider 404/429/5xx esetén a
+    // következőre vált (mindegyiknek külön ingyenes napi kerete van).
     const DEFAULT_CHAIN = [
       'gemini-2.0-flash',
       'gemini-2.0-flash-lite',
       'gemini-2.5-flash',
       'gemini-2.5-flash-lite',
-      'gemini-1.5-flash',
-      'gemini-1.5-flash-8b',
     ];
 
     const override = this.get('GEMINI_MODELS')
@@ -213,11 +250,12 @@ export class AppConfigService {
     return this.get('INTEGRATION_ENC_KEY');
   }
 
-  get mail(): { apiKey: string; sender: string; from: string } {
+  get mail(): { apiKey: string; sender: string; from: string; fromName: string } {
     return {
       apiKey: this.get('BREVO_API_KEY'),
       sender: this.get('BREVO_SENDER'),
       from: this.get('MAIL_FROM'),
+      fromName: this.get('MAIL_FROM_NAME'),
     };
   }
 

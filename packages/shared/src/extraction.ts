@@ -50,7 +50,7 @@ export const ExtractedInvoiceSchema = z.object({
   /** ISO dátum (YYYY-MM-DD), ha értelmezhető. */
   date: z.string().default(''),
   invoiceNumber: z.string().default(''),
-  /** ISO 4217 pénznem (pl. HUF, RON, EUR). */
+  /** ISO 4217 pénznem (pl. RON, EUR). */
   currency: z.string().default(''),
   /** Kilométeróra-állás, ha szerepel a számlán. */
   odometerKm: z.number().int().nonnegative().nullable().default(null),
@@ -70,6 +70,13 @@ export const ExtractedItemSchema = z.object({
   category: z.nativeEnum(ItemCategory).default(ItemCategory.OTHER),
   /** Alkatrész-típus, ha releváns (fék, motor, szűrő…). */
   partType: z.nativeEnum(PartType).nullable().default(null),
+  /**
+   * A számlán szereplő alkatrész cikkszám / cikkkód (pl. "FB-1234", OEM-szám),
+   * ha látható. Ez az alkatrész legpontosabb azonosítója: ebből épül a
+   * jármű-javaslat (mely járművekre lett már felrakva ugyanez a cikkszám).
+   * Ha nincs a számlán, `null` – ekkor a típus + név alapján képződik kulcs.
+   */
+  articleNumber: z.string().nullable().default(null),
   /** vehicle | tool | general */
   type: z.nativeEnum(ItemType).default(ItemType.GENERAL),
   /** Ha a motor konkrét meglévő járműhöz kötötte. */

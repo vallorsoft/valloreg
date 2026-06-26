@@ -63,6 +63,11 @@
       "allLegal": "Összes jogi dokumentum",
       "about": "Rólunk",
       "tagline": "Flottakezelés okosan – kevesebb adminisztráció, több átláthatóság."
+    },
+    "contactEmail": "vallorsoft@gmail.com",
+    "notFound": {
+      "message": "A keresett oldal nem található.",
+      "backHome": "Vissza a főoldalra"
     }
   },
   "landing": {
@@ -210,25 +215,58 @@
       "usersUnlimited": "Korlátlan felhasználó",
       "documents": "{count} dokumentum / hó",
       "documentsUnlimited": "Korlátlan dokumentum / hó",
+      "storage": "{gb} GB tárhely",
+      "compareButton": "Csomagok összehasonlítása",
       "mostPopular": "Legnépszerűbb",
       "cta": "Kiválasztom",
       "plans": {
         "STARTER": {
-          "name": "Starter",
+          "name": "Start",
           "description": "Kisebb flottáknak, az első lépésekhez."
         },
         "STANDARD": {
-          "name": "Standard",
-          "description": "Növekvő flottáknak, riportokkal és exporttal."
+          "name": "Pro",
+          "description": "Növekvő flottáknak: riport, export, emlékeztető, komplex szerviz."
         },
         "PROFESSIONAL": {
-          "name": "Professional",
-          "description": "Aktív flottakezeléshez, teljes funkciókészlettel."
+          "name": "Fleet",
+          "description": "Teljes flotta-intelligencia: ranglista, tartósság, beszállító-minőség."
         },
         "BUSINESS": {
           "name": "Business",
           "description": "Nagy flottáknak, korlátok nélkül."
         }
+      },
+      "billingMonthly": "Havi",
+      "billingYearly": "Éves",
+      "perYear": "/ év",
+      "yearlyNote": "Éves fizetésnél 12 hónap helyett csak 11 havidíj – 1 hónap ingyen.",
+      "monthFree": "1 hónap ingyen"
+    },
+    "compare": {
+      "title": "Csomagok összehasonlítása",
+      "subtitle": "Mit tud pontosan az egyes csomag – egy táblázatban.",
+      "feature": "Funkció",
+      "note": "A tárhely teljes kapacitás (nem nullázódik havonta); bármely csomaghoz vehető extra tárhely.",
+      "storagePacks": "Vásárolható extra tárhely (havi díj): {list}",
+      "limits": {
+        "vehicles": "Járművek",
+        "users": "Felhasználók",
+        "documents": "Dokumentum / hó",
+        "storage": "Tárhely"
+      },
+      "rows": {
+        "ocrAi": "OCR + AI feldolgozás",
+        "serviceBook": "Digitális szervizkönyv + dokumentumtár",
+        "dashboard": "Költség-dashboard",
+        "reports": "Riportok + CSV/PDF export",
+        "reminders": "Emlékeztetők (idő/km karbantartás)",
+        "majorParts": "Munkadíj + komplex szerviz + idővonal",
+        "insights": "Insights (anomáliák, TCO, Európai benchmark)",
+        "durability": "Tanuló élettartam + prediktív karbantartás",
+        "rankings": "Ranglista + jelvények + csere-tanácsadó",
+        "supplier": "Beszállító-minőség",
+        "extraStorage": "Vásárolható extra tárhely"
       }
     },
     "faq": {
@@ -269,7 +307,10 @@
       "message": "Üzenet",
       "messagePlaceholder": "Miben segíthetünk?",
       "submit": "Üzenet küldése",
-      "note": "Hamarosan válaszolunk. Az űrlap bekötése későbbi fázisban érkezik."
+      "note": "Megnyitjuk az ön levelezőprogramját az előre kitöltött üzenettel. Hamarosan válaszolunk.",
+      "mailtoSubject": "Valloreg – kapcsolatfelvétel",
+      "success": "Megnyitottuk a levelezőprogramját az előre kitöltött üzenettel. Ha nem nyílt meg, írjon közvetlenül a {email} címre.",
+      "errorNoMessage": "Kérjük, írja be az üzenetét."
     }
   },
   "auth": {
@@ -291,7 +332,8 @@
       "submit": "Bejelentkezés",
       "noAccount": "Még nincs fiókja?",
       "registerLink": "Regisztráljon",
-      "forgotPassword": "Elfelejtett jelszó?"
+      "forgotPassword": "Elfelejtett jelszó?",
+      "rememberMe": "Maradjak bejelentkezve"
     },
     "register": {
       "title": "Regisztráció",
@@ -364,6 +406,22 @@
       "success": "A jelszavát sikeresen módosítottuk. Most már bejelentkezhet az új jelszavával.",
       "goToLogin": "Bejelentkezés",
       "invalidLink": "A visszaállító link érvénytelen vagy hiányzik. Kérjen újat."
+    },
+    "acceptInvite": {
+      "title": "Meghívó elfogadása",
+      "subtitle": "Állítsa be a fiókját, hogy csatlakozhasson a céghez.",
+      "name": "Név",
+      "namePlaceholder": "Az Ön neve",
+      "password": "Jelszó",
+      "passwordPlaceholder": "Legalább 8 karakter",
+      "confirmPassword": "Jelszó megerősítése",
+      "confirmPasswordPlaceholder": "Írja be újra a jelszót",
+      "submit": "Meghívó elfogadása",
+      "backToLogin": "Vissza a bejelentkezéshez",
+      "success": "A meghívót elfogadta. Most már bejelentkezhet.",
+      "goToLogin": "Bejelentkezés",
+      "invalidLink": "A meghívó linkje érvénytelen vagy hiányzik. Kérjen újat a cégétől.",
+      "hint": "Ha már van fiókja ezzel az e-mail-címmel, a jelszó megadása nélkül is elfogadhatja a meghívót."
     }
   },
   "app": {
@@ -374,6 +432,7 @@
       "reminders": "Emlékeztetők",
       "reports": "Riportok",
       "insights": "Anomáliák",
+      "rankings": "Ranglista",
       "team": "Csapat",
       "billing": "Előfizetés",
       "account": "Fiók",
@@ -408,8 +467,8 @@
       "automationRate": "Automatizáltság"
     },
     "units": {
-      "currency": "Ft",
-      "perKm": "Ft/km",
+      "currency": "RON",
+      "perKm": "RON/km",
       "items": "db",
       "events": "esemény"
     },
@@ -428,10 +487,21 @@
       "plate": "Rendszám",
       "make": "Gyártmány",
       "model": "Modell",
+      "segment": "Szegmens",
       "year": "Évjárat",
       "odometer": "Km-óra",
       "cost": "Összköltség",
       "actions": "Műveletek"
+    },
+    "segments": {
+      "all": "Összes",
+      "van": "Furgon (< 3,5 t)",
+      "light_truck": "Kisteher (3,5–7,5 t)",
+      "truck_7_5_18": "Középes teher (7,5–18 t)",
+      "truck_18_plus": "Nyerges (18 t+)",
+      "semi_trailer": "Félpótkocsi",
+      "trailer": "Pótkocsi",
+      "other": "Egyéb"
     },
     "empty": {
       "title": "Még nincs jármű",
@@ -487,6 +557,64 @@
         "item": "Tétel",
         "category": "Kategória",
         "amount": "Összeg"
+      }
+    },
+    "fields": {
+      "sectionTech": "Műszaki adatok",
+      "sectionOwner": "Tulajdonos",
+      "sectionUser": "Üzembentartó / lízingbevevő",
+      "vehicleType": "Típus/variáns (D.2)",
+      "firstRegistration": "Első forgalomba helyezés",
+      "category": "Jármű-kategória (J)",
+      "fleetSegment": "Flotta-szegmens",
+      "fleetSegmentAuto": "Automatikus (forgalmiból)",
+      "revenuePerKm": "Bevétel/km (opcionális)",
+      "fuelType": "Üzemanyag",
+      "engineCm3": "Hengerűrtartalom (cm³)",
+      "powerKw": "Teljesítmény (kW)",
+      "color": "Szín",
+      "seats": "Ülőhelyek száma",
+      "maxMassKg": "Megengedett legnagyobb tömeg (kg)",
+      "kerbWeightKg": "Saját tömeg (kg)",
+      "euroClass": "Emissziós osztály (Euro)",
+      "typeApproval": "Típusjóváhagyási szám (K)",
+      "party": {
+        "type": "Típus",
+        "person": "Magánszemély",
+        "company": "Cég",
+        "name": "Név",
+        "address": "Cím",
+        "cnp": "CNP (személyi szám)",
+        "cui": "CUI (adószám)"
+      }
+    },
+    "scans": {
+      "title": "Forgalmi beolvasások",
+      "subtitle": "Töltsd fel a forgalmit (1–2 oldal) – feldolgozás után járműként mentheted.",
+      "uploadHint": "Húzd ide a forgalmi fotóját/PDF-jét, vagy válassz fájlt (max. 2 oldal).",
+      "choose": "Fájl kiválasztása",
+      "uploading": "Feltöltés…",
+      "loading": "Betöltés…",
+      "empty": "Még nincs folyamatban lévő beolvasás.",
+      "pages": "({count} oldal)",
+      "saveAsVehicle": "Mentés járműként",
+      "updateVehicle": "Meglévő frissítése",
+      "dismiss": "Elvetés",
+      "dismissing": "Elvetés…",
+      "errorUpload": "A feltöltés sikertelen, próbáld újra.",
+      "table": {
+        "file": "Fájl / rendszám",
+        "uploadedAt": "Feltöltve",
+        "status": "Státusz",
+        "actions": "Műveletek"
+      },
+      "status": {
+        "PENDING": "Sorban",
+        "OCR_RUNNING": "Szövegfelismerés",
+        "EXTRACTING": "Adatkiolvasás",
+        "DONE": "Kész",
+        "FAILED": "Sikertelen",
+        "CONFIRMED": "Mentve"
       }
     },
     "scanRegistration": "Forgalmi beolvasása",
@@ -667,7 +795,19 @@
         "price": "Ár",
         "empty": "Nincsenek tételek.",
         "unassigned": "Nincs hozzárendelve",
-        "assignError": "A hozzárendelés sikertelen."
+        "assignError": "A hozzárendelés sikertelen.",
+        "addLaborTitle": "Munkadíj hozzáadása",
+        "laborNamePlaceholder": "Megnevezés (pl. Munkadíj)",
+        "laborAmountPlaceholder": "Összeg",
+        "addLabor": "Hozzáadás",
+        "adding": "Hozzáadás…",
+        "laborInvalid": "Adj meg megnevezést és pozitív összeget.",
+        "laborError": "A tétel hozzáadása sikertelen.",
+        "delete": "Törlés",
+        "deleting": "Törlés…",
+        "deleteError": "A tétel törlése sikertelen.",
+        "confirmDelete": "Biztosan törlöd ezt a tételt?",
+        "uncertain": "Bizonytalan"
       }
     },
     "actions": {
@@ -696,6 +836,62 @@
       "confirmOverwrite": "Biztosan felülírja az eredeti számlát? Az eredeti dokumentum, a számlája és a tételei véglegesen törlődnek.",
       "errorOverwrite": "A felülírás sikertelen, próbálja újra.",
       "orDelete": "vagy törölje ezt a feltöltést a fenti Törlés gombbal."
+    }
+  },
+  "majorComponents": {
+    "title": "Komplex szerviz",
+    "subtitle": "Komplex szervizek (csere/felújítás) idővonala.",
+    "forecastTitle": "Tartósság-előrejelzés",
+    "nextDue": "Becsült esedékesség",
+    "estCost": "Becsült költség",
+    "expected": "várható",
+    "status": {
+      "ok": "Rendben",
+      "watch": "Figyelni",
+      "due": "Esedékes",
+      "overdue": "Lejárt"
+    },
+    "source": {
+      "empirical": "tanult",
+      "seed": "alap",
+      "manual": "kézi"
+    },
+    "add": "Hozzáadás",
+    "cancel": "Mégse",
+    "save": "Mentés",
+    "saving": "Mentés…",
+    "loading": "Betöltés…",
+    "empty": "Még nincs rögzített komplex szerviz esemény.",
+    "delete": "Törlés",
+    "confirmDelete": "Biztosan törlöd ezt az eseményt?",
+    "addError": "A rögzítés sikertelen.",
+    "deleteError": "A törlés sikertelen.",
+    "component": "Alkatrész",
+    "kind": "Jelleg",
+    "titleField": "Megnevezés",
+    "titlePlaceholder": "pl. Sebességváltó-felújítás",
+    "odometerKm": "Km-óra (cserekor)",
+    "date": "Dátum",
+    "partsCost": "Alkatrész költség",
+    "laborCost": "Munkadíj",
+    "notes": "Megjegyzés",
+    "kinds": {
+      "replacement": "Csere",
+      "refurbishment": "Felújítás"
+    },
+    "components": {
+      "turbo": "Turbó",
+      "engine_overhaul": "Motorfelújítás",
+      "injection": "Befecskendezés",
+      "clutch": "Kuplung",
+      "driveshaft": "Kardán",
+      "gearbox_overhaul": "Sebességváltó-felújítás",
+      "differential": "Differenciálmű",
+      "dpf_egr": "DPF / EGR",
+      "air_compressor": "Légkompresszor",
+      "steering": "Kormánymű",
+      "cooling": "Hűtőrendszer",
+      "other": "Egyéb"
     }
   },
   "reminders": {
@@ -933,6 +1129,88 @@
       "title": "Visszahívások",
       "subtitle": "A flottád járműveire vonatkozó, nyilvános visszahívási értesítések (ingyenes forrásból).",
       "remedy": "Teendő"
+    },
+    "itemCategories": {
+      "brakes": "Fék",
+      "engine": "Motor",
+      "filters": "Szűrők",
+      "tires": "Gumiabroncs",
+      "suspension": "Futómű",
+      "electrical": "Elektromos",
+      "transmission": "Erőátvitel",
+      "body": "Karosszéria",
+      "fluids": "Folyadékok",
+      "brake_pads": "Fékbetét",
+      "timing_belt": "Vezérműszíj",
+      "oil_change": "Olajcsere",
+      "other": "Egyéb"
+    },
+    "durability": {
+      "title": "Tartósság-felmérés (szegmensenként)",
+      "subtitle": "Kategóriánként más a kifutási idő (furgon vs. nyerges vs. pótkocsi). A várható élettartam kézzel is beállítható az alapértelmezett (tanult/seed) mellett.",
+      "segment": "Szegmens",
+      "component": "Alkatrész",
+      "expectedKm": "Várható élettartam",
+      "source": "Forrás",
+      "samples": "Minták",
+      "override": "Kézi felülírás (km)",
+      "save": "Mentés",
+      "clear": "Töröl",
+      "loading": "Betöltés…",
+      "saveError": "A mentés sikertelen.",
+      "sources": {
+        "manual": "kézi",
+        "empirical": "tanult",
+        "seed": "alap"
+      }
+    }
+  },
+  "rankings": {
+    "title": "Ranglista",
+    "subtitle": "Jármű-rangsor költséghatékonyság és megbízhatóság alapján, szegmensenként és márka/modellenként.",
+    "loading": "Betöltés…",
+    "unavailable": "Ez a funkció a csomagodban nem érhető el.",
+    "empty": "Még nincs elég adat a ranglistához.",
+    "exportCsv": "CSV export",
+    "exportPdf": "PDF",
+    "replaceAdvice": "Cserére érdemes",
+    "tabs": {
+      "segment": "Szegmensek szerint",
+      "model": "Márka/modell szerint",
+      "suppliers": "Beszállítók"
+    },
+    "suppliers": {
+      "empty": "Még nincs beszállítóhoz köthető komplex szerviz adat.",
+      "supplier": "Beszállító",
+      "component": "Alkatrész",
+      "medianCost": "Medián költség",
+      "medianLife": "Medián élettartam",
+      "events": "Események"
+    },
+    "table": {
+      "vehicle": "Jármű",
+      "score": "Pontszám",
+      "costPerKm": "Költség/km",
+      "profitPerKm": "Nyereség/km",
+      "bigPartsDue": "Esedékes komplex szerviz",
+      "badges": "Jelvények"
+    },
+    "badges": {
+      "segment_champion": "Szegmens-bajnok",
+      "model_champion": "Modell-bajnok",
+      "lowest_cost_km": "Legolcsóbb km",
+      "most_reliable": "Legmegbízhatóbb"
+    },
+    "csv": {
+      "group": "Csoport",
+      "vehicle": "Jármű",
+      "score": "Pontszám",
+      "costPerKm": "Költség/km",
+      "revenuePerKm": "Bevétel/km",
+      "profitPerKm": "Nyereség/km",
+      "majorEvents": "Komplex szervizek",
+      "bigPartsDue": "Esedékes komplex szerviz",
+      "replaceAdvice": "Cserére érdemes"
     }
   },
   "admin": {
@@ -953,9 +1231,9 @@
       "invoices": "Számlák"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -964,6 +1242,33 @@
       "PAST_DUE": "Lejárt fizetés",
       "CANCELED": "Lemondva"
     },
+    "billing": {
+      "title": "Számla-/utalási adatok",
+      "subtitle": "Ezeket az adatokat küldi a rendszer az előfizetés-igénylő e-mailbe. Üres mezőnél a szerver-beállítás (env) a tartalék.",
+      "loading": "Betöltés…",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "saved": "Mentve.",
+      "error": "A mentés sikertelen.",
+      "fields": {
+        "companyName": "Számlakibocsátó (cégnév)",
+        "taxNumber": "Adószám",
+        "address": "Cím",
+        "beneficiary": "Kedvezményezett",
+        "iban": "IBAN / Számlaszám",
+        "bankName": "Bank",
+        "swift": "SWIFT",
+        "notifyEmail": "Értesítő e-mail (új igénylésről)"
+      },
+      "test": {
+        "title": "Teszt e-mail (Brevo-konfiguráció ellenőrzése)",
+        "placeholder": "Cél e-mail cím",
+        "send": "Teszt küldése",
+        "sending": "Küldés…",
+        "ok": "Elküldve ide: {to}. Ha nem érkezik meg, ellenőrizd a feladó hitelesítését a Brevóban.",
+        "fail": "Sikertelen: {error}. Ellenőrizd a Brevo API-kulcsot és a hitelesített feladót."
+      }
+    },
     "subscription": {
       "title": "Előfizetés",
       "plan": "Csomag",
@@ -971,6 +1276,13 @@
       "save": "Mentés",
       "saving": "Mentés…",
       "saved": "Az előfizetés mentve.",
+      "error": "A mentés sikertelen."
+    },
+    "storage": {
+      "label": "Extra tárhely (GB)",
+      "save": "Tárhely mentése",
+      "saving": "Mentés…",
+      "saved": "Az extra tárhely mentve.",
       "error": "A mentés sikertelen."
     },
     "features": {
@@ -984,6 +1296,24 @@
       "forceOn": "Bekapcsolva",
       "forceOff": "Kikapcsolva",
       "error": "A módosítás sikertelen."
+    },
+    "featureKeys": {
+      "OCR": "OCR szövegfelismerés",
+      "AI_PROCESSING": "AI feldolgozás",
+      "DASHBOARD": "Vezérlőpult",
+      "REPORTS": "Riportok",
+      "API": "API hozzáférés",
+      "EXPORT": "Export",
+      "REMINDERS": "Emlékeztetők",
+      "DOCUMENT_LIBRARY": "Dokumentumtár",
+      "ANALYTICS": "Prémium analitika"
+    },
+    "roles": {
+      "OWNER": "Tulajdonos",
+      "FLEET_MANAGER": "Flottamenedzser",
+      "ADMIN": "Adminisztrátor",
+      "ACCOUNTANT": "Könyvelő",
+      "VIEWER": "Megtekintő"
     },
     "members": {
       "title": "Tagok",
@@ -1018,12 +1348,17 @@
       "bank": "Bank",
       "swift": "SWIFT",
       "reference": "Közlemény",
-      "referenceHint": "Kérjük, a közleménybe írd be: {reference}"
+      "referenceHint": "Kérjük, a közleménybe írd be: {reference}",
+      "monthly": "Havi",
+      "yearly": "Éves",
+      "perYear": "/ év",
+      "yearlyNote": "Éves fizetésnél 12 hónap helyett csak 11 havidíj – 1 hónap ingyen.",
+      "monthFree": "1 hónap ingyen"
     },
     "plans": {
-      "STARTER": "Starter",
-      "STANDARD": "Standard",
-      "PROFESSIONAL": "Professional",
+      "STARTER": "Start",
+      "STANDARD": "Pro",
+      "PROFESSIONAL": "Fleet",
       "BUSINESS": "Business"
     },
     "statuses": {
@@ -1036,11 +1371,27 @@
       "title": "Használat",
       "vehicles": "Járművek",
       "users": "Felhasználók",
-      "documents": "Dokumentumok (ez a hónap)"
+      "documents": "Dokumentumok (ez a hónap)",
+      "storage": "Tárhely",
+      "includesExtra": "tartalmaz {gb} GB extrát",
+      "storageNote": "A tárhely teljes kapacitás (nem nullázódik havonta).",
+      "storagePacks": "Vásárolható extra tárhely (havi díj): {list}",
+      "buyStorageTitle": "Extra tárhely vásárlása (havi díj, utalással):"
     },
     "features": {
       "title": "Elérhető funkciók",
-      "none": "Nincs engedélyezett funkció."
+      "none": "Nincs engedélyezett funkció.",
+      "keys": {
+        "OCR": "OCR szövegfelismerés",
+        "AI_PROCESSING": "AI feldolgozás",
+        "DASHBOARD": "Vezérlőpult",
+        "REPORTS": "Riportok",
+        "API": "API hozzáférés",
+        "EXPORT": "Export",
+        "REMINDERS": "Emlékeztetők",
+        "DOCUMENT_LIBRARY": "Dokumentumtár",
+        "ANALYTICS": "Prémium analitika"
+      }
     }
   },
   "account": {
@@ -1097,5 +1448,61 @@
     "working": "Folyamatban…",
     "error": "Hiba történt, próbáld újra.",
     "consentRequired": "Előbb engedélyezd a marketing/értesítések hozzájárulást (a süti-sávban)."
+  },
+  "legal": {
+    "lastUpdated": "Utolsó frissítés: 2025. június 1.",
+    "backToHome": "Vissza a főoldalra",
+    "privacy": {
+      "title": "Adatvédelmi tájékoztató",
+      "intro": "Ez a tájékoztató ismerteti, hogyan kezeli a Valloreg a szolgáltatás használata során megadott személyes adatokat. Az adatkezelés az Európai Unió általános adatvédelmi rendeletének (GDPR) megfelelően történik.",
+      "sections": [
+        {
+          "heading": "Az adatkezelő",
+          "body": "A szolgáltatást a Valloreg üzemelteti. Adatvédelmi kérdéseivel a {email} címen vehet fel velünk kapcsolatot."
+        },
+        {
+          "heading": "Milyen adatokat kezelünk",
+          "body": "Fiók- és kapcsolattartási adatokat (név, e-mail-cím, cégadatok), valamint a szolgáltatás használata során feltöltött dokumentumokat és jármű-adatokat. Az automatikus naplók technikai adatokat (IP-cím, böngészőtípus) tartalmazhatnak a biztonság és az üzemeltetés céljából."
+        },
+        {
+          "heading": "Az adatkezelés célja és jogalapja",
+          "body": "Az adatokat a szolgáltatás nyújtásához, a szerződés teljesítéséhez, a számlázáshoz és a jogszabályi kötelezettségek teljesítéséhez kezeljük. A jogalap a szerződés teljesítése, jogos érdek, illetve a jogi kötelezettség."
+        },
+        {
+          "heading": "Adattárolás és -továbbítás",
+          "body": "Az adatokat addig őrizzük, amíg a fiók aktív, illetve ameddig azt jogszabály előírja. Adatfeldolgozóként tárhely-, e-mail- és AI-szolgáltatókat veszünk igénybe, kizárólag a szolgáltatás működtetéséhez szükséges mértékben."
+        },
+        {
+          "heading": "Az Ön jogai",
+          "body": "Ön jogosult a személyes adataihoz való hozzáférésre, azok helyesbítésére, törlésére, a kezelés korlátozására, valamint az adathordozhatóságra. Kérelmét a {email} címen jelezheti."
+        }
+      ]
+    },
+    "terms": {
+      "title": "Felhasználási feltételek",
+      "intro": "A Valloreg szolgáltatás használatával Ön elfogadja az alábbi feltételeket. Kérjük, használat előtt figyelmesen olvassa el őket.",
+      "sections": [
+        {
+          "heading": "A szolgáltatás",
+          "body": "A Valloreg flottakezelő szoftvert biztosít, amely OCR és mesterséges intelligencia segítségével dolgozza fel a feltöltött dokumentumokat és jármű-adatokat. A szolgáltatást a mindenkori előfizetési csomag feltételei szerint nyújtjuk."
+        },
+        {
+          "heading": "Fiók és felelősség",
+          "body": "Ön felel a fiókja hozzáférési adatainak biztonságos kezeléséért és a fiókján keresztül végzett tevékenységekért. A szolgáltatást kizárólag jogszerű célokra használhatja."
+        },
+        {
+          "heading": "Tartalom és adatok",
+          "body": "Az Ön által feltöltött tartalom az Ön tulajdona marad. Ön felel azért, hogy jogosult az adatok feltöltésére és kezelésére. Az AI-alapú feldolgozás eredménye tájékoztató jellegű, ezért javasoljuk a fontos adatok ellenőrzését."
+        },
+        {
+          "heading": "Felelősség korlátozása",
+          "body": "A szolgáltatást „ahogy van” alapon nyújtjuk. A jogszabályok által megengedett mértékben nem vállalunk felelősséget a szolgáltatás használatából eredő közvetett károkért."
+        },
+        {
+          "heading": "Kapcsolat",
+          "body": "A feltételekkel kapcsolatos kérdéseit a {email} címen várjuk."
+        }
+      ]
+    }
   }
 }

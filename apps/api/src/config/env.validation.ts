@@ -31,6 +31,18 @@ export const envSchema = z.object({
   // A webes frontend nyilvános URL-je (a jelszó-visszaállító e-mail linkjéhez).
   // Ha üres, a CORS_ORIGINS első eleme a fallback.
   WEB_APP_URL: z.string().optional().default(''),
+  // KAPCSOLÓ: ha a frontend SAME-ORIGIN proxyn éri el az auth-végpontokat (a web
+  // a /api/auth-ot a saját originjáról proxyzza az apinak), akkor a refresh cookie
+  // first-party, ezért SameSite=Lax mehet (a cross-site SameSite=None helyett).
+  // Alap: false (a jelenlegi cross-site működés marad). Lásd a web oldali
+  // NEXT_PUBLIC_SAME_ORIGIN_AUTH kapcsolót – a kettőt EGYÜTT kell bekapcsolni.
+  SAME_ORIGIN_FRONTEND: booleanString(false),
+
+  // KAPCSOLÓ: a háttér-ütemezők (reminders/reports/verification/benchmark) CSAK
+  // akkor regisztrálnak workert + ismétlődő jobot, ha ez igaz. TÖBB API-instance
+  // esetén állítsd `true`-ra EGYETLEN instance-on, hogy a napi/heti jobok ne
+  // fussanak N-szer (duplikált e-mail/push). Render free (1 instance): marad `true`.
+  SCHEDULER_ENABLED: booleanString(true),
 
   // PostgreSQL – a DIRECT_URL opcionális (Neon-nál külön); ha nincs, a
   // PrismaService a DATABASE_URL-t használja a migrációkhoz is.
@@ -46,10 +58,16 @@ export const envSchema = z.object({
   REDIS_PASSWORD: z.string().optional().default(''),
 
   // JWT
-  JWT_ACCESS_SECRET: z.string().min(1, 'JWT_ACCESS_SECRET kötelező'),
-  JWT_REFRESH_SECRET: z.string().min(1, 'JWT_REFRESH_SECRET kötelező'),
+  JWT_ACCESS_SECRET: z
+    .string()
+    .min(32, 'JWT_ACCESS_SECRET legalább 32 karakter legyen'),
+  JWT_REFRESH_SECRET: z
+    .string()
+    .min(32, 'JWT_REFRESH_SECRET legalább 32 karakter legyen'),
   JWT_ACCESS_TTL: z.coerce.number().int().positive().default(900),
-  JWT_REFRESH_TTL: z.coerce.number().int().positive().default(1209600),
+  // Refresh token élettartama (alap: 90 nap). A kliens minden használatkor
+  // rotálja/gördíti előre, így az eszközön aktív felhasználó bejelentkezve marad.
+  JWT_REFRESH_TTL: z.coerce.number().int().positive().default(7776000),
   // Jelszó-visszaállító token élettartama másodpercben (alap: 1 óra).
   PASSWORD_RESET_TTL: z.coerce.number().int().positive().default(3600),
 
@@ -96,6 +114,8 @@ export const envSchema = z.object({
   BREVO_API_KEY: z.string().optional().default(''),
   BREVO_SENDER: z.string().default('noreply@valloreg.local'),
   MAIL_FROM: z.string().default('noreply@valloreg.local'),
+  // A feladó megjelenített neve (Brevo sender name).
+  MAIL_FROM_NAME: z.string().default('Valloreg'),
 
   // Web Push (VAPID) – Fázis 4 push értesítések.
   VAPID_PUBLIC_KEY: z.string().optional().default(''),

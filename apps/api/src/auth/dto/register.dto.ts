@@ -1,4 +1,5 @@
 import {
+  IsBoolean,
   IsEmail,
   IsOptional,
   IsString,
@@ -34,4 +35,9 @@ export class RegisterDto {
   @MinLength(8, { message: 'A jelszó legalább 8 karakter legyen.' })
   @MaxLength(128)
   password!: string;
+
+  /** "Remember me" (tartós vs. session refresh cookie). Alap: igaz. */
+  @IsOptional()
+  @IsBoolean()
+  rememberMe?: boolean;
 }

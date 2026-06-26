@@ -30,6 +30,7 @@ export function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [rememberMe, setRememberMe] = useState(true);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -54,13 +55,17 @@ export function LoginForm() {
 
     setSubmitting(true);
     try {
-      const res = await authApi.login({ email: email.trim(), password });
+      const res = await authApi.login({
+        email: email.trim(),
+        password,
+        rememberMe,
+      });
       if (isTwoFactorChallenge(res)) {
         // 2FA aktív: átváltunk a kód-bekérő lépésre.
         setSessionToken(res.sessionToken);
         return;
       }
-      storeAuth(res);
+      storeAuth(res, rememberMe);
       router.push('/dashboard');
     } catch (err) {
       // A nyers hibát a böngésző konzoljába is kiírjuk (státusz, URL) a könnyebb
@@ -79,7 +84,7 @@ export function LoginForm() {
     setSubmitting(true);
     try {
       const res = await authApi.verifyTwoFactorLogin(sessionToken, code.trim());
-      storeAuth(res);
+      storeAuth(res, rememberMe);
       router.push('/dashboard');
     } catch (err) {
       console.error('[auth] 2fa verify failed', err);
@@ -175,7 +180,16 @@ export function LoginForm() {
           onChange={(e) => setPassword(e.target.value)}
           error={errors.password}
         />
-        <div className="-mt-2 text-right">
+        <div className="-mt-2 flex items-center justify-between gap-3">
+          <label className="flex items-center gap-2 text-sm text-anthracite-700">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="h-4 w-4 rounded border-anthracite-300 text-primary-600 focus:ring-primary-500"
+            />
+            {t('rememberMe')}
+          </label>
           <Link
             href="/forgot-password"
             className="text-sm font-medium text-primary-700 hover:text-primary-800"

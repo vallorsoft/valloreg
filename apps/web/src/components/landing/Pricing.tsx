@@ -1,10 +1,14 @@
-import { useTranslations } from 'next-intl';
+'use client';
+
+import { useState } from 'react';
+import { useTranslations, useLocale } from 'next-intl';
 import {
   PLAN_LIMITS,
-  PLAN_PRICES,
   PLAN_CURRENCY,
   PlanTier,
   UNLIMITED,
+  BillingInterval,
+  planPrice,
 } from '@valloreg/shared';
 import { Card } from '@/components/ui/Card';
 import { Button } from '@/components/ui/Button';
@@ -12,18 +16,24 @@ import { Link } from '@/i18n/routing';
 import { SectionHeading } from './SectionHeading';
 import { cn } from '@/lib/cn';
 
-// Display order; PROFESSIONAL is highlighted as the recommended plan.
+// Három csomag a landingen (Start / Pro / Fleet). A „Pro" a kiemelt.
 const PLAN_ORDER: PlanTier[] = [
   PlanTier.STARTER,
   PlanTier.STANDARD,
   PlanTier.PROFESSIONAL,
-  PlanTier.BUSINESS,
 ];
 
-const HIGHLIGHTED: PlanTier = PlanTier.PROFESSIONAL;
+const HIGHLIGHTED: PlanTier = PlanTier.STANDARD;
+
+const GB = 1024 * 1024 * 1024;
 
 export function Pricing() {
   const t = useTranslations('landing.pricing');
+  const locale = useLocale();
+  const [billingInterval, setBillingInterval] = useState<BillingInterval>(
+    BillingInterval.MONTHLY,
+  );
+  const isYearly = billingInterval === BillingInterval.YEARLY;
 
   return (
     <section id="pricing" className="scroll-mt-20 bg-white py-20">
@@ -32,7 +42,32 @@ export function Pricing() {
         <p className="mx-auto mt-3 max-w-2xl text-center text-sm text-anthracite-500">
           {t('transferNote')}
         </p>
-        <div className="mt-12 grid gap-6 lg:grid-cols-4">
+
+        {/* Havi / Éves választó */}
+        <div className="mt-8 flex flex-col items-center gap-2">
+          <div className="inline-flex rounded-full border border-anthracite-200 p-1">
+            {[BillingInterval.MONTHLY, BillingInterval.YEARLY].map((iv) => (
+              <button
+                key={iv}
+                type="button"
+                onClick={() => setBillingInterval(iv)}
+                className={cn(
+                  'rounded-full px-5 py-2 text-sm font-medium transition',
+                  billingInterval === iv
+                    ? 'bg-primary-600 text-white'
+                    : 'text-anthracite-600 hover:text-anthracite-900',
+                )}
+              >
+                {iv === BillingInterval.MONTHLY
+                  ? t('billingMonthly')
+                  : t('billingYearly')}
+              </button>
+            ))}
+          </div>
+          <p className="text-sm font-medium text-primary-700">{t('yearlyNote')}</p>
+        </div>
+
+        <div className="mt-10 grid gap-6 lg:grid-cols-3">
           {PLAN_ORDER.map((tier) => {
             const limits = PLAN_LIMITS[tier];
             const highlighted = tier === HIGHLIGHTED;
@@ -49,6 +84,7 @@ export function Pricing() {
               limits.maxDocumentsPerMonth === UNLIMITED
                 ? t('documentsUnlimited')
                 : t('documents', { count: limits.maxDocumentsPerMonth });
+            const storage = t('storage', { gb: Math.round(limits.maxStorageBytes / GB) });
 
             return (
               <Card
@@ -73,12 +109,15 @@ export function Pricing() {
 
                 <p className="mt-4 flex items-baseline gap-1.5">
                   <span className="text-3xl font-bold text-anthracite-900">
-                    {PLAN_PRICES[tier].toLocaleString('hu-HU')} {PLAN_CURRENCY}
+                    {planPrice(tier, billingInterval).toLocaleString(locale)}{' '}
+                    {PLAN_CURRENCY}
                   </span>
-                  <span className="text-sm text-anthracite-400">{t('perMonth')}</span>
+                  <span className="text-sm text-anthracite-400">
+                    {isYearly ? t('perYear') : t('perMonth')}
+                  </span>
                 </p>
                 <p className="mt-1 text-xs font-medium text-primary-700">
-                  {t('freeTrial')}
+                  {isYearly ? t('monthFree') : t('freeTrial')}
                 </p>
 
                 <ul className="mt-6 flex-1 space-y-3 text-sm text-anthracite-700">
@@ -90,6 +129,9 @@ export function Pricing() {
                   </li>
                   <li className="flex items-center gap-2">
                     <Check /> {documents}
+                  </li>
+                  <li className="flex items-center gap-2">
+                    <Check /> {storage}
                   </li>
                 </ul>
 
@@ -104,6 +146,14 @@ export function Pricing() {
               </Card>
             );
           })}
+        </div>
+
+        <div className="mt-10 text-center">
+          <a href="#compare">
+            <Button variant="outline" size="lg">
+              {t('compareButton')}
+            </Button>
+          </a>
         </div>
       </div>
     </section>
