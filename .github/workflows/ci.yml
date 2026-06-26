@@ -115,3 +115,40 @@ jobs:
 
       - name: Test (integration)
         run: pnpm --filter @valloreg/api test:int
+
+  # E2E: a buildelt Next.js appot valódi (headless Chromium) böngészővel hajtja.
+  # Csak a PUBLIKUS felület (landing, auth kliens-validáció, consent, útvonal-
+  # védelem, jogi oldalak) – backend nélkül. Külön job (böngésző + web build kell).
+  e2e:
+    name: e2e (playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @valloreg/shared build
+
+      # A web app buildje – a Playwright config CI-ban `next start`-ot indít.
+      - name: Build web
+        run: pnpm --filter @valloreg/web build
+
+      # A böngészőt a CI-ban le kell tölteni (a sandboxban előtelepített, itt nem).
+      - name: Install Playwright Chromium
+        run: pnpm --filter @valloreg/web exec playwright install --with-deps chromium
+
+      - name: E2E (playwright)
+        run: pnpm --filter @valloreg/web exec playwright test
