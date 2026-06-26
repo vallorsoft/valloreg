@@ -1,4 +1,27 @@
 {
+  "consent": {
+    "title": "Adatvédelem és sütik",
+    "description": "A szolgáltatás működéséhez feltétlenül szükséges mechanizmusokat használunk, és a hozzájárulásoddal további kategóriákat is. Elfogadhatod az összeset, csak a szükségeseket, vagy testreszabhatod a választást.",
+    "cookieLink": "Süti szabályzat",
+    "preferences": "Beállítások",
+    "saveChoices": "Választás mentése",
+    "rejectAll": "Csak a szükségesek",
+    "acceptAll": "Összes elfogadása",
+    "cat": {
+      "necessary": {
+        "title": "Feltétlenül szükséges",
+        "desc": "Bejelentkezés, biztonság és a munkamenet megőrzése. Nem kapcsolható ki."
+      },
+      "functional": {
+        "title": "Funkcionális",
+        "desc": "Megjegyzi a beállításaidat a jobb élményért."
+      },
+      "marketing": {
+        "title": "Marketing / értesítések",
+        "desc": "Push értesítések és kommunikáció, kizárólag hozzájárulás alapján."
+      }
+    }
+  },
   "common": {
     "appName": "Valloreg",
     "tagline": "Szervizszámlából digitális szerviztörténet – OCR és AI segítségével.",
@@ -9,7 +32,8 @@
       "contact": "Kapcsolat",
       "login": "Bejelentkezés",
       "register": "Regisztráció",
-      "dashboard": "Vezérlőpult"
+      "dashboard": "Vezérlőpult",
+      "legal": "Jogi"
     },
     "actions": {
       "startTrial": "Próbálja ki ingyen",
@@ -35,6 +59,8 @@
       "legal": "Jogi",
       "privacy": "Adatvédelem",
       "terms": "Felhasználási feltételek",
+      "cookies": "Sütik",
+      "allLegal": "Összes jogi dokumentum",
       "about": "Rólunk",
       "tagline": "Flottakezelés okosan – kevesebb adminisztráció, több átláthatóság."
     },
@@ -288,6 +314,14 @@
     }
   },
   "auth": {
+    "twoFactor": {
+      "title": "Kétlépcsős ellenőrzés",
+      "subtitle": "Add meg a hitelesítő appban látható 6 jegyű kódot.",
+      "codeLabel": "Kód",
+      "verify": "Ellenőrzés",
+      "invalid": "Érvénytelen kód. Próbáld újra.",
+      "back": "Vissza a bejelentkezéshez"
+    },
     "login": {
       "title": "Bejelentkezés",
       "subtitle": "Üdvözöljük újra! Jelentkezzen be a fiókjába.",
@@ -401,6 +435,7 @@
       "rankings": "Ranglista",
       "team": "Csapat",
       "billing": "Előfizetés",
+      "account": "Fiók",
       "admin": "Super Admin",
       "logout": "Kijelentkezés"
     },
@@ -1359,6 +1394,49 @@
       }
     }
   },
+  "account": {
+    "title": "Fiók és biztonság",
+    "twoFactor": {
+      "heading": "Kétlépcsős hitelesítés (2FA)",
+      "statusLabel": "Állapot",
+      "enabled": "Bekapcsolva",
+      "disabled": "Kikapcsolva",
+      "intro": "Adj extra biztonsági réteget egy hitelesítő alkalmazással (Google Authenticator, Authy stb.).",
+      "enable": "2FA bekapcsolása",
+      "disable": "2FA kikapcsolása",
+      "setupIntro": "Add meg az alábbi kulcsot (vagy nyisd meg az otpauth linket) a hitelesítő appban, majd írd be a 6 jegyű kódot.",
+      "secretLabel": "Kulcs (kézi bevitel)",
+      "uriLabel": "otpauth link",
+      "codeLabel": "Kód az appból",
+      "confirm": "Bekapcsolás megerősítése",
+      "passwordLabel": "Jelszavad",
+      "confirmDisable": "Kikapcsolás megerősítése",
+      "successEnabled": "A kétlépcsős hitelesítés bekapcsolva.",
+      "successDisabled": "A kétlépcsős hitelesítés kikapcsolva.",
+      "invalid": "Érvénytelen kód. Próbáld újra.",
+      "working": "Folyamatban…",
+      "cancel": "Mégse"
+    }
+  },
+  "dsr": {
+    "heading": "Az adataid (GDPR)",
+    "exportTitle": "Adatok exportja",
+    "exportDesc": "Tölts le egy JSON fájlt a fiókod és a céged adataival (járművek, dokumentumok, számlák, emlékeztetők, audit naplók).",
+    "exportButton": "Adatok letöltése (JSON)",
+    "exporting": "Előkészítés…",
+    "deleteAccountTitle": "Fiók törlése",
+    "deleteAccountDesc": "Véglegesen törli a személyes fiókodat. Visszafordíthatatlan művelet.",
+    "deleteAccountButton": "Fiókom törlése",
+    "deleteTenantTitle": "Cég törlése",
+    "deleteTenantDesc": "Véglegesen törli a céget és minden adatát (járművek, számlák, dokumentumok). Csak a tulajdonos (OWNER).",
+    "deleteTenantButton": "Cég törlése",
+    "passwordLabel": "Erősítsd meg a jelszavaddal",
+    "confirm": "Megerősítés",
+    "cancel": "Mégse",
+    "working": "Folyamatban…",
+    "deleted": "Törölve. Ki leszel jelentkeztetve.",
+    "error": "A művelet nem sikerült. Próbáld újra."
+  },
   "notifications": {
     "title": "Push értesítések",
     "description": "Kapj értesítést, amikor egy dokumentum feldolgozása elkészül.",
@@ -1368,7 +1446,8 @@
     "enable": "Bekapcsolás",
     "disable": "Kikapcsolás",
     "working": "Folyamatban…",
-    "error": "Hiba történt, próbáld újra."
+    "error": "Hiba történt, próbáld újra.",
+    "consentRequired": "Előbb engedélyezd a marketing/értesítések hozzájárulást (a süti-sávban)."
   },
   "legal": {
     "lastUpdated": "Utolsó frissítés: 2025. június 1.",

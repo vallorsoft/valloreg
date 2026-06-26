@@ -34,6 +34,7 @@ export interface CurrentUser {
   email: string;
   name: string | null;
   isPlatformAdmin: boolean;
+  twoFactorEnabled: boolean;
 }
 
 /** The `/auth/me` (and login/register) session payload. */

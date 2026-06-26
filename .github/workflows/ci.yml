@@ -1,41 +1,52 @@
-name: CI
+name: ci
 
-# Minden main-be menő PR-t és a main push-okat ellenőrzi: a shared/web/api
-# typecheck + build + (no-op) lint a turbo pipeline-on át. A prisma client az
-# api postinstall-ban generálódik (a GitHub runneren van háló, helyben nincs).
+# Lint + typecheck + build a monorepón minden push-ra és pull requestre.
+# A valódi minőség-kapu a typecheck (lásd CLAUDE.md): nincs ESLint és nincs
+# valódi tesztcsomag, a lint/test scriptek placeholderek.
+#
+# A `pnpm format:check` szándékosan NINCS itt: a meglévő kód még nem teljesen
+# prettier-tiszta, és nem akartuk pirosra állítani a CI-t. Ha a repó egyszer
+# végigformázódik (`pnpm format`), vegyél fel egy "Format check" lépést.
+#
+# A @valloreg/shared-t a Turbo a `^build` függőség miatt a többi csomag elé
+# buildeli; az `api` Prisma kliense az install `postinstall` (prisma generate)
+# lépésében generálódik – DB-kapcsolat nélkül is.
+
 on:
-  pull_request:
-    branches: [main]
   push:
-    branches: [main]
+    branches: ['**']
+  pull_request:
+    branches: ['**']
 
-# Egy ágon egyszerre csak a legutóbbi futás éljen.
+# Egy ágon csak a legutóbbi futás fusson; a régebbit szakítsd meg.
 concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build-and-check:
+  build:
+    name: lint · typecheck · build
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # A pnpm verziót a package.json "packageManager" mezőjéből veszi (nem adunk
-      # meg külön `version`-t, különben ütközés: ERR_PNPM_BAD_PM_VERSION).
+      # A packageManager mező (pnpm@10.33.0) alapján a helyes pnpm verziót húzza.
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
 
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version-file: .nvmrc
           cache: pnpm
 
-      # A postinstall (apps/api) lefuttatja a `prisma generate`-et – ehhez kell háló.
-      - name: Install dependencies
+      - name: Install
         run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
 
       - name: Typecheck
         run: pnpm typecheck
@@ -43,5 +54,101 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Lint
-        run: pnpm lint
+      # Unit tesztek (DB nélkül): megosztott kontraktusok, zod sémák, i18n paritás,
+      # domain-logika, guardok. Az integrációs tesztek (élő Postgres) külön jobban.
+      - name: Test (unit)
+        run: pnpm test
+
+  # Integrációs tesztek élő Postgresszel: tenant-izoláció, TenantGuard, enum-paritás.
+  # Külön job, mert DB-t és lefuttatott migrációt igényel. A Prisma kliens az
+  # install postinstall (prisma generate) lépésében generálódik.
+  integration:
+    name: integration (postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: valloreg
+          POSTGRES_PASSWORD: valloreg
+          POSTGRES_DB: valloreg_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U valloreg"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Helyi Postgres (nem Neon pooler) – a withPgBouncer nem nyúl hozzá.
+      DATABASE_URL: postgresql://valloreg:valloreg@localhost:5432/valloreg_test
+      DIRECT_URL: postgresql://valloreg:valloreg@localhost:5432/valloreg_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @valloreg/shared build
+
+      # A séma felhúzása a teszt-DB-re (idempotens migráció).
+      - name: DB migrate
+        run: pnpm --filter @valloreg/api prisma:deploy
+
+      # Drift-őr: a lefuttatott migrációkból előállt DB pontosan a schema.prisma-t
+      # adja? Ha eltérés van (pl. szerkesztett séma migráció nélkül), --exit-code
+      # 2-vel elbukik. Megfogja a "séma változott, de nincs migráció" hibát.
+      - name: Migration drift check
+        run: pnpm --filter @valloreg/api exec prisma migrate diff --from-url "$DATABASE_URL" --to-schema-datamodel prisma/schema.prisma --exit-code
+
+      - name: Test (integration)
+        run: pnpm --filter @valloreg/api test:int
+
+  # E2E: a buildelt Next.js appot valódi (headless Chromium) böngészővel hajtja.
+  # Csak a PUBLIKUS felület (landing, auth kliens-validáció, consent, útvonal-
+  # védelem, jogi oldalak) – backend nélkül. Külön job (böngésző + web build kell).
+  e2e:
+    name: e2e (playwright)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @valloreg/shared build
+
+      # A web app buildje – a Playwright config CI-ban `next start`-ot indít.
+      - name: Build web
+        run: pnpm --filter @valloreg/web build
+
+      # A böngészőt a CI-ban le kell tölteni (a sandboxban előtelepített, itt nem).
+      - name: Install Playwright Chromium
+        run: pnpm --filter @valloreg/web exec playwright install --with-deps chromium
+
+      - name: E2E (playwright)
+        run: pnpm --filter @valloreg/web exec playwright test

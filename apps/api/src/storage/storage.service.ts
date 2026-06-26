@@ -1,7 +1,9 @@
 import { Injectable, Logger, OnModuleInit } from '@nestjs/common';
 import {
   DeleteObjectCommand,
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
@@ -96,6 +98,51 @@ export class StorageService implements OnModuleInit {
     await this.client.send(
       new DeleteObjectCommand({ Bucket: this.bucket, Key: key }),
     );
+  }
+
+  /**
+   * Egy prefix alatti ÖSSZES objektum törlése (pl. cég-szintű GDPR törléskor:
+   * `tenants/{tenantId}/`). Lapozva listáz és kötegelten töröl (max 1000/kérés).
+   * Idempotens: ha nincs egyetlen objektum sem, no-op.
+   */
+  async deleteByPrefix(prefix: string): Promise<number> {
+    let continuationToken: string | undefined;
+    let totalDeleted = 0;
+
+    do {
+      const listed = await this.client.send(
+        new ListObjectsV2Command({
+          Bucket: this.bucket,
+          Prefix: prefix,
+          ContinuationToken: continuationToken,
+        }),
+      );
+
+      const keys = (listed.Contents ?? [])
+        .map((o) => o.Key)
+        .filter((k): k is string => !!k);
+
+      if (keys.length > 0) {
+        await this.client.send(
+          new DeleteObjectsCommand({
+            Bucket: this.bucket,
+            Delete: { Objects: keys.map((Key) => ({ Key })) },
+          }),
+        );
+        totalDeleted += keys.length;
+      }
+
+      continuationToken = listed.IsTruncated
+        ? listed.NextContinuationToken
+        : undefined;
+    } while (continuationToken);
+
+    if (totalDeleted > 0) {
+      this.logger.log(
+        `Törölve ${totalDeleted} objektum a(z) "${prefix}" prefix alól.`,
+      );
+    }
+    return totalDeleted;
   }
 
   /** Presigned GET URL letöltéshez. */

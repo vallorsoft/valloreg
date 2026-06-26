@@ -36,6 +36,12 @@ export function MarketingHeader() {
               {t(s.key)}
             </a>
           ))}
+          <Link
+            href="/legal"
+            className="text-sm font-medium text-anthracite-600 transition-colors hover:text-anthracite-900"
+          >
+            {t('legal')}
+          </Link>
         </div>
 
         <div className="hidden items-center gap-3 md:flex">
@@ -82,6 +88,13 @@ export function MarketingHeader() {
               {t(s.key)}
             </a>
           ))}
+          <Link
+            href="/legal"
+            className="rounded-lg px-2 py-2 text-sm font-medium text-anthracite-700 hover:bg-anthracite-50"
+            onClick={() => setOpen(false)}
+          >
+            {t('legal')}
+          </Link>
           <div className="mt-2 flex items-center justify-between">
             <LanguageSwitcher />
           </div>

@@ -17,6 +17,7 @@ const NAV = [
   { href: '/rankings', key: 'rankings' },
   { href: '/team', key: 'team' },
   { href: '/billing', key: 'billing' },
+  { href: '/account', key: 'account' },
 ] as const;
 
 export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {

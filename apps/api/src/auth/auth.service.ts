@@ -9,11 +9,14 @@ import { AppConfigService } from '../config/app-config.service';
 import { AuditService } from '../audit/audit.service';
 import { MailerService } from '../storage/mailer.service';
 import { AppException } from '../common/exceptions/app.exception';
+import { TotpService } from './totp.service';
 import type { AccessTokenPayload } from './strategies/jwt.strategy';
 import type { RegisterDto } from './dto/register.dto';
 import type { LoginDto } from './dto/login.dto';
 
 const TRIAL_DAYS = 14;
+/** A 2FA-bejelentkezéshez kiadott rövid életű „munkamenet" token élettartama (mp). */
+const TWOFA_SESSION_TTL = 300;
 
 export interface MembershipSummary {
   tenantId: string;
@@ -43,9 +46,19 @@ export interface AuthResult extends AuthTokens {
     email: string;
     name: string | null;
     isPlatformAdmin: boolean;
+    twoFactorEnabled: boolean;
   };
   memberships: MembershipSummary[];
 }
+
+/** 2FA aktív felhasználónál a login NEM ad ki tokent, csak egy challenge-et. */
+export interface TwoFactorChallenge {
+  twoFactorRequired: true;
+  /** Rövid életű token, amit a /auth/2fa/verify-login a kóddal együtt vár. */
+  sessionToken: string;
+}
+
+export type LoginResult = AuthResult | TwoFactorChallenge;
 
 /**
  * Auth szolgáltatás. MINDEN művelet a SYSTEM (unscoped) Prisma klienst használja,
@@ -61,6 +74,7 @@ export class AuthService {
     private readonly config: AppConfigService,
     private readonly audit: AuditService,
     private readonly mailer: MailerService,
+    private readonly totp: TotpService,
   ) {}
 
   /**
@@ -147,6 +161,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         isPlatformAdmin: user.isPlatformAdmin,
+        twoFactorEnabled: false,
       },
       memberships: [
         {
@@ -159,7 +174,7 @@ export class AuthService {
   }
 
   /** Bejelentkezés: tokenek + a felhasználó membership-listája (aktív cég választáshoz). */
-  async login(dto: LoginDto, ip?: string): Promise<AuthResult> {
+  async login(dto: LoginDto, ip?: string): Promise<LoginResult> {
     const email = dto.email.toLowerCase().trim();
 
     const user = await this.prisma.system.user.findUnique({
@@ -176,6 +191,23 @@ export class AuthService {
     const valid = await argon2.verify(user.passwordHash, dto.password);
     if (!valid) {
       throw AppException.invalidCredentials();
+    }
+
+    // Ha a felhasználónál aktív a 2FA, NEM adunk ki tokent: csak egy rövid életű
+    // challenge-et. A teljes bejelentkezés a /auth/2fa/verify-login-on dől el.
+    if (user.twoFactorSecret) {
+      const sessionToken = await this.jwt.signAsync(
+        { sub: user.id, twoFactorPending: true },
+        { secret: this.config.jwt.accessSecret, expiresIn: TWOFA_SESSION_TTL },
+      );
+      await this.audit.log({
+        userId: user.id,
+        action: 'auth.login_2fa_pending',
+        resourceType: 'User',
+        resourceId: user.id,
+        ip,
+      });
+      return { twoFactorRequired: true, sessionToken };
     }
 
     await this.audit.log({
@@ -200,6 +232,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         isPlatformAdmin: user.isPlatformAdmin,
+        twoFactorEnabled: false,
       },
       memberships: user.memberships.map((m) => ({
         tenantId: m.tenantId,
@@ -207,6 +240,166 @@ export class AuthService {
         role: m.role,
       })),
     };
+  }
+
+  /**
+   * 2FA bejelentkezés második lépése: a login-ból kapott rövid életű
+   * sessionToken + a 6 jegyű TOTP kód ellenőrzése, majd a teljes tokenek kiadása.
+   */
+  async verifyTwoFactorLogin(
+    sessionToken: string,
+    code: string,
+    ip?: string,
+  ): Promise<AuthResult> {
+    let payload: { sub: string; twoFactorPending?: boolean };
+    try {
+      payload = await this.jwt.verifyAsync<{
+        sub: string;
+        twoFactorPending?: boolean;
+      }>(sessionToken, {
+        secret: this.config.jwt.accessSecret,
+      });
+    } catch {
+      throw AppException.tokenInvalid();
+    }
+    if (!payload.twoFactorPending) {
+      throw AppException.tokenInvalid();
+    }
+
+    const user = await this.prisma.system.user.findUnique({
+      where: { id: payload.sub },
+      include: {
+        memberships: { include: { tenant: { select: { name: true } } } },
+      },
+    });
+    if (!user || !user.twoFactorSecret) {
+      throw AppException.tokenInvalid();
+    }
+
+    if (!this.totp.verify(user.twoFactorSecret, code)) {
+      await this.audit.log({
+        userId: user.id,
+        action: 'auth.2fa_failed',
+        resourceType: 'User',
+        resourceId: user.id,
+        ip,
+      });
+      throw AppException.invalidCredentials();
+    }
+
+    await this.audit.log({
+      userId: user.id,
+      action: 'auth.login',
+      resourceType: 'User',
+      resourceId: user.id,
+      ip,
+      metadata: { method: '2fa' },
+    });
+
+    // 2FA-bejelentkezésnél a "Remember me" választást az 1. lépés sessionToken-je
+    // nem hordozza – tartós sessiont adunk (a dokumentált alapérték: remember=true).
+    const tokens = await this.issueTokens(
+      user.id,
+      user.email,
+      user.isPlatformAdmin,
+      true,
+    );
+
+    return {
+      ...tokens,
+      user: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        isPlatformAdmin: user.isPlatformAdmin,
+        twoFactorEnabled: true,
+      },
+      memberships: user.memberships.map((m) => ({
+        tenantId: m.tenantId,
+        tenantName: m.tenant.name,
+        role: m.role,
+      })),
+    };
+  }
+
+  /**
+   * 2FA bekapcsolásának ELSŐ lépése: új titok + otpauth URI generálása.
+   * A titkot MÉG NEM tároljuk – csak a confirm után (a kód igazolja, hogy a
+   * felhasználó valóban be tudja olvasni). A kliens visszaküldi a titkot + kódot.
+   */
+  async beginTwoFactorSetup(
+    userId: string,
+  ): Promise<{ secret: string; otpAuthUri: string }> {
+    const user = await this.prisma.system.user.findUnique({
+      where: { id: userId },
+      select: { email: true },
+    });
+    if (!user) {
+      throw AppException.unauthorized();
+    }
+    const secret = this.totp.generateSecret();
+    return {
+      secret,
+      otpAuthUri: this.totp.buildOtpAuthUri(secret, user.email),
+    };
+  }
+
+  /** 2FA megerősítése: a titok + kód ellenőrzése, majd a titok tárolása. */
+  async confirmTwoFactorSetup(
+    userId: string,
+    secret: string,
+    code: string,
+  ): Promise<{ ok: true }> {
+    if (!this.totp.verify(secret, code)) {
+      throw AppException.validation('Érvénytelen 2FA kód.');
+    }
+    await this.prisma.system.$transaction(async (tx) => {
+      await tx.user.update({
+        where: { id: userId },
+        data: { twoFactorSecret: secret },
+      });
+      // Minden más munkamenet érvénytelenítése (új biztonsági állapot).
+      await tx.refreshToken.updateMany({
+        where: { userId, revokedAt: null },
+        data: { revokedAt: new Date() },
+      });
+    });
+    await this.audit.log({
+      userId,
+      action: 'auth.2fa_enabled',
+      resourceType: 'User',
+      resourceId: userId,
+    });
+    return { ok: true };
+  }
+
+  /** 2FA kikapcsolása – jelszó-megerősítéssel. */
+  async disableTwoFactor(
+    userId: string,
+    password: string,
+  ): Promise<{ ok: true }> {
+    const user = await this.prisma.system.user.findUnique({
+      where: { id: userId },
+      select: { passwordHash: true, twoFactorSecret: true },
+    });
+    if (!user) {
+      throw AppException.unauthorized();
+    }
+    const valid = await argon2.verify(user.passwordHash, password);
+    if (!valid) {
+      throw AppException.invalidCredentials();
+    }
+    await this.prisma.system.user.update({
+      where: { id: userId },
+      data: { twoFactorSecret: null },
+    });
+    await this.audit.log({
+      userId,
+      action: 'auth.2fa_disabled',
+      resourceType: 'User',
+      resourceId: userId,
+    });
+    return { ok: true };
   }
 
   /**
@@ -418,6 +611,7 @@ export class AuthService {
         email: user.email,
         name: user.name,
         isPlatformAdmin: user.isPlatformAdmin,
+        twoFactorEnabled: !!user.twoFactorSecret,
       },
       memberships: user.memberships.map((m) => ({
         tenantId: m.tenantId,

@@ -24,6 +24,8 @@ import { RemindersModule } from './reminders/reminders.module';
 import { InsightsModule } from './insights/insights.module';
 import { VerificationModule } from './verification/verification.module';
 import { BenchmarkModule } from './benchmark/benchmark.module';
+import { DsrModule } from './dsr/dsr.module';
+import { DataRetentionModule } from './data-retention/data-retention.module';
 import { MajorComponentsModule } from './major-components/major-components.module';
 import { RankingsModule } from './rankings/rankings.module';
 
@@ -62,6 +64,8 @@ import { RankingsModule } from './rankings/rankings.module';
     InsightsModule,
     VerificationModule,
     BenchmarkModule,
+    DsrModule,
+    DataRetentionModule,
     MajorComponentsModule,
     RankingsModule,
   ],

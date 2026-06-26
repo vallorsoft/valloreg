@@ -1,105 +1,282 @@
-# Valloreg – projekt-konvenciók
+# CLAUDE.md
 
-## Deploy / Git workflow
+Útmutató AI asszisztenseknek (Claude Code és társai) ehhez a repóhoz.
 
-- **A Render a `main` ágról deployol** (Blueprintből létrehozott `valloreg-api` +
-  `valloreg-web` szolgáltatások; a Blueprint a `main` ághoz van kötve).
-- **Minden PR a `main`-re megy, és oda kell merge-elni.** Fejlesztés feature
-  ágon → PR a `main` ellen → squash/merge a `main`-be → a Render onnan deployol.
-- A korábbi integrációs ágak (`claude/serene-ptolemy-3dd850` stb.) már nem a
-  deploy-forrás; mindig a `main` a kanonikus ág.
-- **Minden squash-merge commit a PR-számmal KEZDŐDJÖN** a `main`-en, hogy könnyen
-  visszakövethető legyen, pl. `#30 fix(gemini): …`. Gyakorlatban: a PR létrehozása
-  után a kapott `#NN`-nel kezdődjön a merge commit címe (a squash-merge
-  `commit_title`-jét eszerint kell beállítani). Így a `git log` minden sora egy
-  konkrét PR-hez vezet.
+## Mi ez
+
+A **Valloreg** egy multi-tenant SaaS fuvarozói / flottakezelő szervizmenedzsmenthez. A
+felhasználó szervizszámlákat tölt fel (PDF/JPG/PNG); a rendszer **OCR + AI** segítségével
+kiolvassa, tételenként kategorizálja, járműhöz rendeli, és minimális emberi ellenőrzéssel
+digitális szerviztörténetet épít.
+
+Lefedi a jármű-megfelelőséget is (RO ITP/RCA/rovinietă ellenőrzés), emlékeztetőket,
+flotta-benchmarkot, GDPR/DSR eszközöket és PWA push értesítéseket.
+
+### Nyelvi konvenciók (fontos)
+
+- **A kódkommentek, a dokumentáció és a commit üzenetek többségükben magyarul vannak.**
+  Szerkesztéskor igazodj a fájl meglévő nyelvéhez – ne írd át a magyar kommenteket angolra.
+- A **termék UI háromnyelvű**: `hu` (alapértelmezett), `ro`, `en`. **Nincs hardcode-olt
+  felhasználói szöveg** – minden i18n dictionary-n és gépi hibakódon megy keresztül.
+- Ez a fájl magyarul van; a kódkommenteket a fájl meglévő nyelvén tartsd.
+
+## Tech stack
+
+| Réteg     | Technológia                                             |
+| --------- | ------------------------------------------------------- |
+| Frontend  | Next.js 15 (App Router) · React 19 · TypeScript · TailwindCSS · PWA |
+| Backend   | NestJS 11 · TypeScript · REST                           |
+| Adatbázis | PostgreSQL (prod: Neon) · Prisma ORM 6                  |
+| Sor       | Redis · BullMQ (aszinkron dokumentum/scan feldolgozás)  |
+| Tárolás   | S3-kompatibilis – helyben MinIO, prodban Cloudflare R2  |
+| Auth      | JWT (access + refresh) · TOTP 2FA · RBAC                 |
+| AI/OCR    | Google Gemini (vision; OCR + extraction), stub providerekkel |
+| i18n      | next-intl · hu / ro / en                                |
+| Eszközök  | pnpm workspaces · Turborepo · Prettier                  |
+
+Node **20+** (a `.nvmrc` 22-t rögzít), pnpm **10+** (`packageManager: pnpm@10.33.0`).
+
+## Monorepo szerkezet
+
+```
+valloreg/
+├── apps/
+│   ├── api/    # NestJS backend (REST, Prisma, BullMQ, S3, OCR/AI portok)
+│   └── web/    # Next.js PWA frontend (i18n, Tailwind brand téma)
+├── packages/
+│   └── shared/ # @valloreg/shared — szerepkörök, csomagok, feature flag-ek,
+│               # extraction kontraktusok (zod), dokumentum-szabályok, hibakódok, locale-ok
+├── docs/       # ARCHITECTURE, SECURITY, OCR_AI_ENGINE, DEPLOY, PHASE6, legal/
+├── docker-compose.yml   # helyi infra: Postgres, Redis, MinIO, MailHog
+├── render.yaml          # Render Blueprint (3 szolgáltatás: redis, api, web)
+├── turbo.json · pnpm-workspace.yaml · tsconfig.base.json
+```
+
+A `@valloreg/shared` az egyetlen forrása a mindkét app által megosztott szerződéseknek.
+CommonJS-re buildel, hogy a NestJS (CJS) és a Next.js egyaránt fogyaszthassa. **Mindkét app
+`workspace:*`-on keresztül függ a `@valloreg/shared`-től – buildelni kell, mielőtt a többi
+csomag typecheckel/buildel.**
+
+## Gyakori parancsok
+
+A repó gyökeréből (a Turborepo intézi a csomagonkénti taskokat):
+
+```bash
+pnpm install              # minden workspace telepítése
+cp .env.example .env      # env változók (lásd lent)
+
+pnpm infra:up             # Postgres, Redis, MinIO, MailHog indítása (docker)
+pnpm db:migrate           # prisma migrate dev (api)
+pnpm db:seed              # mintaadat seedelése
+pnpm dev                  # API + web együtt (turbo, persistent)
+
+pnpm build                # minden csomag buildje (tiszteli a ^build függőséget)
+pnpm typecheck            # tsc --noEmit mindenhol
+pnpm lint                 # lint (jelenleg no-op echo csomagonként)
+pnpm test                 # test (api/web/shared még nem tartalmaz valódi tesztet)
+pnpm format               # prettier --write a repón
+pnpm format:check         # prettier --check (commit előtt)
+pnpm infra:down           # helyi infra leállítása
+
+# DB segédparancsok (a @valloreg/api-ra mutatnak)
+pnpm db:generate          # prisma generate
+```
+
+Csomagonként: `pnpm --filter @valloreg/api <script>`, `pnpm --filter @valloreg/web <script>`.
+
+Helyi URL-ek: web `http://localhost:3000`, API `http://localhost:4000/api`,
+MinIO konzol `http://localhost:9001` (valloreg / valloreg-secret), MailHog `http://localhost:8025`.
+
+### Ellenőrzés commit előtt
+
+**Nincs ESLint és nincs valódi tesztcsomag** (a `lint`/`test` scriptek placeholderek). A valódi
+kapu a **`pnpm typecheck`** és a **`pnpm format:check`**. Mindig futtasd ezeket a változtatás
+után. A projekt `strict` TypeScript, bekapcsolt `noUncheckedIndexedAccess` és
+`noImplicitOverride` mellett – a fordító szigorú lesz.
+
+## Architektúra – a lényeg
+
+Három futási egység: Next.js PWA → NestJS API (REST + JWT) → Postgres / Redis+BullMQ → S3. A
+BullMQ **worker ugyanabban az `api` appban fut**, külön process-módban. A teljes diagram és a
+számla-feldolgozási adatfolyam: `docs/ARCHITECTURE.md`.
+
+### Multi-tenancy – a legfontosabb invariáns
+
+Minden üzleti rekord `tenantId`-t hordoz. A tenant-izoláció **kódszinten, fail-closed módon**
+érvényesül, nem csak a séma szintjén:
+
+- A **`PrismaService`** (`apps/api/src/prisma/prisma.service.ts`) két klienst ad:
+  - `prisma.scoped` – egy `$extends` query extension, ami minden tenant-scope-olt modell
+    olvasásába/írásába injektálja a `tenantId`-t. **Minden üzleti repository ezt használja.**
+  - `prisma.system` – a nyers, nem scope-olt kliens. **Kizárólag** globális modellekhez (`User`,
+    `RefreshToken`) vagy szándékos cross-tenant műveletekhez (pl. membership-ellenőrzés a
+    guardokban). A `prisma.runUnscoped(cb)` ezt a szándékot a hívás helyén teszi explicitté.
+- Ha egy tenant-scope-olt modellt **aktív tenant kontextus nélkül** kérdezel le, a kiterjesztés
+  **hibát dob** (fail-closed) – nincs néma cross-tenant szivárgás.
+- A tenant-scope-olt modellek listája a `TENANT_SCOPED_MODELS` halmaz a `prisma.service.ts`-ben.
+  **Ha új üzleti modellt veszel fel a sémába, ide is vedd fel** (és adj neki `tenantId`-t +
+  `@@index([tenantId])`-et).
+- A tenant kontextus `AsyncLocalStorage`-ben folyik (`TenantContextService`): a
+  `TenantContextMiddleware` minden kérésre nyit egy üres ALS holder-t; a `TenantGuard` kiolvassa
+  az `x-tenant-id` headert, ellenőrzi a membership-et a `prisma.system`-en, betölti a
+  szerepkört, és feltölti a holder-t. Minden ezt követő (a `scoped` is) automatikusan látja.
+
+### Kérés-guard pipeline (a sorrend számít)
+
+A kontrollerek így komponálják a guardokat:
+`@UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)`
+
+- `JwtAuthGuard` → beállítja a `request.user`-t (a `@Public()` kihagyja).
+- `TenantGuard` → ellenőrzi a membership-et, beállítja a `request.tenant`-et + ALS kontextust.
+- `RolesGuard` → érvényesíti a `@Roles(TenantRole.OWNER, ...)` metaadatot.
+- `FeatureGuard` → a `@RequireFeature(FeatureKey.X)`-et a tenant csomagja/override-jai ellen.
+- `PlatformAdminGuard` → külön, a Super Admin (platform-üzemeltető) útvonalakhoz.
+
+A dekorátorok az `apps/api/src/common/decorators/`-ból: `@CurrentUser()`, `@CurrentTenant()`,
+`@Roles()`, `@RequireFeature()`, `@Public()`.
+
+### Provider „portok" minta (OCR / AI / verification / recall)
+
+A külső/AI képességek **interfész-portok** mögött vannak, DI tokennel és több
+implementációval, amelyeket env alapján egy `useFactory` választ ki a modulban:
+
+- `EXTRACTION_PROVIDER`, `VEHICLE_EXTRACTION_PROVIDER`, `COMPLIANCE_EXTRACTION_PROVIDER`
+  (`extraction.module.ts`) → `stub` (determinisztikus, kulcs nélkül fut) vagy `gemini`.
+- A verification (`verification/providers/`) és a recall-benchmark (`benchmark/providers/`)
+  ugyanezt a formát követi.
+- **Fallback szabály:** ha `gemini` van kiválasztva, de hiányzik a `GEMINI_API_KEY`, a factory
+  **a stubra esik vissza és figyelmeztet** – a deploy sosem bukik el hiányzó kulcs miatt. Új
+  provider hozzáadásakor tartsd meg ezt a viselkedést.
+
+### Dokumentum-feldolgozási folyamat
+
+Upload → presigned S3 URL → `Document` rekord (`UPLOADED`, `tenantId`-vel) → enqueue a
+`documents` BullMQ sorra (idempotencia-kulcs = dokumentum-hash) → worker: OCR → Extraction →
+kategorizálás/matching → státusz `AUTO_OK` / `NEEDS_REVIEW` / `NOT_INVOICE` / `DUPLICATE` →
+felhasználói review → `CONFIRMED`. Minden lépés audit-logba kerül. A `DocumentStatus` enum a
+Prisma sémában van, és tükrözi a `@valloreg/shared`-et.
+
+## Követendő konvenciók
+
+- **Először a megosztott szerződés.** A szerepkörök, csomag-szintek/limitek, feature kulcsok,
+  hibakódok, locale-ok és az extraction JSON alakok (zod) a `packages/shared/src/`-ben élnek. A
+  Prisma enumok **string-azonosak** ezekkel a konstansokkal. Előbb a `shared`-ben módosíts,
+  utána propagálj.
+- **A hibák gépi kódok, nem prózák.** Az API `ApiErrorBody { code, message, details? }`-t ad
+  vissza `@valloreg/shared` `ErrorCode`-dal. Dobj `AppException`-nel
+  (`common/exceptions/app.exception.ts`); a globális `AllExceptionsFilter` formázza a választ. A
+  webkliens a `code`-ot i18n stringre mappeli (`lib/api.ts`). Új kódot a `shared/errors.ts`-be
+  **és** minden `messages/*.json` `errors` blokkjába vegyél fel.
+- **Nincs hardcode-olt UI szöveg.** Kulcsokat mindhárom `apps/web/src/messages/{hu,ro,en}.json`-be.
+- **NestJS domain-enkénti modul.** Minden domain önálló modul (controller + service + `dto/`);
+  regisztráld az `app.module.ts`-ben. A DTO-k `class-validator`-t használnak; a globális
+  `ValidationPipe` whitelistel és transzformál.
+- **Az új API útvonalak** alapból JWT + tenant-scope-oltak – tedd rá a guard stacket és használj
+  `prisma.scoped`-et. Csak az auth/health `@Public()`/nem scope-olt.
+- **Next.js App Router** az `apps/web/src/app/[locale]/` alatt, `(auth)` és `(app)` route
+  csoportokkal. Az oldalak server komponensek, amelyek a `*Client.tsx` kliens komponensekre
+  delegálnak. Locale-tudatos navigáció az `i18n/routing.ts`-ből (`Link`, `useRouter`, `redirect`).
+- **Formázás:** Prettier – single quote, pontosvessző, trailing comma (`all`), 100 szélesség,
+  2 szóköz, LF. Commit előtt `pnpm format`.
+
+## Adatbázis / Prisma jegyzetek
+
+- Séma: `apps/api/prisma/schema.prisma`. Migrációk: `apps/api/prisma/migrations/`.
+- Két URL: `DATABASE_URL` = **pooled** Neon endpoint (kötelező a `pgbouncer=true`, különben az
+  interaktív tranzakciók – pl. regisztráció – „prepared statement" 500-zal elhasalnak);
+  `DIRECT_URL` = direct endpoint a migrációkhoz. A `PrismaService.withPgBouncer` automatikusan
+  hozzáfűzi a `pgbouncer=true`-t a `-pooler.` URL-ekhez.
+- Sémaváltozás után: `pnpm db:migrate` (dev), a generált kliens a `prisma generate`-tel frissül
+  (a `postinstall` futtatja). Prodban a migráció **indításkor** fut (`prisma:deploy`), nem
+  buildkor – lásd `render.yaml`.
+- Új üzleti modellt `tenantId`-vel, `@@index([tenantId])`-vel **és** a `TENANT_SCOPED_MODELS`-be
+  felvéve adj hozzá (lásd Multi-tenancy fent).
+
+## Konfiguráció és titkok
+
+- Másold a `.env.example`-t `.env`-be. Minden változót dokumentál inline jegyzetekkel (DB
+  pooling, R2/MinIO, JWT, Gemini modell-lánc, VAPID push, Brevo email, utalásos billing, GDPR
+  retenciós ablakok). Az env-et az `apps/api/src/config/env.validation.ts` validálja, és az
+  `AppConfigService`-en keresztül érhető el – **a konfigot ezen a service-en át olvasd, ne
+  közvetlenül `process.env`-ből.**
+- **Soha ne commitolj valódi titkot.** A production titkok Render env változókban élnek
+  (`sync: false`).
+- Fő kapcsolók: `EXTRACTION_PROVIDER`/`OCR_PROVIDER` (`stub`|`gemini`),
+  `BENCHMARK_RECALL_PROVIDER` (`stub`|`external`).
+
+## Deploy
+
+A Render Blueprint (`render.yaml`) három szolgáltatást hoz létre `frankfurt`-ban (free tier):
+`valloreg-redis`, `valloreg-api` (build: `shared build` → `prisma:generate` → `api build`;
+start: nem-fatális `prisma:deploy`, majd `node apps/api/dist/main.js`) és `valloreg-web`. A DB
+külső (Neon). A `keep-alive` GitHub Action ~14 percenként pingeli a `/api/health`-et a Render
+free-tier spin-down ellen. Részletek: `docs/DEPLOY.md`.
+
+## További olvasnivaló
+
+- `docs/ARCHITECTURE.md` — rétegek, adatfolyam, skálázás.
+- `docs/SECURITY.md` — tenant-izoláció, Super Admin határok (az üzemeltető NEM látja a számlák
+  tartalmát), GDPR.
+- `docs/OCR_AI_ENGINE.md` — az OCR/AI extraction motor.
+- `docs/DEPLOY.md` — Render + Neon + R2 deploy.
+- `ROADMAP.md` — fázisos terv és a funkciók státusza.
+- `docs/legal/` és `apps/web/src/lib/legal/` — GDPR/megfelelőség tartalom.
+
+## Git workflow ehhez a környezethez
+
+- A kijelölt feature branchen fejlessz; ha hiányzik, hozd létre helyben.
+- Commitolj világos, leíró üzenettel (igazodj a repó magyar stílusához, ahol természetes).
+- Pushold `git push -u origin <branch>`-csel; hálózati hibánál backoff-fal próbálkozz újra.
+- **Ne nyiss pull requestet, csak ha kifejezetten kérik.**
+
+## Deploy / Git workflow – kanonikus szabályok
+
+- **A Render a `main` ágról deployol** (`valloreg-api` + `valloreg-web`; a Blueprint a
+  `main`-hez kötött). **Minden ág a friss `main`-ről induljon, minden PR a `main`-re menjen**,
+  és oda kell merge-elni; **mindig a `main` a kanonikus ág**. (Ne indíts ágat régi `main`-ről –
+  a divergencia fájdalmas merge-konfliktusokat szül.)
+- **Minden squash-merge commit a PR-számmal KEZDŐDJÖN** a `main`-en (pl. `#30 fix(gemini): …`),
+  hogy a `git log` minden sora egy konkrét PR-hez vezessen.
+
+## Tesztelés
+
+A repó teljes teszt-piramist tartalmaz; a CI (`.github/workflows/ci.yml`) három jobban futtatja.
+
+- **api – Jest** (`apps/api/jest.config.js`, két project): `pnpm --filter @valloreg/api test`
+  (unit, DB nélkül) és `test:int` (integráció, élő Postgres). Unit: megosztott kontraktusok,
+  zod sémák, i18n paritás, guardok, stub providerek, `TENANT_SCOPED_MODELS`↔séma konzisztencia.
+  Integráció: tenant-izoláció (fail-closed), `TenantGuard`, enum-paritás, matching,
+  reminder-sürgősség, dokumentum-pipeline, DB-kényszerek (unique/cascade/SetNull).
+- **web – Vitest + RTL** (`apps/web/vitest.config.ts`): `pnpm --filter @valloreg/web test`.
+- **web E2E – Playwright** (`apps/web/playwright.config.ts`): `pnpm --filter @valloreg/web e2e`
+  — valódi (headless Chromium) böngészővel a publikus felület.
+- A teszt-fájlok **kívül esnek a `tsc` typecheck hatókörén** (a `tsconfig` `exclude`-ja),
+  így nem érintik a build-kaput.
 
 ## AI / Gemini (INGYENES szint)
 
-- **Ingyenes Gemini API-t használunk** (Google AI Studio kulcs, `GEMINI_API_KEY`),
-  **mind a dokumentum/számla-, mind a jármű-beolvasásnál** (OCR + extraction).
-- **Csak ingyenes szinten elérhető modelleket** szabad a láncba tenni. Aktuális
-  alaplánc (app-config `gemini.models`): `gemini-2.0-flash`, `gemini-2.0-flash-lite`,
-  `gemini-2.5-flash`, `gemini-2.5-flash-lite`. Mindegyiknek **külön napi ingyenes
-  kerete** van.
-- **NE használj `gemini-1.5-*` modellt** – a Google kivezette a v1beta
-  `generateContent`-ből (404).
-- A providerek `404/429/500/503` esetén a **következő modellre váltanak**
-  (kvóta-kimerülés vagy kivezetett modell ne bukatja el a feldolgozást).
-- A providert a `render.yaml` `value: gemini`-vel kényszeríti (OCR + EXTRACTION) –
-  **ne állítsd vissza `stub`-ra**, mert a Blueprint-sync felülírná a dashboardot.
+- **Ingyenes Gemini API** (`GEMINI_API_KEY`) mind a számla-, mind a jármű-beolvasásnál.
+- **Csak ingyenes modellek** kerülhetnek a láncba (`gemini-2.0-flash`, `-flash-lite`,
+  `gemini-2.5-flash`, `-flash-lite`). **NE használj `gemini-1.5-*`-ot** (kivezetve, 404). A
+  providerek `404/429/500/503`-ra a **következő modellre váltanak**.
+- A `render.yaml` `value: gemini`-vel kényszeríti (OCR + EXTRACTION) – **ne állítsd `stub`-ra**.
 
-## Web + API topológia (domének)
+## Web + API topológia + Auth buktatók
 
-- **Két külön Render-szolgáltatás, KÜLÖN aldomainen:**
-  - `valloreg-api` → `https://valloreg-api.onrender.com` (NestJS, prefix `/api`),
-  - `valloreg-web` → `https://valloreg-web.onrender.com` (Next.js PWA).
-- A web az API-t a `NEXT_PUBLIC_API_URL=https://valloreg-api.onrender.com/api`
-  címen éri el; az API a `CORS_ORIGINS`/`WEB_APP_URL`-ben a web origint engedi,
-  `credentials: true`-val.
-- **FONTOS: a két aldomain CROSS-SITE egymáshoz képest.** Az `onrender.com` rajta
-  van a Public Suffix List-en, így `valloreg-web.onrender.com` és
-  `valloreg-api.onrender.com` KÜLÖN „site" – nem csak külön origin. Ez minden
-  cookie-/CORS-/credentials-kérdést befolyásol.
-
-## Auth / session – gondok és buktatók
-
-- **Token-modell:** rövid életű access token (15 perc) a kliensben
-  (`localStorage` ha „Remember me", különben `sessionStorage`), az `Authorization`
-  fejléchez. A refresh token **httpOnly cookie**-ban (`valloreg_rt`,
-  `Path=/api/auth`), JS-ből NEM elérhető. A kliens 401-re csendben frissít
-  (single-flight), a refresh `credentials: 'include'`-dal megy.
-- **„Remember me":** bepipálva tartós cookie (90 nap, gördülő) + `localStorage`;
-  kipipálatlanul session cookie + `sessionStorage`. A `remember` a refresh token
-  payloadjában utazik, hogy a rotációknál is megőrződjön.
-- **⚠️ Cross-site cookie (a fő buktató):** mivel web és api külön „site", a refresh
-  cookie csak `SameSite=None; Secure` attribútumokkal megy át. Ezt
-  `NODE_ENV=production` esetén állítjuk be (dev: `Lax`, Secure nélkül, mert
-  localhost azonos site). **Ha a cookie-folyamat elromlik, ELŐSZÖR ezt nézd:**
-  - `NODE_ENV=production` legyen az API-n (különben `Lax`/nem-Secure → a böngésző
-    nem küldi cross-site),
-  - `CORS_ORIGINS` PONTOS web origin (nem `*`), `credentials: true` mellett,
-  - a kliens auth-hívásai `credentials: 'include'`-dal menjenek.
-- **⚠️ Harmadik-fél-cookie korlátozás:** mivel a cookie a web oldaláról nézve
-  „third-party" (másik site), a böngészők szigorodó harmadik-fél-cookie szabályai
-  (Safari ITP, Chrome) blokkolhatják. Jelenleg működik, de **a végleges, robusztus
-  megoldás: a web és az api KÖZÖS domain alá** (pl. `app.valloreg.com` +
-  `app.valloreg.com/api`, vagy `api.valloreg.com` ugyanazon regisztrált domainen),
-  ekkor a cookie first-party `SameSite=Lax` lehet. Saját domain bevezetésekor ezt
-  érdemes egyből így tervezni.
-- **Hideg indítás (Render free):** az API ~15 perc tétlenség után leáll; az első
-  kérés 502/503/504 vagy „Failed to fetch" lehet ~30–60 mp-ig. A web api-kliense
-  ezt backoff-fal újrapróbálja (lásd `apps/web/src/lib/api.ts`), és egy
-  keep-alive GitHub Action pingeli az API health-et.
+- **Két külön Render-szolgáltatás, KÜLÖN aldomainen** (`valloreg-api` `/api` prefixszel,
+  `valloreg-web`). A két aldomain **CROSS-SITE** (az `onrender.com` a Public Suffix List-en van).
+- **Token-modell:** rövid access token (15 perc) a kliensben (`localStorage` ha „Remember me",
+  egyébként `sessionStorage`); refresh token **httpOnly cookie**-ban (`valloreg_rt`). 401-re a
+  kliens csendben frissít (`credentials: 'include'`).
+- **⚠️ Cross-site cookie (fő buktató):** a refresh cookie csak `SameSite=None; Secure`-rel megy
+  át (prod). Ha romlik: `NODE_ENV=production` az API-n, PONTOS `CORS_ORIGINS` + `credentials: true`.
+- **2FA (TOTP):** opcionális; a login 2FA-challenge-et adhat, a kliens a kód-lépésre vált
+  (`verifyTwoFactorLogin`).
 
 ## Nyitott feladat – TOCTOU a limit-ellenőrzéseken (külön PR + teszt)
 
-**Mi a gond:** a csomag-limit ellenőrzések „count/aggregate → majd create" mintát
-követnek **tranzakció nélkül**, így két egyidejű kérés mindkettő átmehet az
-ellenőrzésen, mielőtt bármelyik létrehozná a rekordot → a keret túlléphető
-(jármű/felhasználó/dokumentum/tárhely). Render free (alacsony konkurrencia)
-mellett a kockázat alacsony, ezért tudatosan külön PR-be került.
-
-**Érintett helyek (mind ugyanaz a minta):**
-- `apps/api/src/documents/documents.service.ts` – `assertMonthlyDocumentLimit` +
-  `assertStorageLimit`, majd `document.create` / `vehicleDocument.create`.
-- `apps/api/src/vehicles/vehicles.service.ts` – `assertVehicleLimit`, majd `vehicle.create`
-  (és a scan-staging / `confirmScan` tárhely-ág).
-- `apps/api/src/users/users.service.ts` – `assertUserLimit`, majd `invitation.create` /
-  `membership.create` (invite + acceptInvite).
-
-**Mit kell csinálni:**
-1. A „count/sum → create" párokat **egyetlen `prisma.$transaction`-be** tenni
-   `isolationLevel: 'Serializable'` (vagy `RepeatableRead`) szinttel, és a
-   tranzakción **belül** újraszámolni a limitet közvetlenül a create előtt; túllépéskor
-   a meglévő `AppException.*LimitReached()`-et dobni (rollback).
-2. A serializable ütközést (Prisma `P2034` / serialization failure) elkapni és
-   **egyszer** újrapróbálni, különben a limit-hibát visszaadni.
-3. A tenant-scope-ot a tranzakción belül is megőrizni (a `prisma.scoped` / `system`
-   használat ne csorbuljon – a `$transaction` kliens is scope-olt legyen).
-
-**Tesztelés (ezért külön PR):** a typecheck/build CI **nem** fogja meg a
-tranzakció-szemantikát. Kell **integrációs teszt** valódi (vagy testcontainers)
-Postgres ellen: N párhuzamos create a limit körül → pontosan a limitig menjen át,
-a többi `*LimitReached`-et kapjon. E nélkül a fix ne kerüljön a `main`-re.
-
+A csomag-limit ellenőrzések „count/aggregate → create" mintát követnek **tranzakció nélkül**, így
+két egyidejű kérés túlléphet a kereten. Érintett: `documents.service.ts`, `vehicles.service.ts`,
+`users.service.ts`. **Teendő:** a „count → create" párokat egy `prisma.$transaction`-be
+(`Serializable`), a limitet a tranzakción belül újraszámolni; **integrációs teszt kell**
+(párhuzamos create a limit körül).

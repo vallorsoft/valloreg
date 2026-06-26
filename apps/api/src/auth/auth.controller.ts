@@ -20,7 +20,7 @@ import type {
 import { AppConfigService } from '../config/app-config.service';
 import { AppException } from '../common/exceptions/app.exception';
 import { AuthService } from './auth.service';
-import type { AuthResult, AuthTokens } from './auth.service';
+import type { AuthResult, AuthTokens, TwoFactorChallenge } from './auth.service';
 import {
   clearRefreshCookie,
   readRefreshCookie,
@@ -30,6 +30,11 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import {
+  ConfirmTwoFactorDto,
+  DisableTwoFactorDto,
+  VerifyTwoFactorLoginDto,
+} from './dto/two-factor.dto';
 
 /** A kliensnek visszaadott auth-válasz: NINCS benne refresh token (az cookie-ban). */
 type AuthResponseBody = Omit<AuthResult, keyof AuthTokens> & {
@@ -61,8 +66,12 @@ export class AuthController {
     @Body() dto: LoginDto,
     @Req() req: AuthenticatedRequest,
     @Res({ passthrough: true }) res: Response,
-  ): Promise<AuthResponseBody> {
+  ): Promise<AuthResponseBody | TwoFactorChallenge> {
     const result = await this.authService.login(dto, req.ip);
+    // 2FA aktív: nincs token/cookie, a kliens a kód-bekérő lépésre vált.
+    if ('twoFactorRequired' in result) {
+      return result;
+    }
     return this.respondWithAuth(res, result, dto.rememberMe ?? true);
   }
 
@@ -116,6 +125,60 @@ export class AuthController {
   @Get('me')
   me(@CurrentUser() user: AuthUser) {
     return this.authService.me(user.userId);
+  }
+
+  // ── 2FA (TOTP) ──────────────────────────────────────────────────────────
+
+  /** 2FA bekapcsolásának indítása: titok + otpauth URI (még nem tárolt). */
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/setup')
+  @HttpCode(HttpStatus.OK)
+  beginTwoFactorSetup(@CurrentUser() user: AuthUser) {
+    return this.authService.beginTwoFactorSetup(user.userId);
+  }
+
+  /** 2FA megerősítése: titok + kód → a titok tárolása. */
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/confirm')
+  @HttpCode(HttpStatus.OK)
+  confirmTwoFactor(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: ConfirmTwoFactorDto,
+  ) {
+    return this.authService.confirmTwoFactorSetup(
+      user.userId,
+      dto.secret,
+      dto.code,
+    );
+  }
+
+  /** 2FA kikapcsolása jelszó-megerősítéssel. */
+  @UseGuards(JwtAuthGuard)
+  @Post('2fa/disable')
+  @HttpCode(HttpStatus.OK)
+  disableTwoFactor(
+    @CurrentUser() user: AuthUser,
+    @Body() dto: DisableTwoFactorDto,
+  ) {
+    return this.authService.disableTwoFactor(user.userId, dto.password);
+  }
+
+  /** 2FA bejelentkezés második lépése (challenge token + kód). */
+  @Public()
+  @Post('2fa/verify-login')
+  @HttpCode(HttpStatus.OK)
+  async verifyTwoFactorLogin(
+    @Body() dto: VerifyTwoFactorLoginDto,
+    @Req() req: AuthenticatedRequest,
+    @Res({ passthrough: true }) res: Response,
+  ): Promise<AuthResponseBody> {
+    const result = await this.authService.verifyTwoFactorLogin(
+      dto.sessionToken,
+      dto.code,
+      req.ip,
+    );
+    // A refresh token httpOnly cookie-ba (a main token-modellje); 2FA → tartós.
+    return this.respondWithAuth(res, result, true);
   }
 
   // ── Belső segédek ───────────────────────────────────────────────────────
