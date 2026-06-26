@@ -203,12 +203,17 @@ core + AI         workflow + tanulás  proaktív emlékeztető billing, admin, s
 A Fázis 1–5 funkcionálisan lényegében teljes. A maradék adósság elsősorban
 **üzemeltetési érettség**, nem hiányzó termékfunkció:
 
-- **CI/CD:** ✓ `.github/workflows/ci.yml` – `build` job (lint·typecheck·build·unit)
-  minden push/PR-en, + `integration` job (Postgres service) az integrációs tesztekre.
-- **Tesztek:** ✓ Jest tesztcsomag (`apps/api`, `unit` + `integration` project).
-  Unit (DB nélkül): megosztott kontraktusok, zod sémák, i18n paritás, guardok,
-  stub providerek. Integráció (élő Postgres): tenant-izoláció, TenantGuard,
-  enum-paritás. Bővíthető: matching, reminder-sürgősség, dokumentum-pipeline.
+- **CI/CD:** ✓ `.github/workflows/ci.yml` – 3 job: `build` (lint·typecheck·build·unit),
+  `integration` (Postgres service), `e2e` (Playwright + headless Chromium) – push/PR-en.
+- **Tesztek:** ✓ Teljes tesztpiramis.
+  - **api** (Jest, `unit` + `integration` project): kontraktusok, zod sémák, i18n
+    paritás, guardok, stub providerek · tenant-izoláció, TenantGuard, enum-paritás,
+    matching, reminder-sürgősség, dokumentum-pipeline · **DB-integritás**
+    (TENANT_SCOPED_MODELS↔séma, unique/cascade/SetNull kényszerek, migráció-drift).
+  - **web** (Vitest + RTL): lib segédek, auth űrlapok, ConsentBanner, UI komponensek.
+  - **web E2E** (Playwright, valódi böngésző): landing (hu/ro/en, nyelvváltó), auth
+    kliens-validáció, consent, kliensoldali auth-guard, locale-routing, jogi oldalak, 404.
+  - Még nincs: a bejelentkezést igénylő app-oldalak E2E-je (teljes stack kell a CI-ban).
 - **Lint:** nincs ESLint (a `lint` script placeholder); a `pnpm format:check` még
   nincs a CI-ban (a kód nem teljesen prettier-tiszta).
 - **Megfigyelhetőség:** metrikák / tracing / alerting nincs bekötve.
