@@ -67,7 +67,10 @@ describe('Prisma tenant-scope kiterjesztés (integráció)', () => {
   });
 
   it('olvasás szűr: az A kontextus CSAK az A tenant járművét látja', async () => {
-    const rows = await ctx.runWith(ctxA, () => prisma.scoped.vehicle.findMany());
+    // FONTOS: a scoped lekérdezést a runWith callbackjén BELÜL kell await-elni,
+    // hogy a Prisma-kiterjesztés (lusta PrismaPromise) az aktív ALS kontextusban
+    // fusson – ahogy productionben a middleware a teljes kérést az als.run-ban await-eli.
+    const rows = await ctx.runWith(ctxA, async () => await prisma.scoped.vehicle.findMany());
 
     // Csak A jármű(vei) jönnek vissza, B soha.
     expect(rows.every((v) => v.tenantId === tenantA.tenantId)).toBe(true);
@@ -77,8 +80,9 @@ describe('Prisma tenant-scope kiterjesztés (integráció)', () => {
   });
 
   it('create injektál: scoped create az aktív tenantId-t teszi a rekordba', async () => {
-    const created = await ctx.runWith(ctxA, () =>
-      prisma.scoped.vehicle.create({ data: { plate: createdPlate } }),
+    const created = await ctx.runWith(
+      ctxA,
+      async () => await prisma.scoped.vehicle.create({ data: { plate: createdPlate } }),
     );
 
     expect(created.tenantId).toBe(tenantA.tenantId);
@@ -95,11 +99,13 @@ describe('Prisma tenant-scope kiterjesztés (integráció)', () => {
     // Az "extended where unique" miatt a where: { id, tenantId } nem talál B rekordot
     // A kontextusban → a Prisma update P2025-tel dob.
     await expect(
-      ctx.runWith(ctxA, () =>
-        prisma.scoped.vehicle.update({
-          where: { id: vehicleBId },
-          data: { make: 'x' },
-        }),
+      ctx.runWith(
+        ctxA,
+        async () =>
+          await prisma.scoped.vehicle.update({
+            where: { id: vehicleBId },
+            data: { make: 'x' },
+          }),
       ),
     ).rejects.toThrow();
 
