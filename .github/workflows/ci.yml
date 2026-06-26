@@ -58,3 +58,54 @@ jobs:
       # domain-logika, guardok. Az integrációs tesztek (élő Postgres) külön jobban.
       - name: Test (unit)
         run: pnpm test
+
+  # Integrációs tesztek élő Postgresszel: tenant-izoláció, TenantGuard, enum-paritás.
+  # Külön job, mert DB-t és lefuttatott migrációt igényel. A Prisma kliens az
+  # install postinstall (prisma generate) lépésében generálódik.
+  integration:
+    name: integration (postgres)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: valloreg
+          POSTGRES_PASSWORD: valloreg
+          POSTGRES_DB: valloreg_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U valloreg"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      # Helyi Postgres (nem Neon pooler) – a withPgBouncer nem nyúl hozzá.
+      DATABASE_URL: postgresql://valloreg:valloreg@localhost:5432/valloreg_test
+      DIRECT_URL: postgresql://valloreg:valloreg@localhost:5432/valloreg_test
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build shared
+        run: pnpm --filter @valloreg/shared build
+
+      # A séma felhúzása a teszt-DB-re (idempotens migráció).
+      - name: DB migrate
+        run: pnpm --filter @valloreg/api prisma:deploy
+
+      - name: Test (integration)
+        run: pnpm --filter @valloreg/api test:int
