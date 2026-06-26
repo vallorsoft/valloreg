@@ -1,0 +1,55 @@
+name: ci
+
+# Lint + typecheck + build a monorepón minden push-ra és pull requestre.
+# A valódi minőség-kapu a typecheck (lásd CLAUDE.md): nincs ESLint és nincs
+# valódi tesztcsomag, a lint/test scriptek placeholderek.
+#
+# A `pnpm format:check` szándékosan NINCS itt: a meglévő kód még nem teljesen
+# prettier-tiszta, és nem akartuk pirosra állítani a CI-t. Ha a repó egyszer
+# végigformázódik (`pnpm format`), vegyél fel egy "Format check" lépést.
+#
+# A @valloreg/shared-t a Turbo a `^build` függőség miatt a többi csomag elé
+# buildeli; az `api` Prisma kliense az install `postinstall` (prisma generate)
+# lépésében generálódik – DB-kapcsolat nélkül is.
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+    branches: ['**']
+
+# Egy ágon csak a legutóbbi futás fusson; a régebbit szakítsd meg.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: lint · typecheck · build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # A packageManager mező (pnpm@10.33.0) alapján a helyes pnpm verziót húzza.
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Build
+        run: pnpm build

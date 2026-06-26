@@ -11,7 +11,7 @@ Jelmagyarázat: `[ ]` nyitott · `[~]` folyamatban · `[x]` kész
 
 ---
 
-## FÁZIS 1 – CORE ALAPOK (KÉSZ – a CI kivételével)
+## FÁZIS 1 – CORE ALAPOK (KÉSZ)
 
 **Cél:** Biztonságos, multi-tenant, skálázható fundamentum, amelyre az összes további
 modul ráépül. Itt dől el az adatizoláció, az auth és a feldolgozási pipeline váza.
@@ -29,7 +29,7 @@ modul ráépül. Itt dől el az adatizoláció, az auth és a feldolgozási pipe
 - [x] Storage absztrakció: S3/MinIO adapter (presigned upload/download)
 - [x] OCR + Extraction **portok** (interface-ek) stub implementációval (Fázis 2 plugint vár)
 - [x] Frontend váz: Next.js App Router, Tailwind brand téma, i18n (hu/ro/en), PWA manifest + SW, app shell, auth + dashboard skeleton, landing skeleton
-- [ ] CI: lint + typecheck + build (GitHub Actions) — **még hiányzik** (csak a `keep-alive` workflow van; nincs ESLint és nincs valódi tesztcsomag)
+- [x] CI: lint + typecheck + build (GitHub Actions – `.github/workflows/ci.yml`). Megjegyzés: a `lint` és a `test` script továbbra is placeholder (nincs ESLint és valódi tesztcsomag), a valódi kapu a `typecheck` + `build`
 
 **Deliverable:** Futtatható monorepo. Egy cég regisztrálhat, beléphet, tenant-izolált
 adatokat lát; a dokumentum-feltöltés tárolásig eljut; a feldolgozó queue és a provider
@@ -203,9 +203,10 @@ core + AI         workflow + tanulás  proaktív emlékeztető billing, admin, s
 A Fázis 1–5 funkcionálisan lényegében teljes. A maradék adósság elsősorban
 **üzemeltetési érettség**, nem hiányzó termékfunkció:
 
-- **CI/CD:** nincs lint + typecheck + build GitHub Action (csak `keep-alive`).
+- **CI/CD:** ✓ `.github/workflows/ci.yml` (lint + typecheck + build minden push/PR-en).
 - **Lint & tesztek:** nincs ESLint és nincs valódi tesztcsomag (a `lint`/`test`
-  scriptek placeholderek). A kapu jelenleg a `pnpm typecheck` + `pnpm format:check`.
+  scriptek placeholderek). A kapu jelenleg a `pnpm typecheck` + `pnpm build`; a
+  `pnpm format:check` még nincs a CI-ban (a kód nem teljesen prettier-tiszta).
 - **Megfigyelhetőség:** metrikák / tracing / alerting nincs bekötve.
 - **Frontend auto token-refresh:** a kliens 401-re még nem rotálja automatikusan a
   refresh tokent (`apps/web/src/lib/api.ts` TODO).
