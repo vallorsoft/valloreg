@@ -2,6 +2,7 @@ import * as ExcelJS from 'exceljs';
 import {
   SpreadsheetParserService,
   guessPartType,
+  isLaborItem,
   isIncomeSheet,
   looksLikePlate,
   normalizeHeader,
@@ -57,6 +58,15 @@ describe('spreadsheet-parser tiszta segédfüggvények', () => {
     expect(guessPartType('Filtru de combustibil')).toBe('filters');
     expect(guessPartType('Lichid racire concentrat')).toBe('fluids');
     expect(guessPartType('valami ismeretlen')).toBeNull();
+  });
+
+  it('isLaborItem: munkadíj (manopera) felismerése', () => {
+    expect(isLaborItem('MANOPERA (INLOCUIRE, REMEDIERE)')).toBe(true);
+    expect(isLaborItem('Diagnoza webasto')).toBe(true);
+    expect(isLaborItem('Reparatie sistem')).toBe(true);
+    expect(isLaborItem('Munkadíj csere')).toBe(true);
+    expect(isLaborItem('Separator de ulei')).toBe(false);
+    expect(isLaborItem('Filtru hidraulic')).toBe(false);
   });
 });
 

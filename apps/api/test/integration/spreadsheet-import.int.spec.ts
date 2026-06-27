@@ -73,7 +73,7 @@ describe('SpreadsheetImportService.commit (integráció, élő Postgres)', () =>
     ws.addRow([
       new Date('2026-01-10'),
       'RO6026000289',
-      '0600969Separator de ulei B 1\n470 018 00 80Etansare corp filtru ulei BUC 1',
+      '0600969Separator de ulei B 1\n470 018 00 80Etansare corp filtru ulei BUC 1\nMANOPERA inlocuire filtru',
       'S.C. INTER CARS ROMANIA S.R.L.',
       2008.59,
       516678,
@@ -112,9 +112,15 @@ describe('SpreadsheetImportService.commit (integráció, élő Postgres)', () =>
     expect(doc.invoice).not.toBeNull();
     expect(doc.invoice!.documentId).toBe(doc.id);
     expect(Number(doc.invoice!.grossTotal)).toBeCloseTo(2008.59);
-    expect(doc.invoice!.items.length).toBeGreaterThanOrEqual(2);
+    expect(doc.invoice!.items.length).toBeGreaterThanOrEqual(3);
     // A jármű-illesztés a fül nevéből: a tételek a járműhöz kötve.
     expect(doc.invoice!.items.every((i) => i.vehicleId)).toBe(true);
+    // MANOPERA → labor kategória; a többi alkatrész (part).
+    const categories = doc.invoice!.items.map((i) => i.category);
+    expect(categories).toContain('labor');
+    expect(categories).toContain('part');
+    const manopera = doc.invoice!.items.find((i) => /manopera/i.test(i.name));
+    expect(manopera?.category).toBe('labor');
   });
 
   it('újra-commit ugyanazzal a fájllal: idempotens (skip, nincs duplikátum)', async () => {

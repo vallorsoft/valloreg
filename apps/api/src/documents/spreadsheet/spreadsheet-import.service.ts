@@ -32,6 +32,7 @@ import { EXTRACTION_PROVIDER, type ExtractionProvider } from '../../extraction/e
 import {
   SpreadsheetParserService,
   guessPartType,
+  isLaborItem,
   rowKey,
   type ParsedWorkbook,
 } from './spreadsheet-parser.service';
@@ -366,12 +367,22 @@ export class SpreadsheetImportService {
 
   /** Egy import-tétel → `ExtractedItem` (kategória/típus heurisztikával). */
   private toExtractedItem(item: SpreadsheetImportItem, isVehicleSheet: boolean): ExtractedItem {
-    const partType = isVehicleSheet ? guessPartType(item.name) : null;
+    // MUNKADÍJ (manopera) automatikus felismerése → `labor` kategória. A munkadíj
+    // a járműhöz tartozik (type marad vehicle a járműlapokon), de NEM alkatrész,
+    // ezért partType nincs.
+    const labor = isLaborItem(item.name);
+    const category = labor
+      ? ItemCategory.LABOR
+      : isVehicleSheet
+        ? ItemCategory.PART
+        : ItemCategory.OTHER;
+    const partType = labor || !isVehicleSheet ? null : guessPartType(item.name);
     return {
       name: item.name,
-      category: isVehicleSheet ? ItemCategory.PART : ItemCategory.OTHER,
+      category,
       partType: partType as ExtractedItem['partType'],
-      articleNumber: item.articleNumber,
+      // Munkadíjnál a "cikkszám" zaj, ne kerüljön be cikkszámként.
+      articleNumber: labor ? null : item.articleNumber,
       type: isVehicleSheet ? ItemType.VEHICLE : ItemType.GENERAL,
       vehicleId: null,
       quantity: item.quantity,

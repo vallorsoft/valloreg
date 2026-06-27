@@ -529,6 +529,18 @@ function pad2(s: string): string {
 }
 
 /**
+ * Munkadíj (manopera) felismerése a tétel megnevezéséből (RO/HU/EN kulcsszavak).
+ * Ha igaz, a tétel `labor` kategóriába kerül (nem `part`). Pl. „MANOPERA
+ * (INLOCUIRE…)", „Diagnoza webasto", „Reparatie", „szerelés", „javítás".
+ */
+export function isLaborItem(name: string): boolean {
+  const n = stripDiacritics((name ?? '').toLowerCase());
+  return /\b(manopera|manoper|inlocuire|remediere|reparatie|reparat|montaj|demontaj|montare|demontare|diagnoza|diagnostic|verificare|revizie|munkadij|munkadi|szerel|javit|labor|labour)\b/.test(
+    n,
+  );
+}
+
+/**
  * Alkatrész-típus (PartType) durva megsejtése a megnevezésből (RO/HU/EN
  * kulcsszavak). Csak segédlet az importhoz; null, ha nem egyértelmű.
  */
