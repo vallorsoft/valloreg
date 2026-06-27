@@ -1,4 +1,4 @@
-import type { LegalBlock, LegalDoc } from '@/lib/legal';
+import type { LegalBlock, LegalDocRecord } from '@valloreg/shared';
 
 // Renderează un document juridic structurat (blocuri) în HTML semantic.
 // Server component (fără interactivitate). Stilizare cu tema brand existentă.
@@ -6,11 +6,7 @@ import type { LegalBlock, LegalDoc } from '@/lib/legal';
 function Block({ block }: { block: LegalBlock }) {
   switch (block.k) {
     case 'h':
-      return (
-        <h2 className="mt-10 text-xl font-bold text-anthracite-900">
-          {block.t}
-        </h2>
-      );
+      return <h2 className="mt-10 text-xl font-bold text-anthracite-900">{block.t}</h2>;
     case 'p':
       return <p className="mt-4 text-sm leading-relaxed text-anthracite-600">{block.t}</p>;
     case 'ul':
@@ -68,32 +64,14 @@ function Block({ block }: { block: LegalBlock }) {
   }
 }
 
-export function LegalDocView({ doc }: { doc: LegalDoc }) {
+export function LegalDocView({ doc }: { doc: LegalDocRecord }) {
   return (
     <article className="container-page max-w-3xl py-12">
       <header className="border-b border-anthracite-100 pb-6">
         <h1 className="text-3xl font-bold text-anthracite-900">{doc.title}</h1>
-        {doc.subtitle ? (
-          <p className="mt-2 text-base text-anthracite-500">{doc.subtitle}</p>
-        ) : null}
-        <p className="mt-3 text-xs text-anthracite-400">
-          Ultima actualizare: {doc.updated}
-        </p>
+        {doc.subtitle ? <p className="mt-2 text-base text-anthracite-500">{doc.subtitle}</p> : null}
+        <p className="mt-3 text-xs text-anthracite-400">Ultima actualizare: {doc.updated}</p>
       </header>
-
-      {doc.reviewRequired ? (
-        <div className="mt-6 rounded-xl border border-primary-300 bg-primary-50 p-4 text-sm leading-relaxed text-anthracite-700">
-          <strong className="text-primary-700">
-            Document pregătit pentru revizuire juridică.
-          </strong>{' '}
-          Acest document a fost generat pe baza implementării tehnice reale a
-          platformei și necesită revizuirea și avizarea finală de către un
-          avocat / consilier juridic înainte de utilizarea în producție.
-          Pasajele marcate cu <code>[DE COMPLETAT]</code> sau{' '}
-          <code>[DE VERIFICAT JURIDIC]</code> indică decizii care depind de
-          avocat sau de date operaționale interne.
-        </div>
-      ) : null}
 
       <div className="mt-2">
         {doc.blocks.map((block, i) => (

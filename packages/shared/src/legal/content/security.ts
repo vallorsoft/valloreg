@@ -91,15 +91,18 @@ const incidentResponse: LegalDoc = {
   subtitle: 'Detectare, clasificare, escaladare',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Procesul de detectare, clasificare și gestionare a incidentelor de securitate.',
+  summary: 'Procesul de detectare, clasificare și gestionare a incidentelor de securitate.',
   blocks: [
     { k: 'h', t: '1. Clasificarea incidentelor' },
     {
       k: 'table',
       head: ['Severitate', 'Exemple', 'Reacție țintă'],
       rows: [
-        ['Critică', 'Compromiterea datelor, indisponibilitate totală, acces neautorizat cross-tenant', 'Imediată'],
+        [
+          'Critică',
+          'Compromiterea datelor, indisponibilitate totală, acces neautorizat cross-tenant',
+          'Imediată',
+        ],
         ['Majoră', 'Degradare semnificativă, vulnerabilitate exploatabilă', 'În câteva ore'],
         ['Minoră', 'Erori izolate, fără impact asupra datelor', 'În cadrul programului normal'],
       ],
@@ -179,15 +182,17 @@ const backupDr: LegalDoc = {
   subtitle: 'Backup, RPO/RTO, testare',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Strategia de copii de rezervă și de recuperare a serviciului în caz de dezastru.',
+  summary: 'Strategia de copii de rezervă și de recuperare a serviciului în caz de dezastru.',
   blocks: [
     { k: 'h', t: '1. Componente și mecanisme' },
     {
       k: 'table',
       head: ['Componentă', 'Mecanism de backup'],
       rows: [
-        ['Bază de date (PostgreSQL/Neon)', 'Backup-uri gestionate de furnizor (snapshot/point-in-time)'],
+        [
+          'Bază de date (PostgreSQL/Neon)',
+          'Backup-uri gestionate de furnizor (snapshot/point-in-time)',
+        ],
         ['Stocare obiecte (documente)', 'Reziliența furnizorului de stocare'],
         ['Cozi (Redis/BullMQ)', 'Date tranzitorii; joburile sunt idempotente și reluabile'],
         ['Configurație/secrete', 'Gestionate în secret manager (Render)'],
@@ -216,8 +221,7 @@ const bcp: LegalDoc = {
   subtitle: 'Servicii critice și restaurare prioritară',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Asigurarea continuității serviciilor critice în cazul unei întreruperi majore.',
+  summary: 'Asigurarea continuității serviciilor critice în cazul unei întreruperi majore.',
   blocks: [
     { k: 'h', t: '1. Servicii critice' },
     {
@@ -253,8 +257,7 @@ const vulnDisclosure: LegalDoc = {
   subtitle: 'Raportare responsabilă',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Cum pot fi raportate în mod responsabil vulnerabilitățile de securitate.',
+  summary: 'Cum pot fi raportate în mod responsabil vulnerabilitățile de securitate.',
   blocks: [
     {
       k: 'p',
@@ -288,8 +291,7 @@ const accessControl: LegalDoc = {
   subtitle: 'Roluri, privilegiu minim, need-to-know',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Regulile de acordare și gestionare a accesului la sisteme și date.',
+  summary: 'Regulile de acordare și gestionare a accesului la sisteme și date.',
   blocks: [
     { k: 'h', t: '1. Principii' },
     {
@@ -336,8 +338,7 @@ const accessReview: LegalDoc = {
   subtitle: 'Reevaluarea periodică a drepturilor',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Cum și cât de des se revizuiește accesul utilizatorilor la date.',
+  summary: 'Cum și cât de des se revizuiește accesul utilizatorilor la date.',
   blocks: [
     { k: 'h', t: '1. Scop' },
     {

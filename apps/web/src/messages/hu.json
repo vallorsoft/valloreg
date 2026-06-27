@@ -1320,6 +1320,76 @@
       "name": "Név",
       "email": "E-mail",
       "role": "Szerepkör"
+    },
+    "legalLink": {
+      "title": "Jogi dokumentumok",
+      "subtitle": "Szabályzatok szerkesztése, közzététele, letöltése és cégeknek küldése."
+    }
+  },
+  "adminLegal": {
+    "title": "Jogi dokumentumok",
+    "subtitle": "Szabályzatok szerkesztése, közzététele, letöltése és cégeknek küldése.",
+    "loading": "Betöltés…",
+    "forbidden": "Nincs platform admin jogosultságod.",
+    "backToAdmin": "Vissza a Super Adminhoz",
+    "empty": "Nincs jogi dokumentum.",
+    "categories": {
+      "public": "Publikus dokumentumok",
+      "gdpr": "GDPR megfelelőség",
+      "security": "Biztonság és folytonosság",
+      "ai": "Mesterséges intelligencia (EU AI Act)",
+      "hr": "Szervezeti / HR"
+    },
+    "badge": {
+      "public": "Publikus",
+      "internal": "Belső"
+    },
+    "visibility": {
+      "publish": "Közzététel",
+      "unpublish": "Visszavonás",
+      "working": "Folyamatban…",
+      "nowPublic": "A dokumentum mostantól publikus.",
+      "nowInternal": "A dokumentum mostantól belső.",
+      "error": "A láthatóság módosítása sikertelen."
+    },
+    "editor": {
+      "title": "Szerkesztés",
+      "placeholder": "Válassz egy dokumentumot a listából a szerkesztéshez.",
+      "loadError": "A dokumentum betöltése sikertelen.",
+      "fields": {
+        "title": "Cím",
+        "subtitle": "Alcím",
+        "summary": "Összefoglaló",
+        "updated": "Utolsó frissítés (címke)",
+        "blocks": "Tartalmi blokkok (JSON)"
+      },
+      "blocksHint": "A blokkok JSON-tömbként szerkeszthetők. Érvénytelen JSON esetén a mentés nem indul el.",
+      "invalidJson": "A tartalmi blokkok JSON-ja érvénytelen. Javítsd, mielőtt mentenél.",
+      "save": "Mentés",
+      "saving": "Mentés…",
+      "saved": "A dokumentum mentve.",
+      "saveError": "A mentés sikertelen."
+    },
+    "download": {
+      "title": "Letöltés",
+      "working": "Letöltés…",
+      "error": "A letöltés sikertelen.",
+      "formats": {
+        "md": "Markdown (.md)",
+        "json": "JSON (.json)",
+        "pdf": "PDF (.pdf)"
+      }
+    },
+    "send": {
+      "title": "Küldés cégnek",
+      "tenant": "Cég",
+      "tenantPlaceholder": "Válassz céget…",
+      "format": "Formátum",
+      "send": "Küldés",
+      "sending": "Küldés…",
+      "ok": "Elküldve ide: {to}.",
+      "fail": "A küldés nem sikerült (címzett: {to}).",
+      "error": "A küldés sikertelen."
     }
   },
   "billing": {

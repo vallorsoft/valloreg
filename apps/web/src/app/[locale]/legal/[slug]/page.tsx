@@ -5,18 +5,7 @@ import { Link } from '@/i18n/routing';
 import { MarketingHeader } from '@/components/landing/MarketingHeader';
 import { MarketingFooter } from '@/components/landing/MarketingFooter';
 import { LegalDocView } from '@/components/legal/LegalDocView';
-import { getAllLegalSlugs, getLegalDoc } from '@/lib/legal';
-import { SUPPORTED_LOCALES } from '@valloreg/shared';
-
-// Generăm static toate combinațiile locale × slug.
-export function generateStaticParams() {
-  const slugs = getAllLegalSlugs();
-  return SUPPORTED_LOCALES.flatMap((locale) =>
-    slugs.map((slug) => ({ locale, slug })),
-  );
-}
-
-export const dynamicParams = false;
+import { fetchPublicLegalDoc } from '@/lib/legal-api';
 
 export async function generateMetadata({
   params,
@@ -24,7 +13,7 @@ export async function generateMetadata({
   params: Promise<{ locale: string; slug: string }>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const doc = getLegalDoc(slug);
+  const doc = await fetchPublicLegalDoc(slug);
   if (!doc) return {};
   return { title: doc.title, description: doc.summary };
 }
@@ -37,7 +26,7 @@ export default async function LegalDocPage({
   const { locale, slug } = await params;
   setRequestLocale(locale);
 
-  const doc = getLegalDoc(slug);
+  const doc = await fetchPublicLegalDoc(slug);
   if (!doc) notFound();
 
   return (

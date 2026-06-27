@@ -79,7 +79,4 @@ const onboardingOffboarding: LegalDoc = {
   ],
 };
 
-export const HR_DOCS: LegalDoc[] = [
-  employeeConfidentiality,
-  onboardingOffboarding,
-];
+export const HR_DOCS: LegalDoc[] = [employeeConfidentiality, onboardingOffboarding];

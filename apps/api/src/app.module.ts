@@ -18,6 +18,7 @@ import { HealthModule } from './health/health.module';
 import { StatsModule } from './stats/stats.module';
 import { ReportsModule } from './reports/reports.module';
 import { AdminModule } from './admin/admin.module';
+import { LegalModule } from './legal/legal.module';
 import { BillingModule } from './billing/billing.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { RemindersModule } from './reminders/reminders.module';
@@ -59,6 +60,7 @@ import { RankingsModule } from './rankings/rankings.module';
     StatsModule,
     ReportsModule,
     AdminModule,
+    LegalModule,
     BillingModule,
     RemindersModule,
     InsightsModule,

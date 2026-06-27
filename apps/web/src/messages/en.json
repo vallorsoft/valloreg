@@ -1320,6 +1320,76 @@
       "name": "Name",
       "email": "Email",
       "role": "Role"
+    },
+    "legalLink": {
+      "title": "Legal documents",
+      "subtitle": "Edit, publish, download and send policies to companies."
+    }
+  },
+  "adminLegal": {
+    "title": "Legal documents",
+    "subtitle": "Edit, publish, download and send policies to companies.",
+    "loading": "Loading…",
+    "forbidden": "You do not have platform admin permissions.",
+    "backToAdmin": "Back to Super Admin",
+    "empty": "No legal documents.",
+    "categories": {
+      "public": "Public documents",
+      "gdpr": "GDPR compliance",
+      "security": "Security and continuity",
+      "ai": "Artificial intelligence (EU AI Act)",
+      "hr": "Organizational / HR"
+    },
+    "badge": {
+      "public": "Public",
+      "internal": "Internal"
+    },
+    "visibility": {
+      "publish": "Publish",
+      "unpublish": "Unpublish",
+      "working": "Working…",
+      "nowPublic": "The document is now public.",
+      "nowInternal": "The document is now internal.",
+      "error": "Failed to change visibility."
+    },
+    "editor": {
+      "title": "Edit",
+      "placeholder": "Select a document from the list to edit it.",
+      "loadError": "Failed to load the document.",
+      "fields": {
+        "title": "Title",
+        "subtitle": "Subtitle",
+        "summary": "Summary",
+        "updated": "Last updated (label)",
+        "blocks": "Content blocks (JSON)"
+      },
+      "blocksHint": "Blocks are edited as a JSON array. If the JSON is invalid, saving will not start.",
+      "invalidJson": "The content blocks JSON is invalid. Fix it before saving.",
+      "save": "Save",
+      "saving": "Saving…",
+      "saved": "Document saved.",
+      "saveError": "Saving failed."
+    },
+    "download": {
+      "title": "Download",
+      "working": "Downloading…",
+      "error": "Download failed.",
+      "formats": {
+        "md": "Markdown (.md)",
+        "json": "JSON (.json)",
+        "pdf": "PDF (.pdf)"
+      }
+    },
+    "send": {
+      "title": "Send to company",
+      "tenant": "Company",
+      "tenantPlaceholder": "Choose a company…",
+      "format": "Format",
+      "send": "Send",
+      "sending": "Sending…",
+      "ok": "Sent to: {to}.",
+      "fail": "Sending failed (recipient: {to}).",
+      "error": "Sending failed."
     }
   },
   "billing": {

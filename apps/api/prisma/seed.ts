@@ -13,8 +13,9 @@
  * A jelszavak argon2 hash-sel készülnek. A seed a sima (nem scope-olt)
  * PrismaClient-et használja, a tenantId-t expliciten adja meg.
  */
-import { PrismaClient } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import * as argon2 from 'argon2';
+import { LEGAL_SEED_DOCS, isSeedDocPublicByDefault } from '@valloreg/shared';
 
 const prisma = new PrismaClient();
 
@@ -245,6 +246,11 @@ async function main(): Promise<void> {
   // publikus 5 cég / 20 jármű alatt).
   await seedBenchmark();
 
+  // ── Jogi / GDPR dokumentumok (globális, SuperAdmin-szerkeszthető) ─────────
+  // A kötelező publikusak alapból isPublic=true; a többi belső. Idempotens:
+  // a már létező rekordokat NEM írja felül (megőrzi a SuperAdmin szerkesztéseit).
+  await seedLegalDocuments();
+
   console.log('Seed kész.');
   console.log(`  Super admin: admin@valloreg.local / SuperAdmin123!`);
   console.log(`  Demo owner:  demo@valloreg.local / Demo1234!`);
@@ -359,6 +365,31 @@ async function ensureVehicle(
   return prisma.vehicle.create({
     data: { tenantId, plate, ...data },
   });
+}
+
+/**
+ * A jogi dokumentumok seedelése a megosztott seed-forrásból. Idempotens: a már
+ * létező slugokat NEM írja felül (a SuperAdmin szerkesztéseit megőrzi); csak az
+ * újakat hozza létre, a kötelező publikusakat eleve `isPublic=true`-val.
+ */
+async function seedLegalDocuments(): Promise<void> {
+  for (const doc of LEGAL_SEED_DOCS) {
+    await prisma.legalDocument.upsert({
+      where: { slug: doc.slug },
+      update: {},
+      create: {
+        slug: doc.slug,
+        category: doc.category,
+        title: doc.title,
+        subtitle: doc.subtitle ?? null,
+        summary: doc.summary,
+        updatedLabel: doc.updated,
+        blocks: doc.blocks as unknown as Prisma.InputJsonValue,
+        isPublic: isSeedDocPublicByDefault(doc),
+      },
+    });
+  }
+  console.log(`  Jogi dokumentumok: ${LEGAL_SEED_DOCS.length} db seedelve.`);
 }
 
 main()

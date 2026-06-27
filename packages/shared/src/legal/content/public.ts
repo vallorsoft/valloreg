@@ -1,5 +1,5 @@
-import type { LegalDoc } from '@/lib/legal/types';
-import { COMPANY, companyIdentityItems } from '@/lib/legal/company';
+import type { LegalDoc } from '../types';
+import { COMPANY, companyIdentityItems } from '../company';
 
 // ──────────────────────────────────────────────────────────────────────────
 // Dokumentumok publice (vizibile vizitatorilor landing page-ului):
@@ -52,12 +52,27 @@ const privacy: LegalDoc = {
       k: 'table',
       head: ['Scop', 'Temei juridic (GDPR)'],
       rows: [
-        ['Crearea contului, autentificare, gestionarea companiei și a rolurilor', 'Art. 6(1)(b) – executarea contractului'],
-        ['Furnizarea serviciului (procesare OCR/AI a documentelor, istoric de service, mementouri)', 'Art. 6(1)(b) – executarea contractului'],
-        ['Facturare și administrarea abonamentului', 'Art. 6(1)(c) – obligație legală; Art. 6(1)(b)'],
+        [
+          'Crearea contului, autentificare, gestionarea companiei și a rolurilor',
+          'Art. 6(1)(b) – executarea contractului',
+        ],
+        [
+          'Furnizarea serviciului (procesare OCR/AI a documentelor, istoric de service, mementouri)',
+          'Art. 6(1)(b) – executarea contractului',
+        ],
+        [
+          'Facturare și administrarea abonamentului',
+          'Art. 6(1)(c) – obligație legală; Art. 6(1)(b)',
+        ],
         ['Securitate, jurnale de audit, prevenirea abuzului', 'Art. 6(1)(f) – interes legitim'],
-        ['Notificări push și e-mail de tip mementou/raport', 'Art. 6(1)(b) și, după caz, Art. 6(1)(a) – consimțământ (push)'],
-        ['Benchmark de flotă anonimizat („tendințe europene")', 'Art. 6(1)(f) – interes legitim, cu opt-out și anonimizare (k-anonimitate)'],
+        [
+          'Notificări push și e-mail de tip mementou/raport',
+          'Art. 6(1)(b) și, după caz, Art. 6(1)(a) – consimțământ (push)',
+        ],
+        [
+          'Benchmark de flotă anonimizat („tendințe europene")',
+          'Art. 6(1)(f) – interes legitim, cu opt-out și anonimizare (k-anonimitate)',
+        ],
       ],
     },
     { k: 'h', t: '4. Destinatari și subîmputerniciți' },
@@ -189,9 +204,24 @@ const cookies: LegalDoc = {
       k: 'table',
       head: ['Categorie', 'Scop', 'Temei', 'Necesită consimțământ'],
       rows: [
-        ['Strict necesare', 'Autentificare (token JWT), securitate, preferința de limbă, păstrarea sesiunii', 'Interes legitim / executarea contractului', 'Nu'],
-        ['Funcționale / preferințe', 'Reținerea alegerilor (de ex. preferințe de consimțământ)', 'Consimțământ', 'Da'],
-        ['Notificări push', 'Trimiterea mementourilor către browser, dacă utilizatorul activează push', 'Consimțământ (Art. 6(1)(a))', 'Da'],
+        [
+          'Strict necesare',
+          'Autentificare (token JWT), securitate, preferința de limbă, păstrarea sesiunii',
+          'Interes legitim / executarea contractului',
+          'Nu',
+        ],
+        [
+          'Funcționale / preferințe',
+          'Reținerea alegerilor (de ex. preferințe de consimțământ)',
+          'Consimțământ',
+          'Da',
+        ],
+        [
+          'Notificări push',
+          'Trimiterea mementourilor către browser, dacă utilizatorul activează push',
+          'Consimțământ (Art. 6(1)(a))',
+          'Da',
+        ],
       ],
     },
     {

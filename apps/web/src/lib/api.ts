@@ -1,7 +1,13 @@
 'use client';
 
 import { ErrorCode } from '@valloreg/shared';
-import type { ApiErrorBody } from '@valloreg/shared';
+import type {
+  ApiErrorBody,
+  LegalDocContent,
+  LegalDocListItem,
+  LegalDocRecord,
+  LegalDownloadFormat,
+} from '@valloreg/shared';
 import {
   getAccessToken,
   getActiveTenantId,
@@ -27,8 +33,7 @@ import {
  *   élettartamáig, ami minden használatkor gördül előre).
  */
 
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
 
 /**
  * KAPCSOLÓ: same-origin auth. Ha be van kapcsolva, az AUTH-végpontokat (login/
@@ -67,10 +72,7 @@ export class ApiError extends Error {
  * Ha a backend ezen kívüli kódot ad vissza, INTERNAL_ERROR-ra esünk, hogy a
  * fordító (`te`) ne dobjon hiányzó-kulcs hibát.
  */
-const KNOWN_ERROR_KEYS = new Set<string>([
-  ...Object.values(ErrorCode),
-  'NETWORK_ERROR',
-]);
+const KNOWN_ERROR_KEYS = new Set<string>([...Object.values(ErrorCode), 'NETWORK_ERROR']);
 
 /** Egy ismert i18n hibakulcs egy tetszőleges hibából (fallback: INTERNAL_ERROR). */
 export function resolveErrorKey(err: unknown): ErrorCode | 'NETWORK_ERROR' {
@@ -86,10 +88,7 @@ export function resolveErrorKey(err: unknown): ErrorCode | 'NETWORK_ERROR' {
  * 404 / elérhetetlen háttér esetektől. Üzleti hibáknál üres.
  */
 export function errorDebugSuffix(err: unknown): string {
-  if (
-    err instanceof ApiError &&
-    (err.code === 'INTERNAL_ERROR' || err.code === 'NETWORK_ERROR')
-  ) {
+  if (err instanceof ApiError && (err.code === 'INTERNAL_ERROR' || err.code === 'NETWORK_ERROR')) {
     return err.status ? ` (HTTP ${err.status})` : ' (nincs válasz)';
   }
   return '';
@@ -186,20 +185,12 @@ async function performRequest<T>(
  * Egy kérés a hideg-indítás (Render free) elleni backoff-újrapróbával, de
  * token-refresh NÉLKÜL. A refresh-réteget az `apiRequest` adja köré.
  */
-async function sendRequest<T>(
-  path: string,
-  options: RequestOptions,
-): Promise<T> {
+async function sendRequest<T>(path: string, options: RequestOptions): Promise<T> {
   const { json, form, anonymous: _anonymous, baseUrl, ...init } = options;
   const base = baseUrl ?? API_BASE_URL;
   const url = path.startsWith('http') ? path : `${base}${path}`;
 
-  const body =
-    form !== undefined
-      ? form
-      : json !== undefined
-        ? JSON.stringify(json)
-        : undefined;
+  const body = form !== undefined ? form : json !== undefined ? JSON.stringify(json) : undefined;
 
   // Hálózati hibára (a kérés el sem ért a szerverig) backoff-fal újrapróbálunk –
   // fájlfeltöltésnél (FormData) is, mert a FormData objektum minden fetch-hívásnál
@@ -270,10 +261,7 @@ function tryRefreshTokens(): Promise<boolean> {
  * EGYSZER csendben frissítünk és újrapróbáljuk a kérést. Így a rövid életű access
  * token lejárta nem jelentkezteti ki a felhasználót.
  */
-export async function apiRequest<T>(
-  path: string,
-  options: RequestOptions = {},
-): Promise<T> {
+export async function apiRequest<T>(path: string, options: RequestOptions = {}): Promise<T> {
   try {
     return await sendRequest<T>(path, options);
   } catch (err) {
@@ -328,9 +316,7 @@ export interface TwoFactorChallenge {
 export type LoginResponse = AuthResponse | TwoFactorChallenge;
 
 /** Type guard: a login válasza 2FA challenge-e? */
-export function isTwoFactorChallenge(
-  res: LoginResponse,
-): res is TwoFactorChallenge {
+export function isTwoFactorChallenge(res: LoginResponse): res is TwoFactorChallenge {
   return (res as TwoFactorChallenge).twoFactorRequired === true;
 }
 
@@ -351,10 +337,7 @@ export const authApi = {
     });
   },
   /** 2FA bejelentkezés második lépése (challenge token + kód). */
-  verifyTwoFactorLogin(
-    sessionToken: string,
-    code: string,
-  ): Promise<AuthResponse> {
+  verifyTwoFactorLogin(sessionToken: string, code: string): Promise<AuthResponse> {
     return apiRequest<AuthResponse>('/auth/2fa/verify-login', {
       method: 'POST',
       json: { sessionToken, code },
@@ -647,15 +630,13 @@ export interface CreateMajorComponentEventPayload {
 
 export const majorComponentsApi = {
   listForVehicle(vehicleId: string) {
-    return apiRequest<MajorComponentEvent[]>(
-      `/vehicles/${vehicleId}/major-components`,
-    );
+    return apiRequest<MajorComponentEvent[]>(`/vehicles/${vehicleId}/major-components`);
   },
   create(vehicleId: string, payload: CreateMajorComponentEventPayload) {
-    return apiRequest<MajorComponentEvent>(
-      `/vehicles/${vehicleId}/major-components`,
-      { method: 'POST', json: payload },
-    );
+    return apiRequest<MajorComponentEvent>(`/vehicles/${vehicleId}/major-components`, {
+      method: 'POST',
+      json: payload,
+    });
   },
   remove(id: string) {
     return apiRequest<{ id: string }>(`/major-components/${id}`, {
@@ -690,9 +671,7 @@ export interface VehicleComponentForecast {
 
 export const durabilityApi = {
   forecastForVehicle(vehicleId: string) {
-    return apiRequest<VehicleComponentForecast[]>(
-      `/vehicles/${vehicleId}/durability`,
-    );
+    return apiRequest<VehicleComponentForecast[]>(`/vehicles/${vehicleId}/durability`);
   },
   survey() {
     return apiRequest<DurabilitySurveyRow[]>(`/durability/survey`);
@@ -704,10 +683,9 @@ export const durabilityApi = {
     });
   },
   clearBaseline(segment: string, component: string) {
-    return apiRequest<unknown>(
-      `/durability/baselines/${segment}/${component}`,
-      { method: 'DELETE' },
-    );
+    return apiRequest<unknown>(`/durability/baselines/${segment}/${component}`, {
+      method: 'DELETE',
+    });
   },
 };
 
@@ -1068,23 +1046,19 @@ export const vehiclesApi = {
     id: string,
     payload: { type: string; validUntil: string; file: ScanFileRef },
   ) {
-    return apiRequest<VehicleVerificationView | null>(
-      `/vehicles/${id}/verify-document/confirm`,
-      { method: 'POST', json: payload },
-    );
+    return apiRequest<VehicleVerificationView | null>(`/vehicles/${id}/verify-document/confirm`, {
+      method: 'POST',
+      json: payload,
+    });
   },
   getVerification(id: string) {
-    return apiRequest<VehicleVerificationView | null>(
-      `/vehicles/${id}/verification`,
-    );
+    return apiRequest<VehicleVerificationView | null>(`/vehicles/${id}/verification`);
   },
   listDocuments(id: string) {
     return apiRequest<VehicleDocumentItem[]>(`/vehicles/${id}/documents`);
   },
   getDocumentDownloadUrl(id: string, docId: string) {
-    return apiRequest<{ downloadUrl: string }>(
-      `/vehicles/${id}/documents/${docId}/download`,
-    );
+    return apiRequest<{ downloadUrl: string }>(`/vehicles/${id}/documents/${docId}/download`);
   },
   getById(id: string) {
     return apiRequest<Vehicle>(`/vehicles/${id}`);
@@ -1225,10 +1199,7 @@ export const statsApi = {
 
 // ── Insights (költség-anomáliák) ─────────────────────────────────────────────
 
-export type AnomalyTypeValue =
-  | 'price_spike'
-  | 'duplicate_invoice'
-  | 'unusual_amount';
+export type AnomalyTypeValue = 'price_spike' | 'duplicate_invoice' | 'unusual_amount';
 export type AnomalySeverityValue = 'low' | 'medium' | 'high';
 
 export interface Anomaly {
@@ -1351,10 +1322,11 @@ export const usersApi = {
    * `password` kell; meglévő fióknál ezek elhagyhatók.
    */
   acceptInvite(payload: { token: string; name?: string; password?: string }) {
-    return apiRequest<{ tenantId: string; userId: string; role: string }>(
-      '/users/accept-invite',
-      { method: 'POST', json: payload, anonymous: true },
-    );
+    return apiRequest<{ tenantId: string; userId: string; role: string }>('/users/accept-invite', {
+      method: 'POST',
+      json: payload,
+      anonymous: true,
+    });
   },
   listInvitations() {
     return apiRequest<PendingInvitation[]>('/users/invitations');
@@ -1512,21 +1484,58 @@ export const adminApi = {
     });
   },
   sendTestEmail(to: string) {
-    return apiRequest<{ ok: boolean; status?: number; error?: string }>(
-      '/admin/test-email',
-      { method: 'POST', json: { to } },
-    );
+    return apiRequest<{ ok: boolean; status?: number; error?: string }>('/admin/test-email', {
+      method: 'POST',
+      json: { to },
+    });
   },
   setFeature(id: string, key: string, enabled: boolean) {
-    return apiRequest<{ key: string; enabled: boolean }>(
-      `/admin/tenants/${id}/features/${key}`,
-      { method: 'PUT', json: { enabled } },
-    );
+    return apiRequest<{ key: string; enabled: boolean }>(`/admin/tenants/${id}/features/${key}`, {
+      method: 'PUT',
+      json: { enabled },
+    });
   },
   removeFeature(id: string, key: string) {
     return apiRequest<void>(`/admin/tenants/${id}/features/${key}`, {
       method: 'DELETE',
     });
+  },
+
+  // ── Jogi dokumentumok (SuperAdmin) ─────────────────────────────────────────
+  legalList() {
+    return apiRequest<LegalDocListItem[]>('/admin/legal');
+  },
+  legalGet(slug: string) {
+    return apiRequest<LegalDocRecord>(`/admin/legal/${slug}`);
+  },
+  legalUpdate(slug: string, payload: LegalDocContent) {
+    return apiRequest<LegalDocRecord>(`/admin/legal/${slug}`, {
+      method: 'PUT',
+      json: payload,
+    });
+  },
+  legalSetVisibility(slug: string, isPublic: boolean) {
+    return apiRequest<LegalDocRecord>(`/admin/legal/${slug}/visibility`, {
+      method: 'PUT',
+      json: { isPublic },
+    });
+  },
+  legalSend(slug: string, tenantId: string, format: LegalDownloadFormat) {
+    return apiRequest<{ ok: boolean; status: number | null; to: string }>(
+      `/admin/legal/${slug}/send`,
+      { method: 'POST', json: { tenantId, format } },
+    );
+  },
+  /** Letöltés bináris Blobként (a böngésző menti le). */
+  async legalDownload(slug: string, format: LegalDownloadFormat): Promise<Blob> {
+    const headers = new Headers();
+    const token = getAccessToken();
+    if (token) headers.set('Authorization', `Bearer ${token}`);
+    const res = await fetch(`${API_BASE_URL}/admin/legal/${slug}/download?format=${format}`, {
+      headers,
+    });
+    if (!res.ok) throw await parseError(res);
+    return res.blob();
   },
 };
 
@@ -1593,9 +1602,7 @@ export interface PushSubscriptionPayload {
 
 export const notificationsApi = {
   getVapidKey() {
-    return apiRequest<{ publicKey: string; enabled: boolean }>(
-      '/notifications/vapid-key',
-    );
+    return apiRequest<{ publicKey: string; enabled: boolean }>('/notifications/vapid-key');
   },
   subscribe(payload: PushSubscriptionPayload) {
     return apiRequest<{ ok: true }>('/notifications/subscribe', {

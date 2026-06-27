@@ -1,11 +1,20 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { AppConfigService } from '../config/app-config.service';
 
+/** Egy e-mail csatolmány (Brevo: base64 tartalom + fájlnév). */
+export interface MailAttachment {
+  /** Fájlnév (pl. „confidentialitate.pdf"). */
+  name: string;
+  /** A fájl tartalma base64-ben kódolva. */
+  contentBase64: string;
+}
+
 export interface MailMessage {
   to: string;
   subject: string;
   text: string;
   html?: string;
+  attachments?: MailAttachment[];
 }
 
 /** Egy küldés eredménye (a teszt-küldés ezt jelzi vissza). */
@@ -58,6 +67,12 @@ export class MailerService {
           subject: message.subject,
           textContent: message.text,
           htmlContent: message.html,
+          attachment: message.attachments?.length
+            ? message.attachments.map((a) => ({
+                name: a.name,
+                content: a.contentBase64,
+              }))
+            : undefined,
         }),
       });
 
