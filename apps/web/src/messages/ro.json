@@ -776,7 +776,7 @@
       },
       "action": {
         "create": "Creare",
-        "duplicate": "Deja importat",
+        "duplicate": "Există deja",
         "skip": "Ignorat"
       },
       "warnings": {

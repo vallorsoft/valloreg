@@ -42,6 +42,26 @@ function normalizePlate(value: string): string {
   return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
 }
 
+/** Beszállítónév normalizálása (a Supplier.normalizedName-mel azonos szabály). */
+function normalizeSupplierName(value: string): string {
+  return (value ?? '').toLowerCase().replace(/\s+/g, ' ').trim();
+}
+
+/** Számlaszám normalizálása a duplikátum-összevetéshez (nagybetű, csak alfanum). */
+function normalizeInvoiceNumber(value: string): string {
+  return (value ?? '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+/**
+ * Tartalmi duplikátum-kulcs: normalizált beszállító + normalizált számlaszám.
+ * Üres, ha bármelyik hiányzik (ekkor nincs megbízható egyezés – mint az OCR-nél).
+ */
+function invoiceDupKey(normalizedSupplier: string, invoiceNumberRaw: string): string {
+  const inv = normalizeInvoiceNumber(invoiceNumberRaw);
+  if (!normalizedSupplier || !inv) return '';
+  return `${normalizedSupplier}|${inv}`;
+}
+
 /**
  * Excel köteges számla-import. KÜLÖN út a kép-OCR pipeline-tól: a táblázat
  * cellái már strukturáltak, ezért előnézet → megerősítés folyamatban dolgozunk,
@@ -224,7 +244,8 @@ export class SpreadsheetImportService {
       if (v.plate) byPlate.set(normalizePlate(v.plate), v.id);
     }
 
-    // Duplikátum-jelölés: a már importált sorok (fájl + tartalom hash).
+    // Duplikátum-jelölés (1): a már importált sorok (fájl + tartalom hash) –
+    // ugyanannak a fájlnak az újra-importja.
     const fileSha = createHash('sha256').update(buffer).digest('hex');
     const rowShas = parsed.rows.map((r) => this.rowSha256(fileSha, r));
     const existing = await this.prisma.scoped.document.findMany({
@@ -232,6 +253,19 @@ export class SpreadsheetImportService {
       select: { sha256: true },
     });
     const existingShas = new Set(existing.map((e) => e.sha256));
+
+    // Duplikátum-jelölés (2): TARTALMI egyezés a már LÉTEZŐ számlákkal (akár
+    // beolvasott/feltöltött számla, akár korábbi import) – azonos beszállító +
+    // (normalizált) számlaszám. Így nem keletkezik kétszer ugyanaz a számla.
+    const existingInvoices = await this.prisma.scoped.invoice.findMany({
+      where: { invoiceNumber: { not: null } },
+      select: { invoiceNumber: true, supplier: { select: { normalizedName: true } } },
+    });
+    const existingInvoiceKeys = new Set<string>();
+    for (const inv of existingInvoices) {
+      const key = invoiceDupKey(inv.supplier?.normalizedName ?? '', inv.invoiceNumber ?? '');
+      if (key) existingInvoiceKeys.add(key);
+    }
 
     for (const row of parsed.rows) {
       const matchedVehicleId = row.vehiclePlate
@@ -241,7 +275,11 @@ export class SpreadsheetImportService {
       if (!matchedVehicleId && !row.warnings.includes(SpreadsheetWarningCode.MISSING_VEHICLE)) {
         row.warnings.push(SpreadsheetWarningCode.MISSING_VEHICLE);
       }
-      if (existingShas.has(this.rowSha256(fileSha, row))) {
+      const dupBySha = existingShas.has(this.rowSha256(fileSha, row));
+      const dupByContent = existingInvoiceKeys.has(
+        invoiceDupKey(normalizeSupplierName(row.supplier), row.invoiceNumber),
+      );
+      if (dupBySha || dupByContent) {
         row.action = SpreadsheetRowAction.DUPLICATE;
       }
     }

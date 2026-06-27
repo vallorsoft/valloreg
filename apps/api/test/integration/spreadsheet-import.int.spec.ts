@@ -136,4 +136,62 @@ describe('SpreadsheetImportService.commit (integráció, élő Postgres)', () =>
     });
     expect(count).toBe(1); // nem duplikálódott
   });
+
+  it('tartalmi duplikátum: már LÉTEZŐ számla (beolvasott) + azonos beszállító/számlaszám → DUPLICATE', async () => {
+    // Egy "beolvasott" számla seedelése a system kliensen (más fájl, más sha) –
+    // mintha korábban feltöltötték volna. Beszállító + számlaszám: ACME / INV-999.
+    const supplier = await prisma.system.supplier.create({
+      data: { tenantId: tenant.tenantId, name: 'ACME SRL', normalizedName: 'acme srl' },
+    });
+    const scanDoc = await prisma.system.document.create({
+      data: {
+        tenantId: tenant.tenantId,
+        uploadedById: tenant.userId,
+        fileName: 'beolvasott.pdf',
+        mimeType: 'application/pdf',
+        sizeBytes: 100,
+        storageKey: `k/${randomUUID()}`,
+        sha256: randomUUID().replace(/-/g, ''),
+        status: DocumentStatus.CONFIRMED,
+      },
+    });
+    await prisma.system.invoice.create({
+      data: {
+        tenantId: tenant.tenantId,
+        documentId: scanDoc.id,
+        supplierId: supplier.id,
+        invoiceNumber: 'INV-999',
+        confidence: 1,
+      },
+    });
+
+    // Excel ugyanazzal a beszállítóval + számlaszámmal (de a fájl SOHA nem volt
+    // importálva → a sha-egyezés NEM játszik, csak a tartalmi egyezés).
+    const wb = new ExcelJS.Workbook();
+    const ws = wb.addWorksheet('B104VLR');
+    ws.addRow(['Data', 'Factura', 'Piese', 'Firma', 'Suma', 'KM', 'Fizetve']);
+    ws.addRow([
+      new Date('2026-02-02'),
+      'INV-999',
+      'Valami alkatresz 1',
+      'ACME SRL',
+      500,
+      600000,
+      'IGEN',
+    ]);
+    const buffer = Buffer.from(await wb.xlsx.writeBuffer());
+    const file = {
+      originalname: 'masik.xlsx',
+      mimetype: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      size: buffer.length,
+      buffer,
+    };
+
+    const preview = await ctx.runWith(tctx, () => service.preview(file));
+    const row = preview.rows.find((r) => r.invoiceNumber === 'INV-999');
+    expect(row).toBeDefined();
+    expect(row!.action).toBe('duplicate');
+    expect(preview.summary.create).toBe(0);
+    expect(preview.summary.duplicate).toBeGreaterThanOrEqual(1);
+  });
 });

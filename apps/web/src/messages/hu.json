@@ -776,7 +776,7 @@
       },
       "action": {
         "create": "Létrehozás",
-        "duplicate": "Már importált",
+        "duplicate": "Már létezik",
         "skip": "Kihagyva"
       },
       "warnings": {

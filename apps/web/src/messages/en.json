@@ -776,7 +776,7 @@
       },
       "action": {
         "create": "Create",
-        "duplicate": "Already imported",
+        "duplicate": "Already exists",
         "skip": "Skipped"
       },
       "warnings": {
