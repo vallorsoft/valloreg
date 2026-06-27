@@ -3,6 +3,7 @@ import { DocumentStatus, DocumentType, TenantRole } from '@valloreg/shared';
 import type { ExtractionResult } from '@valloreg/shared';
 import { DocumentsProcessor } from '../../src/queue/documents.processor';
 import { MatchingService } from '../../src/matching/matching.service';
+import { InvoicePersistenceService } from '../../src/matching/invoice-persistence.service';
 import type { PrismaService } from '../../src/prisma/prisma.service';
 import { cleanup, makePrisma, seedTenant } from './helpers';
 
@@ -96,8 +97,10 @@ describe('DocumentsProcessor pipeline (integráció, élő Postgres)', () => {
         ),
     };
 
-    // Konstruktor-sorrend: (config, prisma, audit, ocr, extraction, matching, notifications).
+    // Konstruktor-sorrend: (config, prisma, audit, ocr, extraction, matching,
+    // invoicePersistence, notifications).
     const matching = new MatchingService(prisma);
+    const invoicePersistence = new InvoicePersistenceService(prisma, matching);
     processor = new DocumentsProcessor(
       {} as never,
       prisma,
@@ -105,6 +108,7 @@ describe('DocumentsProcessor pipeline (integráció, élő Postgres)', () => {
       ocrMock as never,
       extractionMock as never,
       matching,
+      invoicePersistence,
       notificationsMock as never,
     ) as unknown as RunnableProcessor;
   });
