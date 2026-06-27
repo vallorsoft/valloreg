@@ -36,7 +36,7 @@ const employeeConfidentiality: LegalDoc = {
     },
     {
       k: 'note',
-      t: `[DE COMPLETAT de avocat / angajator] Acordul de confidențialitate (NDA) semnat de fiecare angajat/colaborator, clauzele contractuale de muncă privind protecția datelor și sancțiunile aplicabile trebuie redactate și semnate. Punct de contact: ${COMPANY.email}.`,
+      t: `[DE COMPLETAT de avocat / angajator] Acordul de confidențialitate (NDA) semnat de fiecare angajat/colaborator, clauzele contractuale de muncă privind protecția datelor și sancțiunile aplicabile trebuie redactate și semnate. Punct de contact: {{company.email}}.`,
     },
   ],
 };

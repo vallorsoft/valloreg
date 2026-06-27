@@ -22,6 +22,26 @@ export class SetBillingSettingsDto {
 
   @IsOptional()
   @IsString()
+  @MaxLength(50)
+  regCom?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  euid?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(50)
+  phone?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(200)
+  contactEmail?: string;
+
+  @IsOptional()
+  @IsString()
   @MaxLength(200)
   beneficiary?: string;
 

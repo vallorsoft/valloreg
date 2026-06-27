@@ -344,7 +344,7 @@ const internalGdpr: LegalDoc = {
     {
       k: 'ol',
       items: [
-        `Recepția cererii la ${COMPANY.email} și înregistrarea acesteia.`,
+        `Recepția cererii la {{company.email}} și înregistrarea acesteia.`,
         'Verificarea identității solicitantului.',
         'Stabilirea rolului (operator sau împuternicit) – cererile privind conținutul documentelor se redirecționează către compania-client operator.',
         'Identificarea datelor și pregătirea răspunsului (acces, rectificare, ștergere, restricționare, portabilitate, opoziție).',

@@ -723,10 +723,15 @@ model MajorComponentEvent {
 // ──────────────────────────────────────────────────────────────────────────
 model BillingSettings {
   id          String   @id @default("default")
-  // Eladó / számlakibocsátó adatai (a számlaadatokhoz).
-  companyName String   @default("")
-  taxNumber   String   @default("")
-  address     String   @default("")
+  // Eladó / számlakibocsátó adatai (a számlaadatokhoz + a jogi dokumentumok
+  // token-behelyettesítéséhez: {{company.*}}).
+  companyName  String   @default("")
+  taxNumber    String   @default("")
+  address      String   @default("")
+  regCom       String   @default("")
+  euid         String   @default("")
+  phone        String   @default("")
+  contactEmail String   @default("")
   // Utalási adatok (az e-mailbe).
   beneficiary String   @default("")
   iban        String   @default("")

@@ -1,12 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import {
   LEGAL_CATEGORIES,
+  applyLegalTokens,
+  applyLegalTokensToRecord,
   legalBlocksSchema,
   legalDocToJson,
   legalDocToMarkdown,
   legalDownloadFilename,
   type LegalBlock,
   type LegalCategory,
+  type LegalCompanyContext,
   type LegalDocListItem,
   type LegalDocRecord,
   type LegalDownloadFormat,
@@ -15,6 +18,7 @@ import { Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
 import { MailerService } from '../storage/mailer.service';
+import { BillingSettingsService } from '../billing/billing-settings.service';
 import { AppException } from '../common/exceptions/app.exception';
 import { legalDocToPdf } from './legal-pdf';
 import type { UpdateLegalDocDto } from './dto/update-legal-doc.dto';
@@ -55,17 +59,50 @@ export class LegalService {
     private readonly prisma: PrismaService,
     private readonly audit: AuditService,
     private readonly mailer: MailerService,
+    private readonly billing: BillingSettingsService,
   ) {}
+
+  /**
+   * A token-behelyettesítés kontextusa az aktuális (effektív) billing
+   * beállításokból. Az üres mezőket az `applyLegalTokens` a COMPANY-defaultra
+   * ejti vissza, így a dokumentum sosem mutat üres/`{{...}}` cégadatot.
+   */
+  private async context(): Promise<LegalCompanyContext> {
+    const s = await this.billing.getEffective();
+    return {
+      name: s.companyName,
+      taxNumber: s.taxNumber,
+      regCom: s.regCom,
+      euid: s.euid,
+      address: s.address,
+      phone: s.phone,
+      email: s.contactEmail,
+      beneficiary: s.beneficiary,
+      iban: s.iban,
+      bankName: s.bankName,
+      swift: s.swift,
+    };
+  }
 
   // ── Publikus (auth nélkül) ────────────────────────────────────────────────
 
   /** A publikus dokumentumok kategóriánként (lista-elemek, blokkok nélkül). */
   async listPublic() {
-    const docs = await this.prisma.system.legalDocument.findMany({
-      where: { isPublic: true },
-      orderBy: { category: 'asc' },
-    });
-    const items = docs.map((d) => this.toListItem(d));
+    const [docs, ctx] = await Promise.all([
+      this.prisma.system.legalDocument.findMany({
+        where: { isPublic: true },
+        orderBy: { category: 'asc' },
+      }),
+      this.context(),
+    ]);
+    const items = docs
+      .map((d) => this.toListItem(d))
+      .map((it) => ({
+        ...it,
+        title: applyLegalTokens(it.title, ctx),
+        subtitle: it.subtitle != null ? applyLegalTokens(it.subtitle, ctx) : it.subtitle,
+        summary: applyLegalTokens(it.summary, ctx),
+      }));
     return {
       categories: LEGAL_CATEGORIES.map((cat) => ({
         ...cat,
@@ -82,7 +119,7 @@ export class LegalService {
     if (!row || !row.isPublic) {
       throw AppException.notFound('A dokumentum nem található.');
     }
-    return this.toRecord(row);
+    return applyLegalTokensToRecord(this.toRecord(row), await this.context());
   }
 
   // ── SuperAdmin ────────────────────────────────────────────────────────────
@@ -140,9 +177,12 @@ export class LegalService {
   ): Promise<LegalDocRecord> {
     await this.requireRow(slug);
 
+    // FONTOS: a láthatóság-váltás NEM számít tartalmi „kézi szerkesztésnek"
+    // (az `updatedById`-t nem írjuk), így a seed-szinkron tovább frissíti a
+    // tartalmat – csak a tényleges szövegszerkesztés (update) fagyasztja be.
     const updated = await this.prisma.system.legalDocument.update({
       where: { slug },
-      data: { isPublic, updatedById: actorUserId },
+      data: { isPublic },
     });
 
     await this.audit.log({
@@ -159,7 +199,7 @@ export class LegalService {
   /** Egy dokumentum letöltése a kért formátumban (md / json / pdf). */
   async download(slug: string, format: LegalDownloadFormat): Promise<LegalDownload> {
     const row = await this.requireRow(slug);
-    const record = this.toRecord(row);
+    const record = applyLegalTokensToRecord(this.toRecord(row), await this.context());
     return {
       filename: legalDownloadFilename(slug, format),
       contentType: CONTENT_TYPES[format],
@@ -178,7 +218,7 @@ export class LegalService {
     format: LegalDownloadFormat,
   ) {
     const row = await this.requireRow(slug);
-    const record = this.toRecord(row);
+    const record = applyLegalTokensToRecord(this.toRecord(row), await this.context());
 
     const tenant = await this.prisma.system.tenant.findUnique({
       where: { id: tenantId },

@@ -6,7 +6,14 @@
 // E2E, vagy átmeneti kiesés), a `@valloreg/shared` SEED-tartalmából rendereljük a
 // kötelező-publikus dokumentumokat – így az oldalak backend nélkül is működnek.
 
-import { LEGAL_CATEGORIES, LEGAL_SEED_DOCS, isSeedDocPublicByDefault } from '@valloreg/shared';
+import {
+  COMPANY_DEFAULT_CONTEXT,
+  LEGAL_CATEGORIES,
+  LEGAL_SEED_DOCS,
+  applyLegalTokens,
+  applyLegalTokensToRecord,
+  isSeedDocPublicByDefault,
+} from '@valloreg/shared';
 import type { LegalCategory, LegalDoc, LegalDocListItem, LegalDocRecord } from '@valloreg/shared';
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000/api';
@@ -24,29 +31,36 @@ export interface PublicLegalHub {
 
 // ── Seed-fallback segédek ───────────────────────────────────────────────────
 
+// A fallback nincs DB/billing-beállítás birtokában, ezért a tokeneket a
+// COMPANY-default kontextusból helyettesíti (a beégetett alap cégadatok).
+const sub = (t: string) => applyLegalTokens(t, COMPANY_DEFAULT_CONTEXT);
+
 function seedListItem(doc: LegalDoc): LegalDocListItem {
   return {
     slug: doc.slug,
     category: doc.category,
-    title: doc.title,
-    subtitle: doc.subtitle ?? null,
-    summary: doc.summary,
+    title: sub(doc.title),
+    subtitle: doc.subtitle != null ? sub(doc.subtitle) : null,
+    summary: sub(doc.summary),
     updated: doc.updated,
     isPublic: true,
   };
 }
 
 function seedRecord(doc: LegalDoc): LegalDocRecord {
-  return {
-    slug: doc.slug,
-    category: doc.category,
-    title: doc.title,
-    subtitle: doc.subtitle ?? null,
-    summary: doc.summary,
-    updated: doc.updated,
-    blocks: doc.blocks,
-    isPublic: true,
-  };
+  return applyLegalTokensToRecord(
+    {
+      slug: doc.slug,
+      category: doc.category,
+      title: doc.title,
+      subtitle: doc.subtitle ?? null,
+      summary: doc.summary,
+      updated: doc.updated,
+      blocks: doc.blocks,
+      isPublic: true,
+    },
+    COMPANY_DEFAULT_CONTEXT,
+  );
 }
 
 function seedHub(): PublicLegalHub {

@@ -25,31 +25,51 @@ export class LegalSeedService implements OnModuleInit {
   async onModuleInit(): Promise<void> {
     try {
       const existing = await this.prisma.system.legalDocument.findMany({
-        select: { slug: true },
+        select: { slug: true, updatedById: true },
       });
-      const existingSlugs = new Set(existing.map((d) => d.slug));
-      const missing = LEGAL_SEED_DOCS.filter((d) => !existingSlugs.has(d.slug));
+      const bySlug = new Map(existing.map((d) => [d.slug, d]));
 
-      if (missing.length === 0) {
-        return;
+      const toCreate = LEGAL_SEED_DOCS.filter((d) => !bySlug.has(d.slug));
+      // CSAK a sosem kézzel szerkesztett (updatedById == null) seed-eredetű
+      // dokumentumok tartalmát szinkronizáljuk a friss seedhez (pl. token-alapú
+      // cégadatokra állás). A SuperAdmin szerkesztéseit (updatedById != null)
+      // NEM írjuk felül. Az isPublic-ot sosem írjuk (megőrzi a kapcsolót).
+      const toSync = LEGAL_SEED_DOCS.filter((d) => {
+        const row = bySlug.get(d.slug);
+        return row != null && row.updatedById == null;
+      });
+
+      if (toCreate.length > 0) {
+        await this.prisma.system.legalDocument.createMany({
+          data: toCreate.map((doc) => ({
+            slug: doc.slug,
+            category: doc.category,
+            title: doc.title,
+            subtitle: doc.subtitle ?? null,
+            summary: doc.summary,
+            updatedLabel: doc.updated,
+            blocks: doc.blocks as unknown as Prisma.InputJsonValue,
+            isPublic: isSeedDocPublicByDefault(doc),
+          })),
+          skipDuplicates: true,
+        });
       }
 
-      const result = await this.prisma.system.legalDocument.createMany({
-        data: missing.map((doc) => ({
-          slug: doc.slug,
-          category: doc.category,
-          title: doc.title,
-          subtitle: doc.subtitle ?? null,
-          summary: doc.summary,
-          updatedLabel: doc.updated,
-          blocks: doc.blocks as unknown as Prisma.InputJsonValue,
-          isPublic: isSeedDocPublicByDefault(doc),
-        })),
-        skipDuplicates: true,
-      });
+      for (const doc of toSync) {
+        await this.prisma.system.legalDocument.update({
+          where: { slug: doc.slug },
+          data: {
+            title: doc.title,
+            subtitle: doc.subtitle ?? null,
+            summary: doc.summary,
+            updatedLabel: doc.updated,
+            blocks: doc.blocks as unknown as Prisma.InputJsonValue,
+          },
+        });
+      }
 
       this.logger.log(
-        `Jogi dokumentumok seedelve: ${result.count} új (összes seed: ${LEGAL_SEED_DOCS.length}).`,
+        `Jogi dokumentumok: ${toCreate.length} új, ${toSync.length} szinkronizálva (összes seed: ${LEGAL_SEED_DOCS.length}).`,
       );
     } catch (err) {
       // A boot nem bukhat el a seed miatt (pl. a tábla még nem migrált).

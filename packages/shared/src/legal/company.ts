@@ -20,13 +20,13 @@ export const COMPANY = {
 /** Az operátor azonosító adatait felsorolásként adja vissza (RO). */
 export function companyIdentityItems(): string[] {
   return [
-    `Operator: ${COMPANY.legalName} (denumire comercială serviciu: „${COMPANY.brand}")`,
-    `CUI: ${COMPANY.cui}`,
-    `Nr. Reg. Com.: ${COMPANY.regCom}`,
-    `EUID: ${COMPANY.euid}`,
-    `Sediu social: ${COMPANY.address}`,
-    `Telefon: ${COMPANY.phone}`,
-    `E-mail / Responsabil protecția datelor (punct de contact): ${COMPANY.email}`,
+    `Operator: {{company.name}} (denumire comercială serviciu: „${COMPANY.brand}")`,
+    `CUI: {{company.taxNumber}}`,
+    `Nr. Reg. Com.: {{company.regCom}}`,
+    `EUID: {{company.euid}}`,
+    `Sediu social: {{company.address}}`,
+    `Telefon: {{company.phone}}`,
+    `E-mail / Responsabil protecția datelor (punct de contact): {{company.email}}`,
     `Aplicație web: ${COMPANY.webUrl}`,
     `API: ${COMPANY.apiUrl}`,
   ];

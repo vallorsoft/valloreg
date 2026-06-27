@@ -11,6 +11,7 @@ import { HR_DOCS } from './content/hr';
 
 export * from './types';
 export * from './serialize';
+export * from './tokens';
 export { COMPANY, companyIdentityItems } from './company';
 
 /** A teljes seed-forrás (publikus + belső dokumentumok). */
