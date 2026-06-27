@@ -380,6 +380,9 @@
       "DOCUMENT_UNSUPPORTED_TYPE": "Nem támogatott fájltípus.",
       "DOCUMENT_TOO_LARGE": "A fájl túl nagy.",
       "PROCESSING_FAILED": "A feldolgozás nem sikerült.",
+      "SPREADSHEET_UNSUPPORTED_TYPE": "Nem támogatott táblázat-típus. Engedélyezett: XLSX, XLS.",
+      "SPREADSHEET_PARSE_FAILED": "A táblázat beolvasása sikertelen.",
+      "SPREADSHEET_NO_DATA": "A táblázatban nincs feldolgozható számla-adat.",
       "VALIDATION_FAILED": "Az adatok ellenőrzése sikertelen.",
       "NOT_FOUND": "Az erőforrás nem található.",
       "INTERNAL_ERROR": "Váratlan hiba történt. Kérjük, próbálja újra.",
@@ -739,6 +742,53 @@
         "uploading": "Feltöltés…",
         "done": "Kész",
         "error": "Hiba"
+      }
+    },
+    "import": {
+      "button": "Excel importálása",
+      "title": "Excel számla-import",
+      "subtitle": "Tölts fel egy Excel naplót (XLSX/XLS): munkalaponként egy jármű, soronként egy számla, a tételek a „Piese” cellában.",
+      "choose": "Excel kiválasztása",
+      "preview": "Előnézet",
+      "import": "Importálás",
+      "loading": "Feldolgozás…",
+      "importing": "Importálás…",
+      "cancel": "Mégse",
+      "close": "Bezárás",
+      "row": "sor",
+      "noVehicle": "nincs jármű",
+      "itemsCount": "{count} tétel",
+      "errorPreview": "Az előnézet sikertelen.",
+      "errorCommit": "Az import sikertelen.",
+      "summaryPreview": "{total} sor · {create} létrehozható · {duplicate} már importált · {withWarnings} figyelmeztetéssel",
+      "sheetsSkipped": "Kihagyott munkalapok: {names}",
+      "doneTitle": "Import kész",
+      "summaryDone": "{created} számla létrehozva, {skipped} kihagyva.",
+      "col": {
+        "sheet": "Munkalap",
+        "date": "Dátum",
+        "invoiceNumber": "Számlaszám",
+        "supplier": "Szállító",
+        "vehicle": "Jármű",
+        "items": "Tételek",
+        "total": "Összeg",
+        "status": "Állapot"
+      },
+      "action": {
+        "create": "Létrehozás",
+        "duplicate": "Már importált",
+        "skip": "Kihagyva"
+      },
+      "warnings": {
+        "MISSING_DATE": "Hiányzó dátum",
+        "MISSING_INVOICE_NUMBER": "Hiányzó számlaszám",
+        "MISSING_SUPPLIER": "Hiányzó szállító",
+        "MISSING_TOTAL": "Hiányzó összeg",
+        "MISSING_VEHICLE": "Nincs jármű",
+        "NO_ITEMS": "Nincs tétel",
+        "UNPARSED_ITEMS": "Bizonytalan tételek",
+        "MULTIPLE_INVOICE_NUMBERS": "Több számlaszám",
+        "MULTIPLE_SUPPLIERS": "Több szállító"
       }
     },
     "table": {

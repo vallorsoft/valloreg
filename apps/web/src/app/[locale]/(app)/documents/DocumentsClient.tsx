@@ -9,8 +9,10 @@ import { documentsApi, ApiError, type DocumentListItem } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
 import { UploadZone } from '@/components/app/UploadZone';
+import { SpreadsheetImportModal } from '@/components/app/SpreadsheetImportModal';
 import { DocumentStatusBadge } from '@/components/app/DocumentStatusBadge';
 import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
+import { Button } from '@/components/ui/Button';
 
 const PROCESSING = new Set<string>([
   DocumentStatus.QUEUED,
@@ -27,6 +29,7 @@ export function DocumentsClient() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoadError(false);
@@ -76,7 +79,24 @@ export function DocumentsClient() {
   return (
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
+
+      <div className="mb-3 flex justify-end">
+        <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
+          {t('import.button')}
+        </Button>
+      </div>
+
       <UploadZone onUploadComplete={handleUploadComplete} />
+
+      {importOpen && (
+        <SpreadsheetImportModal
+          onClose={() => setImportOpen(false)}
+          onDone={() => {
+            setImportOpen(false);
+            reload();
+          }}
+        />
+      )}
 
       {error && <p className="mt-4 text-sm text-red-600">{error}</p>}
 

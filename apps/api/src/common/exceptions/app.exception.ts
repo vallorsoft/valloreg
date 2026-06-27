@@ -150,6 +150,35 @@ export class AppException extends HttpException {
     );
   }
 
+  // ── Excel köteges import ──────────────────────────────────────────────
+  static unsupportedSpreadsheetType(): AppException {
+    return new AppException(
+      ErrorCode.SPREADSHEET_UNSUPPORTED_TYPE,
+      'Nem támogatott táblázat-típus. Engedélyezett: XLSX, XLS.',
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+  }
+
+  static spreadsheetParseFailed(
+    message = 'A táblázat beolvasása sikertelen.',
+  ): AppException {
+    return new AppException(
+      ErrorCode.SPREADSHEET_PARSE_FAILED,
+      message,
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+  }
+
+  static spreadsheetNoData(
+    message = 'A táblázatban nincs feldolgozható számla-adat.',
+  ): AppException {
+    return new AppException(
+      ErrorCode.SPREADSHEET_NO_DATA,
+      message,
+      HttpStatus.UNPROCESSABLE_ENTITY,
+    );
+  }
+
   // ── Általános ─────────────────────────────────────────────────────────
   static notFound(message = 'Az erőforrás nem található.'): AppException {
     return new AppException(ErrorCode.NOT_FOUND, message, HttpStatus.NOT_FOUND);

@@ -7,6 +7,8 @@ import type {
   LegalDocListItem,
   LegalDocRecord,
   LegalDownloadFormat,
+  SpreadsheetImportPreview,
+  SpreadsheetImportCommitResult,
 } from '@valloreg/shared';
 import {
   getAccessToken,
@@ -547,6 +549,24 @@ export const documentsApi = {
   /** Teljes törlés: a számla, tételek és a tárolt fájl is törlődik. */
   remove(id: string) {
     return apiRequest<void>(`/documents/${id}`, { method: 'DELETE' });
+  },
+  /** Excel (XLSX/XLS) köteges import – előnézet (nem ír semmit). */
+  importSpreadsheetPreview(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<SpreadsheetImportPreview>('/documents/import/spreadsheet/preview', {
+      method: 'POST',
+      form,
+    });
+  },
+  /** Excel köteges import – véglegesítés (számlák létrehozása). */
+  importSpreadsheetCommit(file: File) {
+    const form = new FormData();
+    form.append('file', file);
+    return apiRequest<SpreadsheetImportCommitResult>('/documents/import/spreadsheet/commit', {
+      method: 'POST',
+      form,
+    });
   },
 };
 

@@ -7,8 +7,7 @@ import {
 } from '@nestjs/common';
 import { Job, Worker } from 'bullmq';
 import { Prisma } from '@prisma/client';
-import { DocumentStatus, DocumentType, ItemType } from '@valloreg/shared';
-import type { ExtractionResult } from '@valloreg/shared';
+import { DocumentStatus, DocumentType } from '@valloreg/shared';
 import { AppConfigService } from '../config/app-config.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditService } from '../audit/audit.service';
@@ -17,8 +16,7 @@ import type { OcrProvider } from '../ocr/ocr.provider';
 import { EXTRACTION_PROVIDER } from '../extraction/extraction.provider';
 import type { ExtractionProvider } from '../extraction/extraction.provider';
 import { MatchingService } from '../matching/matching.service';
-import type { VehicleMatch } from '../matching/matching.service';
-import { normalizePartKey } from '../matching/matching.util';
+import { InvoicePersistenceService } from '../matching/invoice-persistence.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import {
   DOCUMENTS_QUEUE,
@@ -58,6 +56,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
     @Inject(EXTRACTION_PROVIDER)
     private readonly extraction: ExtractionProvider,
     private readonly matching: MatchingService,
+    private readonly invoicePersistence: InvoicePersistenceService,
     private readonly notifications: NotificationsService,
   ) {}
 
@@ -175,7 +174,7 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
       );
 
       // 4) Perzisztálás (Invoice + InvoiceItem) – idempotens upsert a documentId-re.
-      await this.persistInvoice(
+      await this.invoicePersistence.persist(
         tenantId,
         documentId,
         extraction,
@@ -365,109 +364,6 @@ export class DocumentsProcessor implements OnModuleInit, OnModuleDestroy {
     }
   }
 
-  private async persistInvoice(
-    tenantId: string,
-    documentId: string,
-    extraction: ExtractionResult,
-    supplierId: string | null,
-    vehicleMatch: VehicleMatch,
-  ): Promise<void> {
-    const inv = extraction.invoice;
-
-    await this.prisma.system.$transaction(async (tx) => {
-      // Számla upsert a documentId-re (idempotens újrafeldolgozáshoz).
-      const invoice = await tx.invoice.upsert({
-        where: { documentId },
-        create: {
-          tenantId,
-          documentId,
-          supplierId,
-          invoiceNumber: inv.invoiceNumber || null,
-          date: inv.date ? new Date(inv.date) : null,
-          currency: inv.currency || null,
-          odometerKm: inv.odometerKm ?? null,
-          netTotal: inv.netTotal ?? null,
-          taxTotal: inv.taxTotal ?? null,
-          grossTotal: inv.grossTotal ?? null,
-          confidence: inv.confidence,
-          extractionRaw: extraction as unknown as Prisma.InputJsonValue,
-        },
-        update: {
-          supplierId,
-          invoiceNumber: inv.invoiceNumber || null,
-          date: inv.date ? new Date(inv.date) : null,
-          currency: inv.currency || null,
-          odometerKm: inv.odometerKm ?? null,
-          netTotal: inv.netTotal ?? null,
-          taxTotal: inv.taxTotal ?? null,
-          grossTotal: inv.grossTotal ?? null,
-          confidence: inv.confidence,
-          extractionRaw: extraction as unknown as Prisma.InputJsonValue,
-        },
-      });
-
-      // Korábbi tételek törlése, majd újra létrehozás (egyszerű, idempotens).
-      await tx.invoiceItem.deleteMany({
-        where: { invoiceId: invoice.id, tenantId },
-      });
-
-      if (extraction.items.length > 0) {
-        // A javaslat-számításhoz a számla dátuma/km-állása a viszonyítási pont.
-        const asOfDate = inv.date ? new Date(inv.date) : new Date();
-        const asOfKm = inv.odometerKm ?? null;
-
-        const itemsData: Prisma.InvoiceItemCreateManyInput[] = [];
-        for (const item of extraction.items) {
-          const partKey = normalizePartKey(
-            item.articleNumber,
-            item.partType,
-            item.name,
-          );
-
-          // Jármű-hozzárendelés prioritása: az extrakció által megadott id, majd
-          // a matching motor egyezése – csak a jármű-típusú tételekre.
-          const vehicleId =
-            item.vehicleId ??
-            (item.type === ItemType.VEHICLE ? vehicleMatch.vehicleId : null);
-
-          // JAVASLAT: csak jármű-típusú alkatrész-tételre, aminek van partKey-je
-          // és nincs hard egyezése (különben felesleges – már tudjuk a járművet).
-          let suggestion = null;
-          if (partKey && item.type === ItemType.VEHICLE && !vehicleId) {
-            suggestion = await this.matching.suggestVehicleForItem(
-              tenantId,
-              partKey,
-              item.partType ?? null,
-              asOfDate,
-              asOfKm,
-              invoice.id,
-            );
-          }
-
-          itemsData.push({
-            tenantId,
-            invoiceId: invoice.id,
-            name: item.name,
-            category: item.category,
-            partType: item.partType ?? null,
-            type: item.type,
-            articleNumber: item.articleNumber ?? null,
-            partKey,
-            vehicleId,
-            suggestedVehicleId: suggestion?.vehicleId ?? null,
-            suggestionConfidence: suggestion?.confidence ?? null,
-            suggestionReason: suggestion?.reason ?? null,
-            quantity: item.quantity,
-            unitPrice: item.unitPrice ?? null,
-            price: item.price,
-            confidence: item.confidence,
-          });
-        }
-
-        await tx.invoiceItem.createMany({ data: itemsData });
-      }
-    });
-  }
 }
 
 /**

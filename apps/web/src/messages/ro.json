@@ -380,6 +380,9 @@
       "DOCUMENT_UNSUPPORTED_TYPE": "Tip de fișier neacceptat.",
       "DOCUMENT_TOO_LARGE": "Fișierul este prea mare.",
       "PROCESSING_FAILED": "Procesarea a eșuat.",
+      "SPREADSHEET_UNSUPPORTED_TYPE": "Tip de fișier neacceptat. Permise: XLSX, XLS.",
+      "SPREADSHEET_PARSE_FAILED": "Citirea tabelului a eșuat.",
+      "SPREADSHEET_NO_DATA": "Tabelul nu conține date de factură procesabile.",
       "VALIDATION_FAILED": "Validarea datelor a eșuat.",
       "NOT_FOUND": "Resursa nu a fost găsită.",
       "INTERNAL_ERROR": "A apărut o eroare neașteptată. Vă rugăm să încercați din nou.",
@@ -739,6 +742,53 @@
         "uploading": "Se încarcă…",
         "done": "Gata",
         "error": "Eroare"
+      }
+    },
+    "import": {
+      "button": "Import Excel",
+      "title": "Import facturi din Excel",
+      "subtitle": "Încărcați un registru Excel (XLSX/XLS): o filă per vehicul, un rând per factură, piesele în celula „Piese”.",
+      "choose": "Alege fișierul Excel",
+      "preview": "Previzualizare",
+      "import": "Importă",
+      "loading": "Se procesează…",
+      "importing": "Se importă…",
+      "cancel": "Anulează",
+      "close": "Închide",
+      "row": "rând",
+      "noVehicle": "fără vehicul",
+      "itemsCount": "{count} piese",
+      "errorPreview": "Previzualizarea a eșuat.",
+      "errorCommit": "Importul a eșuat.",
+      "summaryPreview": "{total} rânduri · {create} de creat · {duplicate} deja importate · {withWarnings} cu avertismente",
+      "sheetsSkipped": "File ignorate: {names}",
+      "doneTitle": "Import finalizat",
+      "summaryDone": "{created} facturi create, {skipped} ignorate.",
+      "col": {
+        "sheet": "Filă",
+        "date": "Dată",
+        "invoiceNumber": "Nr. factură",
+        "supplier": "Furnizor",
+        "vehicle": "Vehicul",
+        "items": "Piese",
+        "total": "Total",
+        "status": "Stare"
+      },
+      "action": {
+        "create": "Creare",
+        "duplicate": "Deja importat",
+        "skip": "Ignorat"
+      },
+      "warnings": {
+        "MISSING_DATE": "Lipsă dată",
+        "MISSING_INVOICE_NUMBER": "Lipsă nr. factură",
+        "MISSING_SUPPLIER": "Lipsă furnizor",
+        "MISSING_TOTAL": "Lipsă total",
+        "MISSING_VEHICLE": "Fără vehicul",
+        "NO_ITEMS": "Fără piese",
+        "UNPARSED_ITEMS": "Piese incerte",
+        "MULTIPLE_INVOICE_NUMBERS": "Mai multe nr. factură",
+        "MULTIPLE_SUPPLIERS": "Mai mulți furnizori"
       }
     },
     "table": {

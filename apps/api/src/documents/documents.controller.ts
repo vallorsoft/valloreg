@@ -29,12 +29,16 @@ import type {
 } from '../common/types/request-context';
 import { DocumentsService } from './documents.service';
 import type { UploadedDocumentFile } from './documents.service';
+import { SpreadsheetImportService } from './spreadsheet/spreadsheet-import.service';
 import { ResolveDuplicateDto } from './dto/resolve-duplicate.dto';
 
 @Controller('documents')
 @UseGuards(JwtAuthGuard, TenantGuard, RolesGuard, FeatureGuard)
 export class DocumentsController {
-  constructor(private readonly documentsService: DocumentsService) {}
+  constructor(
+    private readonly documentsService: DocumentsService,
+    private readonly spreadsheetImport: SpreadsheetImportService,
+  ) {}
 
   /**
    * Dokumentum feltöltése EGY kéréssel (multipart/form-data, `file` mező).
@@ -54,6 +58,40 @@ export class DocumentsController {
     @UploadedFile() file: UploadedDocumentFile | undefined,
   ) {
     return this.documentsService.upload(tenant.tenantId, user.userId, file);
+  }
+
+  /**
+   * Excel (XLSX/XLS) köteges import – ELŐNÉZET. A táblázatot munkalaponként és
+   * soronként felismeri (egy sor ≈ egy számla, a "Piese" cella tételenként), de
+   * NEM ír semmit. Hiányzó adatnál a sort megtartja, és figyelmeztetést ad.
+   */
+  @Post('import/spreadsheet/preview')
+  @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
+  @UseGuards(SubscriptionGuard)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),
+  )
+  importSpreadsheetPreview(
+    @UploadedFile() file: UploadedDocumentFile | undefined,
+  ) {
+    return this.spreadsheetImport.preview(file);
+  }
+
+  /** Excel köteges import – VÉGLEGESÍTÉS (a CREATE sorokból számlák jönnek létre). */
+  @Post('import/spreadsheet/commit')
+  @RequireFeature(FeatureKey.DOCUMENT_LIBRARY)
+  @UseGuards(SubscriptionGuard)
+  @Roles(TenantRole.OWNER, TenantRole.FLEET_MANAGER, TenantRole.ADMIN)
+  @UseInterceptors(
+    FileInterceptor('file', { limits: { fileSize: MAX_DOCUMENT_SIZE_BYTES } }),
+  )
+  importSpreadsheetCommit(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @UploadedFile() file: UploadedDocumentFile | undefined,
+  ) {
+    return this.spreadsheetImport.commit(tenant.tenantId, user.userId, file);
   }
 
   /** Lista (minden tag). */

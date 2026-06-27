@@ -380,6 +380,9 @@
       "DOCUMENT_UNSUPPORTED_TYPE": "Unsupported file type.",
       "DOCUMENT_TOO_LARGE": "The file is too large.",
       "PROCESSING_FAILED": "Processing failed.",
+      "SPREADSHEET_UNSUPPORTED_TYPE": "Unsupported spreadsheet type. Allowed: XLSX, XLS.",
+      "SPREADSHEET_PARSE_FAILED": "Could not read the spreadsheet.",
+      "SPREADSHEET_NO_DATA": "The spreadsheet has no processable invoice data.",
       "VALIDATION_FAILED": "Data validation failed.",
       "NOT_FOUND": "Resource not found.",
       "INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
@@ -739,6 +742,53 @@
         "uploading": "Uploading…",
         "done": "Done",
         "error": "Error"
+      }
+    },
+    "import": {
+      "button": "Import Excel",
+      "title": "Excel invoice import",
+      "subtitle": "Upload an Excel ledger (XLSX/XLS): one sheet per vehicle, one row per invoice, line items in the “Piese” cell.",
+      "choose": "Choose Excel file",
+      "preview": "Preview",
+      "import": "Import",
+      "loading": "Processing…",
+      "importing": "Importing…",
+      "cancel": "Cancel",
+      "close": "Close",
+      "row": "row",
+      "noVehicle": "no vehicle",
+      "itemsCount": "{count} items",
+      "errorPreview": "Preview failed.",
+      "errorCommit": "Import failed.",
+      "summaryPreview": "{total} rows · {create} to create · {duplicate} already imported · {withWarnings} with warnings",
+      "sheetsSkipped": "Skipped sheets: {names}",
+      "doneTitle": "Import complete",
+      "summaryDone": "{created} invoices created, {skipped} skipped.",
+      "col": {
+        "sheet": "Sheet",
+        "date": "Date",
+        "invoiceNumber": "Invoice no.",
+        "supplier": "Supplier",
+        "vehicle": "Vehicle",
+        "items": "Items",
+        "total": "Total",
+        "status": "Status"
+      },
+      "action": {
+        "create": "Create",
+        "duplicate": "Already imported",
+        "skip": "Skipped"
+      },
+      "warnings": {
+        "MISSING_DATE": "Missing date",
+        "MISSING_INVOICE_NUMBER": "Missing invoice no.",
+        "MISSING_SUPPLIER": "Missing supplier",
+        "MISSING_TOTAL": "Missing total",
+        "MISSING_VEHICLE": "No vehicle",
+        "NO_ITEMS": "No items",
+        "UNPARSED_ITEMS": "Uncertain items",
+        "MULTIPLE_INVOICE_NUMBERS": "Multiple invoice nos.",
+        "MULTIPLE_SUPPLIERS": "Multiple suppliers"
       }
     },
     "table": {

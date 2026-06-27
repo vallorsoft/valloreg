@@ -17,6 +17,7 @@ export * from './extraction';
 export * from './vehicle-extraction';
 export * from './compliance-extraction';
 export * from './documents';
+export * from './spreadsheet-import';
 export * from './locales';
 export * from './errors';
 export * from './legal';
