@@ -10,6 +10,10 @@ const EMPTY: BillingSettings = {
   companyName: '',
   taxNumber: '',
   address: '',
+  regCom: '',
+  euid: '',
+  phone: '',
+  contactEmail: '',
   beneficiary: '',
   iban: '',
   bankName: '',
@@ -21,7 +25,11 @@ const EMPTY: BillingSettings = {
 const FIELDS: (keyof BillingSettings)[] = [
   'companyName',
   'taxNumber',
+  'regCom',
+  'euid',
   'address',
+  'phone',
+  'contactEmail',
   'beneficiary',
   'iban',
   'bankName',
@@ -134,7 +142,12 @@ export function BillingSettingsCard() {
                 placeholder={form.notifyEmail || t('test.placeholder')}
                 className="h-10 min-w-[220px] flex-1 rounded-lg border border-anthracite-200 bg-white px-3 text-sm text-anthracite-900"
               />
-              <Button size="sm" variant="outline" onClick={() => void handleTest()} disabled={testing}>
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => void handleTest()}
+                disabled={testing}
+              >
                 {testing ? t('test.sending') : t('test.send')}
               </Button>
             </div>

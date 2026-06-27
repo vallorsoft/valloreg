@@ -1448,6 +1448,10 @@ export interface BillingSettings {
   companyName: string;
   taxNumber: string;
   address: string;
+  regCom: string;
+  euid: string;
+  phone: string;
+  contactEmail: string;
   beneficiary: string;
   iban: string;
   bankName: string;

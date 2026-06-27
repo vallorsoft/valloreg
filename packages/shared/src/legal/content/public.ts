@@ -106,7 +106,7 @@ const privacy: LegalDoc = {
     },
     {
       k: 'p',
-      t: `Pentru exercitarea drepturilor ne puteți contacta la ${COMPANY.email}. Răspundem în cel mult 30 de zile. Plângerile se pot adresa ${COMPANY.dpa}, ${COMPANY.dpaWeb}.`,
+      t: `Pentru exercitarea drepturilor ne puteți contacta la {{company.email}}. Răspundem în cel mult 30 de zile. Plângerile se pot adresa ${COMPANY.dpa}, ${COMPANY.dpaWeb}.`,
     },
     {
       k: 'note',
@@ -181,7 +181,7 @@ const terms: LegalDoc = {
       t: '[DE COMPLETAT de avocat] Clauze contractuale B2B suplimentare: prețuri și plată, durata și încetarea, perioada de probă, politica de rambursare, proprietatea intelectuală, forța majoră, legea aplicabilă și instanța competentă, modalitatea de modificare a termenilor.',
     },
     { k: 'h', t: '6. Contact' },
-    { k: 'p', t: `Pentru întrebări legate de acești termeni: ${COMPANY.email}.` },
+    { k: 'p', t: `Pentru întrebări legate de acești termeni: {{company.email}}.` },
   ],
 };
 
@@ -238,7 +238,7 @@ const cookies: LegalDoc = {
       k: 'p',
       t: 'Puteți șterge sau bloca cookie-urile din setările browserului. Blocarea categoriilor strict necesare poate afecta funcționarea serviciului (de ex. autentificarea).',
     },
-    { k: 'p', t: `Întrebări: ${COMPANY.email}.` },
+    { k: 'p', t: `Întrebări: {{company.email}}.` },
   ],
 };
 

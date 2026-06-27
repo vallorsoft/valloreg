@@ -122,7 +122,7 @@ const incidentResponse: LegalDoc = {
     { k: 'h', t: '3. Notificare' },
     {
       k: 'p',
-      t: `Dacă incidentul constituie o încălcare a securității datelor cu caracter personal, se aplică Procedura privind încălcarea securității datelor: notificarea ${COMPANY.dpa} în cel mult 72 de ore, dacă este cazul. Punct de contact intern: ${COMPANY.email}.`,
+      t: `Dacă incidentul constituie o încălcare a securității datelor cu caracter personal, se aplică Procedura privind încălcarea securității datelor: notificarea ${COMPANY.dpa} în cel mult 72 de ore, dacă este cazul. Punct de contact intern: {{company.email}}.`,
     },
     {
       k: 'note',
@@ -275,7 +275,7 @@ const vulnDisclosure: LegalDoc = {
     { k: 'h', t: '2. Cum raportați' },
     {
       k: 'p',
-      t: `Trimiteți detaliile (pași de reproducere, impact) la ${COMPANY.email}. Confirmăm primirea și vă informăm despre stadiul remedierii.`,
+      t: `Trimiteți detaliile (pași de reproducere, impact) la {{company.email}}. Confirmăm primirea și vă informăm despre stadiul remedierii.`,
     },
     {
       k: 'note',

@@ -7,6 +7,10 @@ export interface EffectiveBillingSettings {
   companyName: string;
   taxNumber: string;
   address: string;
+  regCom: string;
+  euid: string;
+  phone: string;
+  contactEmail: string;
   beneficiary: string;
   iban: string;
   bankName: string;
@@ -47,6 +51,10 @@ export class BillingSettingsService {
       companyName: row?.companyName ?? '',
       taxNumber: row?.taxNumber ?? '',
       address: row?.address ?? '',
+      regCom: row?.regCom ?? '',
+      euid: row?.euid ?? '',
+      phone: row?.phone ?? '',
+      contactEmail: row?.contactEmail ?? '',
       beneficiary: pick(row?.beneficiary, env.beneficiary),
       iban: pick(row?.iban, env.iban),
       bankName: pick(row?.bankName, env.bank),
@@ -61,6 +69,10 @@ export class BillingSettingsService {
       companyName: dto.companyName,
       taxNumber: dto.taxNumber,
       address: dto.address,
+      regCom: dto.regCom,
+      euid: dto.euid,
+      phone: dto.phone,
+      contactEmail: dto.contactEmail,
       beneficiary: dto.beneficiary,
       iban: dto.iban,
       bankName: dto.bankName,
