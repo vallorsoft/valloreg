@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { Fragment, useRef, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { SPREADSHEET_EXTENSIONS, SpreadsheetRowAction } from '@valloreg/shared';
 import type { SpreadsheetImportPreview, SpreadsheetImportCommitResult } from '@valloreg/shared';
@@ -34,6 +34,16 @@ export function SpreadsheetImportModal({ onClose, onDone }: Props) {
   const [result, setResult] = useState<SpreadsheetImportCommitResult | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
+
+  function toggleRow(key: string) {
+    setExpanded((prev) => {
+      const next = new Set(prev);
+      if (next.has(key)) next.delete(key);
+      else next.add(key);
+      return next;
+    });
+  }
 
   async function handlePreview() {
     if (!file) return;
@@ -170,44 +180,87 @@ export function SpreadsheetImportModal({ onClose, onDone }: Props) {
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-anthracite-100">
-                      {preview.rows.map((r) => (
-                        <tr key={`${r.sheet}-${r.rowNumber}`}>
-                          <td className="px-2 py-1.5 text-anthracite-500">{r.sheet}</td>
-                          <td className="px-2 py-1.5">{r.date || '–'}</td>
-                          <td className="px-2 py-1.5">{r.invoiceNumber || '–'}</td>
-                          <td className="px-2 py-1.5">{r.supplier || '–'}</td>
-                          <td className="px-2 py-1.5">
-                            {r.matchedVehicleId ? (
-                              r.vehiclePlate
-                            ) : (
-                              <span className="text-amber-600">
-                                {r.vehiclePlate ? r.vehiclePlate : t('noVehicle')}
-                              </span>
-                            )}
-                          </td>
-                          <td className="px-2 py-1.5">
-                            {t('itemsCount', { count: r.items.length })}
-                          </td>
-                          <td className="px-2 py-1.5">
-                            {r.grossTotal != null ? r.grossTotal : '–'}
-                          </td>
-                          <td className="px-2 py-1.5">
-                            <Badge tone={ACTION_TONE[r.action]}>{t(`action.${r.action}`)}</Badge>
-                            {r.warnings.length > 0 && (
-                              <div className="mt-1 flex flex-wrap gap-1">
-                                {r.warnings.map((w) => (
-                                  <span
-                                    key={w}
-                                    className="rounded bg-amber-50 px-1 py-0.5 text-[10px] text-amber-700"
-                                  >
-                                    {t(`warnings.${w}`)}
+                      {preview.rows.map((r) => {
+                        const key = `${r.sheet}-${r.rowNumber}`;
+                        const isOpen = expanded.has(key);
+                        return (
+                          <Fragment key={key}>
+                            <tr>
+                              <td className="px-2 py-1.5 text-anthracite-500">{r.sheet}</td>
+                              <td className="px-2 py-1.5">{r.date || '–'}</td>
+                              <td className="px-2 py-1.5">{r.invoiceNumber || '–'}</td>
+                              <td className="px-2 py-1.5">{r.supplier || '–'}</td>
+                              <td className="px-2 py-1.5">
+                                {r.matchedVehicleId ? (
+                                  r.vehiclePlate
+                                ) : (
+                                  <span className="text-amber-600">
+                                    {r.vehiclePlate ? r.vehiclePlate : t('noVehicle')}
                                   </span>
-                                ))}
-                              </div>
+                                )}
+                              </td>
+                              <td className="px-2 py-1.5">
+                                <button
+                                  type="button"
+                                  className="text-primary-600 hover:underline disabled:text-anthracite-400 disabled:no-underline"
+                                  disabled={r.items.length === 0}
+                                  onClick={() => toggleRow(key)}
+                                >
+                                  {isOpen ? '▾ ' : '▸ '}
+                                  {t('itemsCount', { count: r.items.length })}
+                                </button>
+                              </td>
+                              <td className="px-2 py-1.5">
+                                {r.grossTotal != null ? r.grossTotal : '–'}
+                              </td>
+                              <td className="px-2 py-1.5">
+                                <Badge tone={ACTION_TONE[r.action]}>
+                                  {t(`action.${r.action}`)}
+                                </Badge>
+                                {r.warnings.length > 0 && (
+                                  <div className="mt-1 flex flex-wrap gap-1">
+                                    {r.warnings.map((w) => (
+                                      <span
+                                        key={w}
+                                        className="rounded bg-amber-50 px-1 py-0.5 text-[10px] text-amber-700"
+                                      >
+                                        {t(`warnings.${w}`)}
+                                      </span>
+                                    ))}
+                                  </div>
+                                )}
+                              </td>
+                            </tr>
+                            {isOpen && r.items.length > 0 && (
+                              <tr className="bg-anthracite-50/60">
+                                <td colSpan={8} className="px-3 py-2">
+                                  <ul className="space-y-1">
+                                    {r.items.map((it, idx) => (
+                                      <li
+                                        key={idx}
+                                        className="flex items-baseline justify-between gap-3 text-anthracite-700"
+                                      >
+                                        <span>
+                                          {it.articleNumber && (
+                                            <span className="mr-2 font-mono text-anthracite-500">
+                                              {it.articleNumber}
+                                            </span>
+                                          )}
+                                          {it.name || '–'}
+                                        </span>
+                                        <span className="shrink-0 text-anthracite-500">
+                                          × {it.quantity}
+                                          {it.unit ? ` ${it.unit}` : ''}
+                                        </span>
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </td>
+                              </tr>
                             )}
-                          </td>
-                        </tr>
-                      ))}
+                          </Fragment>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
