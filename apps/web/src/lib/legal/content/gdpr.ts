@@ -28,13 +28,25 @@ const ropa: LegalDoc = {
       k: 'table',
       head: ['Element', 'Detaliu'],
       rows: [
-        ['Scop', 'Înregistrare, autentificare, gestionarea companiilor (tenant), a membrilor și a rolurilor'],
-        ['Categorii de persoane vizate', 'Utilizatori (administratori și angajați ai companiilor-client), persoane invitate'],
-        ['Categorii de date', 'E-mail, hash parolă (Argon2), nume (opțional), secret 2FA (opțional), rol, asociere utilizator–companie, e-mail invitație'],
+        [
+          'Scop',
+          'Înregistrare, autentificare, gestionarea companiilor (tenant), a membrilor și a rolurilor',
+        ],
+        [
+          'Categorii de persoane vizate',
+          'Utilizatori (administratori și angajați ai companiilor-client), persoane invitate',
+        ],
+        [
+          'Categorii de date',
+          'E-mail, hash parolă (Argon2), nume (opțional), secret 2FA (opțional), rol, asociere utilizator–companie, e-mail invitație',
+        ],
         ['Temei juridic', 'Art. 6(1)(b) – executarea contractului'],
         ['Destinatari', 'Furnizor găzduire (Render), bază de date (Neon), e-mail (Brevo)'],
         ['Transfer extra-SEE', 'Nu (infrastructură UE – Frankfurt)'],
-        ['Termen de stocare', 'Pe durata contului; ștergere la cererea clientului (vezi Politica de retenție)'],
+        [
+          'Termen de stocare',
+          'Pe durata contului; ștergere la cererea clientului (vezi Politica de retenție)',
+        ],
         ['Măsuri de securitate', 'Hash Argon2, JWT, RBAC, izolare pe tenant, audit, TLS'],
       ],
     },
@@ -43,14 +55,32 @@ const ropa: LegalDoc = {
       k: 'table',
       head: ['Element', 'Detaliu'],
       rows: [
-        ['Scop', 'OCR + extragere AI, clasificare, asociere la vehicul, construirea istoricului de service'],
+        [
+          'Scop',
+          'OCR + extragere AI, clasificare, asociere la vehicul, construirea istoricului de service',
+        ],
         ['Rol', 'Persoană împuternicită; operator este compania-client'],
-        ['Categorii de date', 'Conținutul documentelor (facturi, certificate de înmatriculare, documente de conformitate): nume de pe certificat, nr. înmatriculare/VIN, date furnizor, sume, date tehnice extrase (extractionRaw)'],
-        ['Temei juridic', 'Stabilit de operatorul-client; prelucrarea de către Valloreg se face în baza DPA (art. 28 GDPR)'],
-        ['Destinatari / subîmputerniciți', 'Stocare obiecte (Cloudflare R2 / MinIO), AI (Google Gemini – când este activat)'],
+        [
+          'Categorii de date',
+          'Conținutul documentelor (facturi, certificate de înmatriculare, documente de conformitate): nume de pe certificat, nr. înmatriculare/VIN, date furnizor, sume, date tehnice extrase (extractionRaw)',
+        ],
+        [
+          'Temei juridic',
+          'Stabilit de operatorul-client; prelucrarea de către Valloreg se face în baza DPA (art. 28 GDPR)',
+        ],
+        [
+          'Destinatari / subîmputerniciți',
+          'Stocare obiecte (Cloudflare R2 / MinIO), AI (Google Gemini – când este activat)',
+        ],
         ['Transfer extra-SEE', 'Posibil când AI (Gemini) este activat – vezi TIA'],
-        ['Termen de stocare', 'Până la ștergerea documentului de către client (fișierul se șterge și din stocare)'],
-        ['Măsuri', 'Izolare pe tenant, presigned URL, validare MIME/dimensiune (PDF/JPG/PNG, max 25 MB), hash SHA-256 (idempotență), audit'],
+        [
+          'Termen de stocare',
+          'Până la ștergerea documentului de către client (fișierul se șterge și din stocare)',
+        ],
+        [
+          'Măsuri',
+          'Izolare pe tenant, presigned URL, validare MIME/dimensiune (PDF/JPG/PNG, max 25 MB), hash SHA-256 (idempotență), audit',
+        ],
       ],
     },
     { k: 'h', t: 'Activitatea 3 – Securitate, audit și prevenirea abuzului (operator)' },
@@ -59,7 +89,10 @@ const ropa: LegalDoc = {
       head: ['Element', 'Detaliu'],
       rows: [
         ['Scop', 'Jurnalizarea operațiunilor sensibile, detectarea abuzului, suport tehnic'],
-        ['Categorii de date', 'userId, tenantId, acțiune, tip resursă, IP, marcă temporală, metadate; acces de suport temporar (1h/24h/7d), jurnalizat'],
+        [
+          'Categorii de date',
+          'userId, tenantId, acțiune, tip resursă, IP, marcă temporală, metadate; acces de suport temporar (1h/24h/7d), jurnalizat',
+        ],
         ['Temei juridic', 'Art. 6(1)(f) – interes legitim (securitate)'],
         ['Termen de stocare', '[DE STABILIT] termen de retenție a jurnalelor de audit'],
       ],
@@ -69,7 +102,10 @@ const ropa: LegalDoc = {
       k: 'table',
       head: ['Element', 'Detaliu'],
       rows: [
-        ['Scop', 'Mementouri de mentenanță/conformitate, rapoarte lunare, e-mailuri de cont (resetare parolă, invitații)'],
+        [
+          'Scop',
+          'Mementouri de mentenanță/conformitate, rapoarte lunare, e-mailuri de cont (resetare parolă, invitații)',
+        ],
         ['Categorii de date', 'E-mail, abonament push (endpoint, chei p256dh/auth, user-agent)'],
         ['Temei juridic', 'Art. 6(1)(b) și, pentru push, Art. 6(1)(a) – consimțământ'],
         ['Destinatari', 'Brevo (e-mail), serviciul de push al browserului (Web Push / VAPID)'],
@@ -121,11 +157,36 @@ const dpia: LegalDoc = {
       k: 'table',
       head: ['Risc', 'Probabilitate', 'Impact', 'Măsuri de atenuare'],
       rows: [
-        ['Acces neautorizat între companii', 'Scăzută', 'Ridicat', 'Izolare pe tenant (Prisma scope, fail-closed), RBAC, audit'],
-        ['Expunerea conținutului către operatorul platformei', 'Scăzută', 'Ridicat', 'Super Admin nu vede implicit conținutul; acces de suport temporar și jurnalizat'],
-        ['Extragere AI eronată', 'Medie', 'Mediu', 'Human-in-the-loop, scor de încredere, marcarea câmpurilor incerte'],
-        ['Transfer de date la furnizorul AI', 'Medie', 'Mediu', 'Activabil opțional; SCC; vezi TIA; implicit provider „stub"'],
-        ['Pierderea/alterarea datelor', 'Scăzută', 'Ridicat', 'Backup gestionat de furnizor, TLS, criptare la repaus, hash SHA-256'],
+        [
+          'Acces neautorizat între companii',
+          'Scăzută',
+          'Ridicat',
+          'Izolare pe tenant (Prisma scope, fail-closed), RBAC, audit',
+        ],
+        [
+          'Expunerea conținutului către operatorul platformei',
+          'Scăzută',
+          'Ridicat',
+          'Super Admin nu vede implicit conținutul; acces de suport temporar și jurnalizat',
+        ],
+        [
+          'Extragere AI eronată',
+          'Medie',
+          'Mediu',
+          'Human-in-the-loop, scor de încredere, marcarea câmpurilor incerte',
+        ],
+        [
+          'Transfer de date la furnizorul AI',
+          'Medie',
+          'Mediu',
+          'Activabil opțional; SCC; vezi TIA; implicit provider „stub"',
+        ],
+        [
+          'Pierderea/alterarea datelor',
+          'Scăzută',
+          'Ridicat',
+          'Backup gestionat de furnizor, TLS, criptare la repaus, hash SHA-256',
+        ],
       ],
     },
     { k: 'h', t: '4. Concluzie' },
@@ -161,9 +222,19 @@ const tia: LegalDoc = {
       rows: [
         ['Render', 'Găzduire API/web + cozi (Redis)', 'UE – Frankfurt', 'Nu (regiune UE)'],
         ['Neon', 'Bază de date PostgreSQL', 'UE – AWS eu-central-1 (Frankfurt)', 'Nu (regiune UE)'],
-        ['Cloudflare R2', 'Stocare obiecte (documente)', 'Configurabil / global', '[DE VERIFICAT] regiunea bucket-ului'],
+        [
+          'Cloudflare R2',
+          'Stocare obiecte (documente)',
+          'Configurabil / global',
+          '[DE VERIFICAT] regiunea bucket-ului',
+        ],
         ['Brevo', 'Trimitere e-mail', 'UE (Franța)', 'Nu'],
-        ['Google Gemini', 'OCR + extragere AI (opțional)', 'Google (posibil SUA)', 'Da, când este activat'],
+        [
+          'Google Gemini',
+          'OCR + extragere AI (opțional)',
+          'Google (posibil SUA)',
+          'Da, când este activat',
+        ],
       ],
     },
     { k: 'h', t: '2. Transferul principal evaluat: Google Gemini' },
@@ -194,8 +265,7 @@ const retention: LegalDoc = {
   subtitle: 'Durate de păstrare și ștergere',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Cât timp sunt păstrate categoriile de date și cum se realizează ștergerea.',
+  summary: 'Cât timp sunt păstrate categoriile de date și cum se realizează ștergerea.',
   blocks: [
     {
       k: 'p',
@@ -205,13 +275,33 @@ const retention: LegalDoc = {
       k: 'table',
       head: ['Categorie de date', 'Termen de păstrare', 'Mecanism'],
       rows: [
-        ['Cont utilizator și companie', 'Pe durata contractului', 'Ștergere la cerere; ștergerea companiei elimină în cascadă datele asociate'],
-        ['Documente încărcate și date extrase', 'Până la ștergerea de către client', 'La ștergerea documentului, fișierul este eliminat și din stocare'],
-        ['Token-uri de reîmprospătare', `${(1209600 / 86400)} zile (TTL)`, 'Expirare/revocare automată'],
+        [
+          'Cont utilizator și companie',
+          'Pe durata contractului',
+          'Ștergere la cerere; ștergerea companiei elimină în cascadă datele asociate',
+        ],
+        [
+          'Documente încărcate (inclusiv facturile de service) și date extrase (OCR)',
+          'Până la ștergerea de către client',
+          'Valloreg este persoană împuternicită: nu emite, nu încarcă și nu editează aceste documente, ci doar le procesează pentru datele de service; nu are o obligație proprie de arhivare — se șterg la ștergerea documentului/companiei, inclusiv din stocare',
+        ],
+        [
+          'Token-uri de reîmprospătare',
+          `${1209600 / 86400} zile (TTL)`,
+          'Expirare/revocare automată',
+        ],
         ['Token de resetare parolă', '1 oră (TTL)', 'Expirare; de unică folosință'],
         ['Invitații', '7 zile (TTL)', 'Expirare automată'],
-        ['Jurnale de audit', '365 de zile (implicit, configurabil)', 'Ștergere automată zilnică (job de retenție)'],
-        ['Date financiar-contabile (facturare)', 'Conform legii (de regulă 10 ani)', 'Obligație legală'],
+        [
+          'Jurnale de audit',
+          '365 de zile (implicit, configurabil)',
+          'Ștergere automată zilnică (job de retenție)',
+        ],
+        [
+          'Facturile EMISE de Valloreg (abonament/serviciu) – documente contabile proprii',
+          'Conform legii contabilității (RO: de regulă 10 ani)',
+          'Obligație legală de arhivare a operatorului',
+        ],
         ['Backup-uri', 'Conform politicii furnizorului', 'Vezi Plan Backup & Disaster Recovery'],
       ],
     },
@@ -288,13 +378,55 @@ const subprocessors: LegalDoc = {
       k: 'table',
       head: ['Furnizor', 'Scop', 'Date prelucrate', 'Localizare', 'Instrument transfer'],
       rows: [
-        ['Render', 'Găzduire API/web, cozi Redis (BullMQ)', 'Toate (la nivel de infrastructură)', 'UE – Frankfurt', 'N/A (UE)'],
-        ['Neon', 'Bază de date PostgreSQL gestionată', 'Date cont, business, audit', 'UE – AWS eu-central-1', 'N/A (UE)'],
-        ['Cloudflare R2', 'Stocare obiecte (documente)', 'Documente încărcate', 'Configurabil', 'DPA + SCC [DE VERIFICAT regiune]'],
-        ['Brevo (Sendinblue)', 'Trimitere e-mail tranzacțional', 'E-mail, conținut notificare', 'UE (Franța)', 'N/A (UE)'],
-        ['Google (Gemini API)', 'OCR + extragere AI (opțional)', 'Conținut document', 'Posibil SUA', 'SCC / DPF [DE VERIFICAT]'],
-        ['Serviciu Web Push (VAPID)', 'Livrare notificări push', 'Endpoint push, user-agent', 'Depinde de browser', 'N/A'],
-        ['API verificare RO (ITP/RCA/rovinietă)', 'Verificare conformitate vehicul (opțional)', 'Nr. înmatriculare', 'Furnizor terț [DE STABILIT]', 'Implicit „stub" (fără transfer)'],
+        [
+          'Render',
+          'Găzduire API/web, cozi Redis (BullMQ)',
+          'Toate (la nivel de infrastructură)',
+          'UE – Frankfurt',
+          'N/A (UE)',
+        ],
+        [
+          'Neon',
+          'Bază de date PostgreSQL gestionată',
+          'Date cont, business, audit',
+          'UE – AWS eu-central-1',
+          'N/A (UE)',
+        ],
+        [
+          'Cloudflare R2',
+          'Stocare obiecte (documente)',
+          'Documente încărcate',
+          'Configurabil',
+          'DPA + SCC [DE VERIFICAT regiune]',
+        ],
+        [
+          'Brevo (Sendinblue)',
+          'Trimitere e-mail tranzacțional',
+          'E-mail, conținut notificare',
+          'UE (Franța)',
+          'N/A (UE)',
+        ],
+        [
+          'Google (Gemini API)',
+          'OCR + extragere AI (opțional)',
+          'Conținut document',
+          'Posibil SUA',
+          'SCC / DPF [DE VERIFICAT]',
+        ],
+        [
+          'Serviciu Web Push (VAPID)',
+          'Livrare notificări push',
+          'Endpoint push, user-agent',
+          'Depinde de browser',
+          'N/A',
+        ],
+        [
+          'API verificare RO (ITP/RCA/rovinietă)',
+          'Verificare conformitate vehicul (opțional)',
+          'Nr. înmatriculare',
+          'Furnizor terț [DE STABILIT]',
+          'Implicit „stub" (fără transfer)',
+        ],
       ],
     },
     {
@@ -304,11 +436,4 @@ const subprocessors: LegalDoc = {
   ],
 };
 
-export const GDPR_DOCS: LegalDoc[] = [
-  ropa,
-  dpia,
-  tia,
-  retention,
-  internalGdpr,
-  subprocessors,
-];
+export const GDPR_DOCS: LegalDoc[] = [ropa, dpia, tia, retention, internalGdpr, subprocessors];

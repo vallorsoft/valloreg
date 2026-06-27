@@ -1,6 +1,6 @@
 # Adatfeldolgozási megállapodás (DPA)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS KÖTELEZŐ.** Ez a DPA a GDPR 28. cikke szerinti minimum-
 > tartalmat fedi le, a Valloreg tényleges működése alapján.
 
@@ -83,12 +83,13 @@ illetve – ahol alkalmazható – az **EU–US Data Privacy Framework** alapjá
 Az Üzemeltető **indokolatlan késedelem nélkül** értesíti az Ügyfelet a tudomására
 jutott, az Ügyfél adatait érintő incidensről, és ésszerű közreműködést nyújt a
 72 órás bejelentési kötelezettség teljesítéséhez.
-【KITÖLTENDŐ: incidens-értesítési e-mail / SLA – pl. 48 órán belül】
+Az incidens-értesítés a vallorsoft@gmail.com címen történik, a tudomásra jutástól számított
+**48 órán belül**.
 
 ## 9. Az adatok törlése / visszaadása
 
 A Főszerződés megszűnését követően az Üzemeltető – az Ügyfél választása szerint –
-**törli vagy visszaadja** a személyes adatokat 【KITÖLTENDŐ: pl. 30 napon belül】,
+**törli vagy visszaadja** a személyes adatokat **30 napon belül**,
 kivéve, ha jogszabály a megőrzést írja elő. A séma kaszkád-törlést támogat; az
 objektumtárból (R2) való törlést is biztosítani kell.
 
@@ -97,4 +98,6 @@ objektumtárból (R2) való törlést is biztosítani kell.
 A felelősségre a Főszerződés irányadó. A jelen DPA és a Főszerződés ellentmondása
 esetén adatvédelmi kérdésben a DPA az irányadó.
 
-**Aláírások / elfogadás:** 【KITÖLTENDŐ: aláíró felek, dátum vagy elektronikus elfogadás módja】
+**Aláírások / elfogadás:** A felek: az Üzemeltető (VALLOR TEAM SRL) és az Ügyfél (előfizető
+cég); elfogadás elektronikus úton, az előfizetés megkezdésével / a megrendelés
+visszaigazolásával.

@@ -4,7 +4,7 @@ Ez a könyvtár a Valloreg platform teljes adatvédelmi és jogi dokumentumcsoma
 tartalmazza. A dokumentumok a **tényleges kódbázis, infrastruktúra és konfiguráció
 auditja** alapján készültek (lásd `00_GDPR_AUDIT_JELENTES.md`), nem sablonból.
 
-> **Verzió:** 1.0 (vázlat) · **Dátum:** 2026-06-24 · **Nyelv:** magyar
+> **Verzió:** 1.0 · **Dátum:** 2026-06-27 · **Nyelv:** magyar
 >
 > ⚠️ **FONTOS:** Ezek a dokumentumok jogi **vázlatok**. Élesítés előtt
 > **ügyvédi / adatvédelmi szakértői ellenőrzés kötelező**. A `【KITÖLTENDŐ: …】`

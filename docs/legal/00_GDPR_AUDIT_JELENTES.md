@@ -52,15 +52,15 @@ pótolandók** a dokumentumok élesítése előtt:
 
 | Adat | Állapot | Megjegyzés |
 |------|---------|------------|
-| Cég hivatalos neve | 【KITÖLTENDŐ】 | A márkanév „Valloreg"; üzemeltető: feltehetően „Vallorsoft" (e-mail: vallorsoft@gmail.com) – megerősítendő |
-| Cégforma / cégjegyzékszám (Nr. ORC / Cégjegyzék) | 【KITÖLTENDŐ】 | RO: J__/____/____ ; HU: Cg.__-__-______ |
-| Adószám / VAT / CUI | 【KITÖLTENDŐ】 | RON árazás → vélhetően román CUI |
-| Bejegyzett székhely (teljes cím) | 【KITÖLTENDŐ】 | |
-| Kapcsolattartó e-mail | 【KITÖLTENDŐ】 | A `MAIL_FROM`/`BREVO_SENDER` alapért. `noreply@valloreg.local` – nem valós |
-| Telefonszám | 【KITÖLTENDŐ】 | |
+| Cég hivatalos neve | VALLOR TEAM SRL | A márkanév „Valloreg"; üzemeltető: VALLOR TEAM SRL (e-mail: vallorsoft@gmail.com) |
+| Cégforma / cégjegyzékszám (Nr. ORC / Cégjegyzék) | J2023000114142 · EUID: ROONRC.J2023000114142 | RO ORC |
+| Adószám / VAT / CUI | 47859317 | RO CUI |
+| Bejegyzett székhely (teljes cím) | Sat Arcuș, Cart. Poiana Arcușului nr. 102, cod 527166, jud. Covasna, România | |
+| Kapcsolattartó e-mail | vallorsoft@gmail.com | |
+| Telefonszám | 0769532015 | |
 | Adatvédelmi kapcsolattartó / DPO | 【KITÖLTENDŐ】 | DPO kötelezettség vizsgálandó (lásd lent) ⚠️ |
-| Bankszámla (utalásos fizetéshez) | 【KITÖLTENDŐ】 | env: `BANK_TRANSFER_BENEFICIARY/IBAN/BANK/SWIFT` jelenleg üres |
-| Felügyeleti hatóság | 【KITÖLTENDŐ】 | RO: ANSPDCP / HU: NAIH – székhely szerint |
+| Bankszámla (utalásos fizetéshez) | 【KITÖLTENDŐ: bankszámla – kedvezményezett, IBAN, bank, SWIFT】 | env: `BANK_TRANSFER_BENEFICIARY/IBAN/BANK/SWIFT` jelenleg üres |
+| Felügyeleti hatóság | ANSPDCP – https://www.dataprotection.ro | A székhely RO (jud. Covasna) |
 | Szolgáltatás elérhető országai | 【KITÖLTENDŐ】 | UI nyelvek: hu/ro/en → HU, RO, nemzetközi (megerősítendő) |
 | Áraknál: nettó vagy bruttó (ÁFA/TVA) | 【KITÖLTENDŐ】 | A kód „nettó"-t mond, az UI nem jelzi ⚠️ fogyasztóvédelem |
 

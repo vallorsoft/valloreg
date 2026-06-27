@@ -1,6 +1,6 @@
 # Érintetti jogok szabályzata (GDPR Data Subject Rights)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS AJÁNLOTT.**
 
 Ez a szabályzat azt írja le, hogyan gyakorolhatja a GDPR szerinti jogait, és
@@ -28,7 +28,7 @@ hogyan kezeli az Üzemeltető a kérelmeket.
 
 ## 3. Hogyan nyújthat be kérelmet?
 
-- **E-mail:** 【KITÖLTENDŐ: pl. privacy@…】
+- **E-mail:** vallorsoft@gmail.com
 - **Azonosítás:** az Üzemeltető a visszaélés elkerülése érdekében ésszerű mértékben
   ellenőrizheti a kérelmező személyazonosságát.
 - **Határidő:** a kérelem beérkezésétől számított **legfeljebb 1 hónap** (összetett
@@ -55,4 +55,4 @@ hogyan kezeli az Üzemeltető a kérelmeket.
 
 - **Románia:** ANSPDCP – www.dataprotection.ro
 - **Magyarország:** NAIH – www.naih.hu
-- 【KITÖLTENDŐ: a székhely szerint illetékes hatóság elérhetősége】
+- A székhely szerint illetékes hatóság (jud. Covasna, RO): **ANSPDCP** – https://www.dataprotection.ro

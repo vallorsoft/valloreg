@@ -1,12 +1,14 @@
 # Általános Szerződési Feltételek (ÁSZF) / Felhasználási feltételek
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS KÖTELEZŐ.** B2B szolgáltatás; a fogyasztói rendelkezések
 > alkalmazhatósága a székhely és a célpiac joga szerint vizsgálandó.
 
 ## 1. A Szolgáltató
 
-【KITÖLTENDŐ: cégnév, székhely, cégjegyzékszám, adószám/CUI, e-mail, telefon】
+**VALLOR TEAM SRL** (székhely: Sat Arcuș, Cart. Poiana Arcușului nr. 102, cod 527166,
+jud. Covasna, România; cégjegyzékszám: J2023000114142 · EUID: ROONRC.J2023000114142;
+adószám/CUI: 47859317; e-mail: vallorsoft@gmail.com; telefon: 0769532015)
 (a továbbiakban: „Szolgáltató"). A szolgáltatás neve: **Valloreg** (a továbbiakban:
 „Szolgáltatás" vagy „Platform").
 
@@ -110,7 +112,8 @@ előzetesen értesíti. A folyamatos használat a módosítás elfogadását jel
 ## 15. Irányadó jog és jogviták
 
 Az irányadó jog és az illetékes bíróság a Szolgáltató **székhelye** szerinti.
-【KITÖLTENDŐ: irányadó jog / illetékesség】
+A szerződésre a román jog irányadó; a jogviták a Szolgáltató székhelye szerint illetékes
+(jud. Covasna, RO) bíróság hatáskörébe tartoznak.
 
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS:** Joghatóság, irányadó jog, esetleges választottbíróság,
 > valamint a fogyasztói jogviták (ODR-platform) szabályainak pontosítása.

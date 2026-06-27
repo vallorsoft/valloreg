@@ -1,6 +1,6 @@
 # SaaS előfizetési feltételek
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】 ·
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27 ·
 > **Árak forrása:** a Valloreg árazási oldala (2026-06; a felhasználó által megadott
 > aktuális RON-árak). ⚠️ **ÜGYVÉDI ELLENŐRZÉS:** nettó/bruttó (TVA) tisztázandó.
 
