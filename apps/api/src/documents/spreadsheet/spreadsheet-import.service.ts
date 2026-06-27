@@ -84,7 +84,9 @@ export class SpreadsheetImportService {
     const createRows = parsed.rows.filter((r) => r.action === SpreadsheetRowAction.CREATE);
 
     let created = 0;
-    let skipped = 0;
+    // A már korábban importált (DUPLICATE) sorokat eleve kihagyjuk – ezek is
+    // beleszámítanak a „skipped"-be, hogy a visszajelzés pontos legyen.
+    let skipped = parsed.rows.filter((r) => r.action === SpreadsheetRowAction.DUPLICATE).length;
     const errors: SpreadsheetImportCommitResult['errors'] = [];
 
     if (createRows.length === 0) {
@@ -134,6 +136,9 @@ export class SpreadsheetImportService {
 
         await this.prisma.scoped.document.create({
           data: {
+            // FONTOS: a Document id-je EXPLICIT, hogy a perzisztált Invoice
+            // documentId-je pontosan ehhez kötődjön (különben FK-hiba).
+            id: documentId,
             tenantId,
             uploadedById: userId,
             // A fájl egyszer tárolt; csak az ELSŐ sor "viszi" a méretet a
