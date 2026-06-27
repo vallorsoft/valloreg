@@ -58,19 +58,42 @@ const aiRiskRegister: LegalDoc = {
   subtitle: 'Identificarea și atenuarea riscurilor sistemelor AI',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Riscurile asociate utilizării AI/OCR și măsurile de atenuare implementate.',
+  summary: 'Riscurile asociate utilizării AI/OCR și măsurile de atenuare implementate.',
   blocks: [
     {
       k: 'table',
       head: ['Risc', 'Descriere', 'Atenuare'],
       rows: [
-        ['Extragere incorectă', 'Câmpuri citite greșit din document', 'Scor de încredere; stare NEEDS_REVIEW; câmpuri incerte marcate; verificare umană'],
-        ['Clasificare greșită', 'Document/articol clasificat eronat', 'Confirmare de către utilizator; sistem de învățare din corecții'],
-        ['Confabulație (hallucination)', 'Date inventate de model', 'Validare cu schema strictă (zod); câmpuri necompletate marcate, nu inventate'],
-        ['Scurgere de date la furnizorul AI', 'Conținut trimis în afara SEE', 'Activare opțională; SCC; implicit provider „stub"; minimizarea datelor'],
-        ['Indisponibilitatea modelului / cote', 'Limite de utilizare (429)', 'Lanț de modele cu comutare automată la următorul model'],
-        ['Părtinire (bias)', 'Tratament inegal', 'Sarcină tehnică restrânsă (extragere de date), fără profilarea persoanelor'],
+        [
+          'Extragere incorectă',
+          'Câmpuri citite greșit din document',
+          'Scor de încredere; stare NEEDS_REVIEW; câmpuri incerte marcate; verificare umană',
+        ],
+        [
+          'Clasificare greșită',
+          'Document/articol clasificat eronat',
+          'Confirmare de către utilizator; sistem de învățare din corecții',
+        ],
+        [
+          'Confabulație (hallucination)',
+          'Date inventate de model',
+          'Validare cu schema strictă (zod); câmpuri necompletate marcate, nu inventate',
+        ],
+        [
+          'Scurgere de date la furnizorul AI',
+          'Conținut trimis în afara SEE',
+          'Activare opțională; SCC; implicit provider „stub"; minimizarea datelor',
+        ],
+        [
+          'Indisponibilitatea modelului / cote',
+          'Limite de utilizare (429)',
+          'Lanț de modele cu comutare automată la următorul model',
+        ],
+        [
+          'Părtinire (bias)',
+          'Tratament inegal',
+          'Sarcină tehnică restrânsă (extragere de date), fără profilarea persoanelor',
+        ],
       ],
     },
     {
@@ -87,8 +110,7 @@ const humanOversight: LegalDoc = {
   subtitle: 'Human-in-the-loop',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Cum asigură Valloreg controlul uman asupra rezultatelor generate de AI.',
+  summary: 'Cum asigură Valloreg controlul uman asupra rezultatelor generate de AI.',
   blocks: [
     { k: 'h', t: '1. Principiul' },
     {
@@ -129,8 +151,7 @@ const aiTransparency: LegalDoc = {
   subtitle: 'Informare pentru utilizatori',
   updated: '25 iunie 2026',
   reviewRequired: true,
-  summary:
-    'Informații clare despre utilizarea inteligenței artificiale în Valloreg.',
+  summary: 'Informații clare despre utilizarea inteligenței artificiale în Valloreg.',
   blocks: [
     { k: 'h', t: 'Ce face AI-ul' },
     {
@@ -159,9 +180,4 @@ const aiTransparency: LegalDoc = {
   ],
 };
 
-export const AI_DOCS: LegalDoc[] = [
-  aiActStatement,
-  aiRiskRegister,
-  humanOversight,
-  aiTransparency,
-];
+export const AI_DOCS: LegalDoc[] = [aiActStatement, aiRiskRegister, humanOversight, aiTransparency];

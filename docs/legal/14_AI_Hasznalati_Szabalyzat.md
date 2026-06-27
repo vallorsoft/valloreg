@@ -1,6 +1,6 @@
 # AI-használati szabályzat (AI Usage Policy)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS AJÁNLOTT.** Ez a szabályzat a Platform AI/OCR
 > funkcióinak tényleges működését írja le (audit alapján).
 

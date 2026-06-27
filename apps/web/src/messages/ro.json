@@ -1320,6 +1320,76 @@
       "name": "Nume",
       "email": "E-mail",
       "role": "Rol"
+    },
+    "legalLink": {
+      "title": "Documente juridice",
+      "subtitle": "Editează, publică, descarcă și trimite politicile către companii."
+    }
+  },
+  "adminLegal": {
+    "title": "Documente juridice",
+    "subtitle": "Editează, publică, descarcă și trimite politicile către companii.",
+    "loading": "Se încarcă…",
+    "forbidden": "Nu ai drepturi de administrator de platformă.",
+    "backToAdmin": "Înapoi la Super Admin",
+    "empty": "Niciun document juridic.",
+    "categories": {
+      "public": "Documente publice",
+      "gdpr": "Conformitate GDPR",
+      "security": "Securitate și continuitate",
+      "ai": "Inteligență artificială (EU AI Act)",
+      "hr": "Organizatoric / HR"
+    },
+    "badge": {
+      "public": "Public",
+      "internal": "Intern"
+    },
+    "visibility": {
+      "publish": "Publică",
+      "unpublish": "Retrage",
+      "working": "În curs…",
+      "nowPublic": "Documentul este acum public.",
+      "nowInternal": "Documentul este acum intern.",
+      "error": "Modificarea vizibilității a eșuat."
+    },
+    "editor": {
+      "title": "Editare",
+      "placeholder": "Selectează un document din listă pentru a-l edita.",
+      "loadError": "Încărcarea documentului a eșuat.",
+      "fields": {
+        "title": "Titlu",
+        "subtitle": "Subtitlu",
+        "summary": "Rezumat",
+        "updated": "Ultima actualizare (etichetă)",
+        "blocks": "Blocuri de conținut (JSON)"
+      },
+      "blocksHint": "Blocurile se editează ca un tablou JSON. Dacă JSON-ul este invalid, salvarea nu pornește.",
+      "invalidJson": "JSON-ul blocurilor de conținut este invalid. Corectează înainte de a salva.",
+      "save": "Salvează",
+      "saving": "Se salvează…",
+      "saved": "Document salvat.",
+      "saveError": "Salvarea a eșuat."
+    },
+    "download": {
+      "title": "Descărcare",
+      "working": "Se descarcă…",
+      "error": "Descărcarea a eșuat.",
+      "formats": {
+        "md": "Markdown (.md)",
+        "json": "JSON (.json)",
+        "pdf": "PDF (.pdf)"
+      }
+    },
+    "send": {
+      "title": "Trimite către companie",
+      "tenant": "Companie",
+      "tenantPlaceholder": "Alege o companie…",
+      "format": "Format",
+      "send": "Trimite",
+      "sending": "Se trimite…",
+      "ok": "Trimis către: {to}.",
+      "fail": "Trimiterea a eșuat (destinatar: {to}).",
+      "error": "Trimiterea a eșuat."
     }
   },
   "billing": {

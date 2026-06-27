@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { useTranslations, useLocale } from 'next-intl';
 import { useRouter } from 'next/navigation';
+import { Link } from '@/i18n/routing';
 import { adminApi, ApiError, type AdminTenantListItem } from '@/lib/api';
 import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
@@ -49,11 +50,7 @@ export function AdminClient() {
   }
 
   if (forbidden) {
-    return (
-      <div className="py-16 text-center text-sm text-anthracite-600">
-        {t('forbidden')}
-      </div>
-    );
+    return <div className="py-16 text-center text-sm text-anthracite-600">{t('forbidden')}</div>;
   }
 
   if (loadError) {
@@ -68,6 +65,16 @@ export function AdminClient() {
   return (
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
+
+      <Card hoverable className="mb-6">
+        <Link href="/admin/legal" className="flex items-center justify-between gap-4">
+          <div>
+            <p className="font-semibold text-anthracite-900">{t('legalLink.title')}</p>
+            <p className="mt-1 text-sm text-anthracite-500">{t('legalLink.subtitle')}</p>
+          </div>
+          <span className="text-primary-600">→</span>
+        </Link>
+      </Card>
 
       <BillingSettingsCard />
 
@@ -100,7 +107,9 @@ export function AdminClient() {
                   >
                     <td className="px-4 py-3 font-medium text-anthracite-900">
                       {tenant.name}
-                      <span className="block text-xs text-anthracite-400">{tenant.email ?? '-'}</span>
+                      <span className="block text-xs text-anthracite-400">
+                        {tenant.email ?? '-'}
+                      </span>
                     </td>
                     <td className="px-4 py-3 text-anthracite-600">
                       {tenant.subscription
@@ -112,9 +121,15 @@ export function AdminClient() {
                         ? t(`statuses.${tenant.subscription.status}` as Parameters<typeof t>[0])
                         : '-'}
                     </td>
-                    <td className="px-4 py-3 text-right text-anthracite-600">{tenant.counts.members}</td>
-                    <td className="px-4 py-3 text-right text-anthracite-600">{tenant.counts.vehicles}</td>
-                    <td className="px-4 py-3 text-right text-anthracite-600">{tenant.counts.documents}</td>
+                    <td className="px-4 py-3 text-right text-anthracite-600">
+                      {tenant.counts.members}
+                    </td>
+                    <td className="px-4 py-3 text-right text-anthracite-600">
+                      {tenant.counts.vehicles}
+                    </td>
+                    <td className="px-4 py-3 text-right text-anthracite-600">
+                      {tenant.counts.documents}
+                    </td>
                   </tr>
                 ))
               )}

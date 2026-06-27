@@ -19,3 +19,4 @@ export * from './compliance-extraction';
 export * from './documents';
 export * from './locales';
 export * from './errors';
+export * from './legal';

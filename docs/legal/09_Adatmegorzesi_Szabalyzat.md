@@ -1,9 +1,10 @@
 # Adatmegőrzési szabályzat (Data Retention Policy)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS KÖTELEZŐ** – a megőrzési idők a számviteli és ágazati
-> jogszabályoktól függenek (RO/HU). Az alábbiak **javasolt** értékek; a
-> `【KITÖLTENDŐ】` mezőket az Üzemeltetőnek véglegesítenie kell.
+> jogszabályoktól függenek (RO/HU). Az alábbiak a tényleges adatmodell és
+> konfiguráció szerinti értékek; a számviteli megőrzési idők jogszabályi
+> véglegesítése ügyvédi ellenőrzést igényel.
 
 ## 1. Alapelv
 
@@ -18,9 +19,10 @@ vagy anonimizáljuk.
 | Fiók (User: e-mail, név, jelszó-hash) | a fiók megszűnéséig | törlés a fiók-törlési folyamattal (bevezetendő) |
 | Cégadatok (Tenant: név, adószám, e-mail, telefon) | szerződés + számviteli idő | jogi kötelezettség miatt hosszabb lehet |
 | Feltöltött dokumentumok + kiolvasott adat | az Ügyfél utasítása / előfizetés szerint | törlés a tenant/dokumentum törlésekor |
-| Számlák, számlatételek (`Invoice`, `InvoiceItem`) | 【KITÖLTENDŐ: pl. 5–10 év (számviteli)】 | RO/HU számviteli megőrzés |
-| `extractionRaw` (nyers AI JSON) | 【KITÖLTENDŐ – ajánlott: rövidíteni / a dokumentummal együtt törölni】 | adattakarékosság |
-| Audit napló (IP-vel) | 【KITÖLTENDŐ: pl. 12 hónap】 | jelenleg nincs automatikus törlés → bevezetendő |
+| Feltöltött szerviz-számlák és tételeik (`Invoice`, `InvoiceItem` – OCR-rel kiolvasott adat) | az Ügyfél utasítása / a dokumentum vagy a tenant törléséig | Az Üzemeltető ezekre **adatfeldolgozó**: nem ő állítja ki, tölti fel vagy szerkeszti, csak feldolgozza a szerviz-adatokért, ezért **nem terheli önálló archiválási kötelezettség** – a kliens törlésével törlődik |
+| Az Üzemeltető által **kiállított** előfizetési/szolgáltatási számlák (saját számviteli bizonylatok) | a számviteli jogszabály szerint (RO: jellemzően 10 év) | Saját bizonylat → **kötelező megőrzés** (RO Legea contabilității nr. 82/1991) |
+| `extractionRaw` (nyers AI JSON) | a kapcsolódó dokumentummal együtt törlődik | adattakarékosság |
+| Audit napló (IP-vel) | 12 hónap (365 nap) | automatikus napi törlési job (`AUDIT_LOG_RETENTION_DAYS=365`, konfigurálható) |
 | Refresh token (hash) | 14 nap (lejárat) | automatikus lejárat |
 | Jelszó-visszaállító token (hash) | 1 óra (lejárat) | egyszer használatos |
 | Meghívó (Invitation) | lejáratig / elfogadásig | token alapú |

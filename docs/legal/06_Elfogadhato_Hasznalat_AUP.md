@@ -1,6 +1,6 @@
 # Elfogadható használati szabályzat (Acceptable Use Policy)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS AJÁNLOTT.**
 
 Ez a szabályzat a Valloreg Platform megengedett használatát határozza meg, és az
@@ -54,4 +54,4 @@ a hatóságot.
 
 ## 6. Bejelentés
 
-Visszaélés vagy biztonsági probléma bejelentése: 【KITÖLTENDŐ: e-mail, pl. security@…】.
+Visszaélés vagy biztonsági probléma bejelentése: vallorsoft@gmail.com.

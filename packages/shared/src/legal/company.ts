@@ -7,8 +7,7 @@ export const COMPANY = {
   cui: '47859317',
   regCom: 'J2023000114142',
   euid: 'ROONRC.J2023000114142',
-  address:
-    'Sat Arcuș, Cart. Poiana Arcușului nr. 102, cod 527166, jud. Covasna, România',
+  address: 'Sat Arcuș, Cart. Poiana Arcușului nr. 102, cod 527166, jud. Covasna, România',
   phone: '0769532015',
   email: 'vallorsoft@gmail.com',
   webUrl: 'https://valloreg-web.onrender.com',

@@ -1,9 +1,8 @@
 # Adatvédelmi tájékoztató (Privacy Policy)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】 ·
-> **Utolsó módosítás:** 2026-06-24
-> ⚠️ **ÜGYVÉDI ELLENŐRZÉS KÖTELEZŐ az élesítés előtt.** A `【KITÖLTENDŐ】`
-> mezőket cégadatokkal kell pótolni.
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27 ·
+> **Utolsó módosítás:** 2026-06-27
+> ⚠️ **ÜGYVÉDI ELLENŐRZÉS KÖTELEZŐ az élesítés előtt.**
 
 Ez a tájékoztató az **EU 2016/679 (GDPR)** rendelet 13–14. cikke alapján
 ismerteti, hogyan kezeli a Valloreg platform a személyes adatokat. A dokumentum
@@ -11,12 +10,12 @@ a platform **tényleges működését** tükrözi.
 
 ## 1. Az adatkezelő
 
-- **Cégnév:** 【KITÖLTENDŐ: hivatalos cégnév】 (a továbbiakban: „Üzemeltető")
-- **Székhely:** 【KITÖLTENDŐ: cím】
-- **Cégjegyzék-/nyilvántartási szám:** 【KITÖLTENDŐ】
-- **Adószám / CUI / VAT:** 【KITÖLTENDŐ】
-- **E-mail:** 【KITÖLTENDŐ】 · **Telefon:** 【KITÖLTENDŐ】
-- **Adatvédelmi kapcsolat / DPO:** 【KITÖLTENDŐ – ha van】
+- **Cégnév:** VALLOR TEAM SRL (a továbbiakban: „Üzemeltető")
+- **Székhely:** Sat Arcuș, Cart. Poiana Arcușului nr. 102, cod 527166, jud. Covasna, România
+- **Cégjegyzék-/nyilvántartási szám:** J2023000114142 (EUID: ROONRC.J2023000114142)
+- **Adószám / CUI / VAT:** 47859317
+- **E-mail:** vallorsoft@gmail.com · **Telefon:** 0769532015
+- **Adatvédelmi kapcsolat / DPO:** vallorsoft@gmail.com (külön DPO jelenleg nincs kijelölve; a DPO szükségessége jogi mérlegelés tárgya)
 
 ## 2. Adatkezelői és adatfeldolgozói szerepkörök
 
@@ -40,7 +39,7 @@ A Valloreg többbérlős üzleti (B2B) szolgáltatás. Két különböző viszon
 | Jelszó (argon2 hash) | biztonságos hitelesítés | szerződés (6(1)(b)) | a fiók megszűnéséig |
 | Cégnév, adószám | szerződés, számlázás | szerződés / jogi kötelezettség (6(1)(c)) | számviteli megőrzés szerint (lásd 9. dok.) |
 | Telefonszám | kapcsolattartás | jogos érdek (6(1)(f)) | a fiók megszűnéséig |
-| IP-cím, audit napló | biztonság, visszaélés-megelőzés, elszámoltathatóság | jogos érdek (6(1)(f)) | 【KITÖLTENDŐ – pl. 12 hónap】 |
+| IP-cím, audit napló | biztonság, visszaélés-megelőzés, elszámoltathatóság | jogos érdek (6(1)(f)) | 12 hónap (365 nap), automatikus törléssel |
 | Eszköz/böngésző (User-Agent), push végpont | értesítések kézbesítése | **hozzájárulás** (6(1)(a)) | a leiratkozásig / hozzájárulás visszavonásáig |
 | Feltöltött dokumentumok és kiolvasott adat | OCR/AI feldolgozás, szerviztörténet | szerződés (ügyfél adatkezelő – DPA) | az ügyfél utasítása / előfizetés szerint |
 | Számlázási hivatkozás, fizetési adat (utalás) | előfizetés kezelése | szerződés / jogi kötelezettség | számviteli megőrzés |
@@ -94,11 +93,10 @@ Az érintettként Önt megilletik a GDPR szerinti jogok: **hozzáférés** (15. 
 (20.), **tiltakozás** (21.), valamint **hozzájárulás visszavonása** (7(3)).
 Részletek és gyakorlati lépések: `10_Erintetti_Jogok_Szabalyzat.md`.
 
-Kérelmét a 【KITÖLTENDŐ: e-mail】 címen jelezheti. Válaszidő: legfeljebb 1 hónap.
+Kérelmét a vallorsoft@gmail.com címen jelezheti. Válaszidő: legfeljebb 1 hónap.
 Panasszal a felügyeleti hatósághoz fordulhat:
-- **Románia:** ANSPDCP – www.dataprotection.ro
+- **Székhely szerint (Románia):** ANSPDCP – www.dataprotection.ro
 - **Magyarország:** NAIH – www.naih.hu
-- 【KITÖLTENDŐ: a székhely szerinti hatóság】
 
 > ⚠️ **JELENLEGI KORLÁT:** A platformon jelenleg **nincs automatikus fiók-törlési
 > és adat-export funkció**; e jogokat az Üzemeltető manuálisan teljesíti a fenti

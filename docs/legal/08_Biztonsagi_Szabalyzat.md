@@ -1,6 +1,6 @@
 # Biztonsági szabályzat (Security Policy)
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > Ez a szabályzat a Platform **tényleges** biztonsági intézkedéseit írja le (audit
 > alapján), és megkülönbözteti a **megvalósított** és a **tervezett/hiányzó**
 > kontrollokat. A GDPR 32. cikkéhez igazítva.
@@ -75,7 +75,7 @@
 Adatvédelmi incidens esetén az Üzemeltető a GDPR 33–34. cikke szerint jár el (72
 órás bejelentés a hatósághoz, szükség esetén az érintettek értesítése), és
 adatfeldolgozóként **indokolatlan késedelem nélkül** értesíti az érintett Ügyfelet.
-Bejelentés: 【KITÖLTENDŐ: security@…】.
+Bejelentés: vallorsoft@gmail.com.
 
 ## 9. Felülvizsgálat
 

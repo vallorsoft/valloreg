@@ -1,6 +1,6 @@
 # Lemondási és visszatérítési szabályzat
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS KÖTELEZŐ** – a fogyasztói elállási jog és a B2B jelleg
 > kérdése a célpiac joga szerint dönthető el.
 
@@ -17,8 +17,8 @@ következmény nélkül elállható. Aktiválás csak az utalás beérkezése ut
 
 ## 3. Előfizetés lemondása
 
-- Az előfizetés a felhasználó kérésére bármikor lemondható a 【KITÖLTENDŐ: módszer –
-  pl. fiókon belüli kérés / e-mail security/billing@…】 úton.
+- Az előfizetés a felhasználó kérésére bármikor lemondható a fiókon belüli kérés vagy a
+  vallorsoft@gmail.com e-mail útján.
 - A lemondás a **folyó (kifizetett) számlázási időszak végén** lép hatályba; az
   időszak végéig a szolgáltatás elérhető marad.
 - A lemondás után a fiók és az adatok kezelésére az **Adatmegőrzési szabályzat**

@@ -758,3 +758,32 @@ model DurabilityBaseline {
   @@index([tenantId])
   @@map("durability_baselines")
 }
+
+// ──────────────────────────────────────────────────────────────────────────
+// Jogi / GDPR dokumentumok (GLOBÁLIS, NEM tenant-scope-olt – mint a User /
+// RefreshToken). A tartalmat a SuperAdmin szerkeszti; az `isPublic` szabályozza
+// a publikus weboldali megjelenést (a kötelező publikusak alapból true).
+// Seed-forrás: @valloreg/shared LEGAL_SEED_DOCS. NE vedd fel a
+// TENANT_SCOPED_MODELS-be (platform-szintű, nincs tenantId).
+// ──────────────────────────────────────────────────────────────────────────
+model LegalDocument {
+  id           String   @id @default(uuid())
+  slug         String   @unique
+  category     String
+  title        String
+  subtitle     String?
+  summary      String
+  // Emberi „utolsó frissítés" címke (pl. „25 iunie 2026").
+  updatedLabel String
+  // A tartalmi blokkok (LegalBlock[] a @valloreg/shared-ból), JSON-ként.
+  blocks       Json
+  // Publikus-e a landing/website-on (SuperAdmin kapcsolja).
+  isPublic     Boolean  @default(false)
+  // Az utoljára szerkesztő platform-admin userId-ja (audit, nincs FK).
+  updatedById  String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([category])
+  @@map("legal_documents")
+}

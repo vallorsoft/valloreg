@@ -1,6 +1,6 @@
 # Cookie- és tárolási szabályzat
 
-> **Verzió:** 1.0 (vázlat) · **Hatályos:** 【KITÖLTENDŐ: dátum】 ·
+> **Verzió:** 1.0 · **Hatályos:** 2026-06-27 ·
 > **Utolsó módosítás:** 2026-06-24
 > ⚠️ **ÜGYVÉDI ELLENŐRZÉS AJÁNLOTT.** Ez a szabályzat a tényleges frontend-
 > implementáció auditja alapján készült.
