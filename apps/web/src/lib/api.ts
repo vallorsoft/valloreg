@@ -594,7 +594,38 @@ export interface AddInvoiceItemPayload {
   unitPrice?: number;
 }
 
+/** Egy kézi javítás tétele (alkatrész vagy munkadíj külön sorként). */
+export interface ManualInvoiceItemPayload {
+  name: string;
+  category?: string;
+  type?: string;
+  partType?: string | null;
+  articleNumber?: string | null;
+  quantity?: number;
+  unitPrice?: number;
+  price?: number;
+}
+
+/** Kézi javítás-rögzítés számla nélkül (alkatrész + munkadíj külön). */
+export interface CreateManualInvoicePayload {
+  vehicleId?: string | null;
+  date?: string;
+  title?: string;
+  supplier?: string;
+  invoiceNumber?: string;
+  currency?: string;
+  odometerKm?: number;
+  items: ManualInvoiceItemPayload[];
+}
+
 export const invoicesApi = {
+  /** Kézi javítás létrehozása (számla nélkül) – Document + Invoice + tételek. */
+  createManual(payload: CreateManualInvoicePayload) {
+    return apiRequest<{ documentId: string; invoiceId: string }>(
+      '/invoices/manual',
+      { method: 'POST', json: payload },
+    );
+  },
   updateItem(itemId: string, payload: UpdateInvoiceItemPayload) {
     return apiRequest<InvoiceItem>(`/invoices/items/${itemId}`, {
       method: 'PATCH',

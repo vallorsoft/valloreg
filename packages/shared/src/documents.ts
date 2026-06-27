@@ -13,6 +13,14 @@ export const ALLOWED_DOCUMENT_EXTENSIONS = ['pdf', 'jpg', 'jpeg', 'png'] as cons
 /** Maximális fájlméret (bytes). 25 MB. */
 export const MAX_DOCUMENT_SIZE_BYTES = 25 * 1024 * 1024;
 
+/**
+ * Kézi rögzítésű (számla nélküli) javítás MIME-jelölője. Ilyenkor NINCS tárolt
+ * fájl (storageKey üres): a felhasználó kézzel vitte be az alkatrészeket és a
+ * munkadíjat olyan javításhoz, amihez nem kapott számlát. A kliens ezzel ismeri
+ * fel a manuális rekordot (pl. a letöltés gomb elrejtéséhez).
+ */
+export const MANUAL_DOCUMENT_MIME_TYPE = 'application/x-valloreg-manual';
+
 export function isAllowedDocumentMimeType(mime: string): mime is AllowedDocumentMimeType {
   return (ALLOWED_DOCUMENT_MIME_TYPES as readonly string[]).includes(mime);
 }

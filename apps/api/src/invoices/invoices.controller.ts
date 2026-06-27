@@ -23,6 +23,7 @@ import type {
 import { InvoicesService } from './invoices.service';
 import { UpdateInvoiceItemDto } from './dto/update-invoice-item.dto';
 import { AddInvoiceItemDto } from './dto/add-invoice-item.dto';
+import { CreateManualInvoiceDto } from './dto/create-manual-invoice.dto';
 import { AppException } from '../common/exceptions/app.exception';
 
 const ITEM_EDIT_ROLES = [
@@ -52,6 +53,21 @@ export class InvoicesController {
   @Get(':id')
   getById(@Param('id') id: string) {
     return this.invoicesService.getById(id);
+  }
+
+  /**
+   * KÉZI javítás rögzítése SZÁMLA NÉLKÜL: alkatrész és munkadíj külön tételként.
+   * Olyan javításokhoz, amikhez nem érkezik számla. Egy „manuális" Document +
+   * Invoice + tételek jön létre (CONFIRMED, fájl nélkül).
+   */
+  @Post('manual')
+  @Roles(...ITEM_EDIT_ROLES)
+  createManual(
+    @CurrentTenant() tenant: ActiveTenant,
+    @CurrentUser() user: AuthUser,
+    @Body() dto: CreateManualInvoiceDto,
+  ) {
+    return this.invoicesService.createManual(tenant.tenantId, user.userId, dto);
   }
 
   /** Tétel felülbírálása (jármű-hozzárendelés, kategória, típus). */

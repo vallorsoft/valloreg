@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
-import { DocumentStatus } from '@valloreg/shared';
+import { DocumentStatus, MANUAL_DOCUMENT_MIME_TYPE } from '@valloreg/shared';
 import {
   documentsApi,
   vehiclesApi,
@@ -325,9 +325,11 @@ export function DocumentReviewClient({ id }: { id: string }) {
             {overwriting ? t('duplicate.overwriting') : t('duplicate.overwrite')}
           </Button>
         )}
-        <Button variant="outline" size="sm" onClick={() => void handleDownload()}>
-          {t('review.download')}
-        </Button>
+        {doc.mimeType !== MANUAL_DOCUMENT_MIME_TYPE && (
+          <Button variant="outline" size="sm" onClick={() => void handleDownload()}>
+            {t('review.download')}
+          </Button>
+        )}
         <Button
           variant="outline"
           size="sm"

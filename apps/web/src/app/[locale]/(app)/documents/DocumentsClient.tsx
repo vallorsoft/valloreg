@@ -10,6 +10,7 @@ import { Card } from '@/components/ui/Card';
 import { PageHeading } from '@/components/app/PageHeading';
 import { UploadZone } from '@/components/app/UploadZone';
 import { SpreadsheetImportModal } from '@/components/app/SpreadsheetImportModal';
+import { ManualRepairModal } from '@/components/app/ManualRepairModal';
 import { DocumentStatusBadge } from '@/components/app/DocumentStatusBadge';
 import { LoadErrorState, isRealLoadError } from '@/components/app/LoadErrorState';
 import { Button } from '@/components/ui/Button';
@@ -30,6 +31,7 @@ export function DocumentsClient() {
   const [error, setError] = useState<string | null>(null);
   const [loadError, setLoadError] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
+  const [manualOpen, setManualOpen] = useState(false);
 
   const refresh = useCallback(async () => {
     setLoadError(false);
@@ -80,7 +82,10 @@ export function DocumentsClient() {
     <>
       <PageHeading title={t('title')} subtitle={t('subtitle')} />
 
-      <div className="mb-3 flex justify-end">
+      <div className="mb-3 flex justify-end gap-2">
+        <Button variant="outline" size="sm" onClick={() => setManualOpen(true)}>
+          {t('manual.button')}
+        </Button>
         <Button variant="outline" size="sm" onClick={() => setImportOpen(true)}>
           {t('import.button')}
         </Button>
@@ -94,6 +99,16 @@ export function DocumentsClient() {
           onDone={() => {
             setImportOpen(false);
             reload();
+          }}
+        />
+      )}
+
+      {manualOpen && (
+        <ManualRepairModal
+          onClose={() => setManualOpen(false)}
+          onCreated={(documentId) => {
+            setManualOpen(false);
+            router.push(`/${locale}/documents/${documentId}`);
           }}
         />
       )}

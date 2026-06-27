@@ -349,6 +349,10 @@ export class DocumentsService {
     if (!document) {
       throw AppException.notFound('A dokumentum nem található.');
     }
+    // Kézi rögzítésű (számla nélküli) rekordhoz nincs tárolt fájl.
+    if (!document.storageKey) {
+      throw AppException.validation('Ehhez a kézi rekordhoz nincs letölthető fájl.');
+    }
     const downloadUrl = await this.storage.presignGet(document.storageKey);
     return { downloadUrl };
   }
