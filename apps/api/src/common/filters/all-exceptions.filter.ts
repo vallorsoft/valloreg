@@ -32,9 +32,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       // azonosítható legyen a Render logokból.
       const where = `${request?.method ?? '?'} ${request?.originalUrl ?? request?.url ?? '?'}`;
       const detail =
-        exception instanceof Error
-          ? `${exception.name}: ${exception.message}`
-          : String(exception);
+        exception instanceof Error ? `${exception.name}: ${exception.message}` : String(exception);
       this.logger.error(
         `[${where}] ${body.code}: ${detail}`,
         exception instanceof Error ? exception.stack : undefined,
@@ -80,10 +78,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
     };
   }
 
-  private fromHttpException(
-    status: number,
-    res: string | object,
-  ): ApiErrorBody {
+  private fromHttpException(status: number, res: string | object): ApiErrorBody {
     const code = this.mapStatusToCode(status);
 
     // ValidationPipe alakja: { message: string[] | string, error, statusCode }
@@ -99,10 +94,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
         };
       }
 
-      const message =
-        typeof rawMessage === 'string'
-          ? rawMessage
-          : this.defaultMessage(status);
+      const message = typeof rawMessage === 'string' ? rawMessage : this.defaultMessage(status);
       return { code, message };
     }
 
@@ -119,10 +111,10 @@ export class AllExceptionsFilter implements ExceptionFilter {
         return ErrorCode.AUTH_FORBIDDEN;
       case HttpStatus.NOT_FOUND:
         return ErrorCode.NOT_FOUND;
+      case HttpStatus.TOO_MANY_REQUESTS:
+        return ErrorCode.RATE_LIMITED;
       default:
-        return status >= 500
-          ? ErrorCode.INTERNAL_ERROR
-          : ErrorCode.VALIDATION_FAILED;
+        return status >= 500 ? ErrorCode.INTERNAL_ERROR : ErrorCode.VALIDATION_FAILED;
     }
   }
 

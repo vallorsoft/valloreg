@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { ErrorCode } from '@valloreg/shared';
-import { ApiError, resolveErrorKey, errorDebugSuffix } from './api';
+import { ApiError, resolveErrorKey, errorDebugSuffix, parseRetryAfter } from './api';
 
 describe('resolveErrorKey', () => {
   it('ismert ErrorCode-ot hordozó ApiError-ra ugyanazt a kódot adja', () => {
@@ -14,11 +14,7 @@ describe('resolveErrorKey', () => {
   });
 
   it('ismeretlen kódú ApiError-ra INTERNAL_ERROR-ra esik', () => {
-    const err = new ApiError(
-      'VALAMI_ISMERETLEN' as ErrorCode,
-      500,
-      'unknown',
-    );
+    const err = new ApiError('VALAMI_ISMERETLEN' as ErrorCode, 500, 'unknown');
     expect(resolveErrorKey(err)).toBe(ErrorCode.INTERNAL_ERROR);
   });
 
@@ -48,6 +44,11 @@ describe('errorDebugSuffix', () => {
     expect(errorDebugSuffix(err)).toBe(' (nincs válasz)');
   });
 
+  it('RATE_LIMITED esetén a HTTP státuszt fűzi', () => {
+    const err = new ApiError(ErrorCode.RATE_LIMITED, 429, 'Too Many Requests');
+    expect(errorDebugSuffix(err)).toBe(' (HTTP 429)');
+  });
+
   it('üzleti hibánál üres stringet ad', () => {
     const err = new ApiError(ErrorCode.AUTH_INVALID_CREDENTIALS, 401, 'nope');
     expect(errorDebugSuffix(err)).toBe('');
@@ -69,5 +70,32 @@ describe('ApiError', () => {
     expect(err.status).toBe(422);
     expect(err.message).toBe('invalid');
     expect(err.details).toEqual(details);
+  });
+});
+
+describe('parseRetryAfter', () => {
+  it('másodpercet ms-re vált', () => {
+    expect(parseRetryAfter('5')).toBe(5000);
+    expect(parseRetryAfter('0')).toBe(0);
+  });
+
+  it('HTTP-dátumot a hátralévő ms-re vált', () => {
+    const future = new Date(Date.now() + 10_000).toUTCString();
+    const ms = parseRetryAfter(future)!;
+    expect(ms).toBeGreaterThan(8000);
+    expect(ms).toBeLessThanOrEqual(10_000);
+  });
+
+  it('hiányzó/érvénytelen értékre undefined', () => {
+    expect(parseRetryAfter(null)).toBeUndefined();
+    expect(parseRetryAfter('')).toBeUndefined();
+    expect(parseRetryAfter('nem-szam')).toBeUndefined();
+  });
+});
+
+describe('RATE_LIMITED', () => {
+  it('ismert i18n kulcs', () => {
+    const err = new ApiError(ErrorCode.RATE_LIMITED, 429, 'Too Many Requests');
+    expect(resolveErrorKey(err)).toBe(ErrorCode.RATE_LIMITED);
   });
 });

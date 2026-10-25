@@ -385,6 +385,7 @@
       "SPREADSHEET_NO_DATA": "The spreadsheet has no processable invoice data.",
       "VALIDATION_FAILED": "Data validation failed.",
       "NOT_FOUND": "Resource not found.",
+      "RATE_LIMITED": "Too many requests. Please wait a moment and try again.",
       "INTERNAL_ERROR": "An unexpected error occurred. Please try again.",
       "NETWORK_ERROR": "Network error. Check your connection."
     },

@@ -385,6 +385,7 @@
       "SPREADSHEET_NO_DATA": "Tabelul nu conține date de factură procesabile.",
       "VALIDATION_FAILED": "Validarea datelor a eșuat.",
       "NOT_FOUND": "Resursa nu a fost găsită.",
+      "RATE_LIMITED": "Prea multe cereri. Vă rugăm să așteptați puțin și să încercați din nou.",
       "INTERNAL_ERROR": "A apărut o eroare neașteptată. Vă rugăm să încercați din nou.",
       "NETWORK_ERROR": "Eroare de rețea. Verificați conexiunea."
     },

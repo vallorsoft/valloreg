@@ -54,18 +54,22 @@ export class ApiError extends Error {
   readonly code: ErrorCode | 'NETWORK_ERROR';
   readonly status: number;
   readonly details?: Record<string, string[]>;
+  /** 429 esetén a `Retry-After` header ms-ben (ha a szerver/edge megadta). */
+  readonly retryAfterMs?: number;
 
   constructor(
     code: ErrorCode | 'NETWORK_ERROR',
     status: number,
     message: string,
     details?: Record<string, string[]>,
+    retryAfterMs?: number,
   ) {
     super(message);
     this.name = 'ApiError';
     this.code = code;
     this.status = status;
     this.details = details;
+    this.retryAfterMs = retryAfterMs;
   }
 }
 
@@ -90,7 +94,10 @@ export function resolveErrorKey(err: unknown): ErrorCode | 'NETWORK_ERROR' {
  * 404 / elérhetetlen háttér esetektől. Üzleti hibáknál üres.
  */
 export function errorDebugSuffix(err: unknown): string {
-  if (err instanceof ApiError && (err.code === 'INTERNAL_ERROR' || err.code === 'NETWORK_ERROR')) {
+  if (
+    err instanceof ApiError &&
+    (err.code === 'INTERNAL_ERROR' || err.code === 'NETWORK_ERROR' || err.code === 'RATE_LIMITED')
+  ) {
     return err.status ? ` (HTTP ${err.status})` : ' (nincs válasz)';
   }
   return '';
@@ -130,9 +137,27 @@ async function parseError(response: Response): Promise<ApiError> {
   } catch {
     // Non-JSON error body – fall through to a generic error.
   }
-  const code = (body?.code as ErrorCode | undefined) ?? 'INTERNAL_ERROR';
+  // A 429-et jellemzően NEM az API, hanem a hosting edge-e (Render/Cloudflare)
+  // adja, nem-JSON törzzsel – ilyenkor is RATE_LIMITED legyen, ne "váratlan hiba".
+  const fallback = response.status === 429 ? ErrorCode.RATE_LIMITED : ErrorCode.INTERNAL_ERROR;
+  const code = (body?.code as ErrorCode | undefined) ?? fallback;
   const message = body?.message ?? response.statusText;
-  return new ApiError(code, response.status, message, body?.details);
+  const retryAfterMs =
+    response.status === 429 ? parseRetryAfter(response.headers.get('Retry-After')) : undefined;
+  return new ApiError(code, response.status, message, body?.details, retryAfterMs);
+}
+
+/**
+ * A `Retry-After` header (másodperc VAGY HTTP-dátum) ms-ben; érvénytelen/hiányzó
+ * értékre undefined.
+ */
+export function parseRetryAfter(value: string | null): number | undefined {
+  if (!value) return undefined;
+  const seconds = Number(value);
+  if (Number.isFinite(seconds) && seconds >= 0) return seconds * 1000;
+  const date = Date.parse(value);
+  if (Number.isNaN(date)) return undefined;
+  return Math.max(0, date - Date.now());
 }
 
 /**
@@ -147,6 +172,14 @@ const NETWORK_RETRY_DELAYS_MS = [2000, 5000, 10000, 15000, 18000, 20000];
 
 /** Hideg indításra utaló átmeneti HTTP-státuszok (Render gateway ébredés közben). */
 const COLD_START_STATUSES = new Set([502, 503, 504]);
+
+/**
+ * 429 (rate limit) esetén legfeljebb ennyiszer próbálunk újra – szándékosan
+ * kevésszer, hogy ne terheljük tovább a korlátozó edge-et. A várakozás a
+ * `Retry-After` (ha van), különben a backoff-sor, de legfeljebb RATE_LIMIT_MAX_DELAY_MS.
+ */
+const RATE_LIMIT_MAX_RETRIES = 2;
+const RATE_LIMIT_MAX_DELAY_MS = 20000;
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
@@ -201,20 +234,29 @@ async function sendRequest<T>(path: string, options: RequestOptions): Promise<T>
   const maxAttempts = NETWORK_RETRY_DELAYS_MS.length + 1;
 
   let lastError: unknown;
+  let rateLimitRetries = 0;
   for (let attempt = 0; attempt < maxAttempts; attempt++) {
     try {
       return await performRequest<T>(url, options, body, init);
     } catch (err) {
       lastError = err;
+      const hasMore = attempt < maxAttempts - 1;
+      const delay = NETWORK_RETRY_DELAYS_MS[attempt]!;
+      // 429: rövid, korlátozott újrapróba a Retry-After szerint.
+      if (err instanceof ApiError && err.status === 429) {
+        if (!hasMore || rateLimitRetries >= RATE_LIMIT_MAX_RETRIES) break;
+        rateLimitRetries++;
+        await sleep(Math.min(err.retryAfterMs ?? delay, RATE_LIMIT_MAX_DELAY_MS));
+        continue;
+      }
       // Újrapróba CSAK átmeneti hideg-indítás-hibára: (a) nincs válasz
       // (NETWORK_ERROR / "Failed to fetch"), vagy (b) a Render gateway 502/503/504-e
       // ébredés közben. A valódi 4xx/5xx alkalmazás-hibákat azonnal továbbdobjuk.
       const retriable =
         err instanceof ApiError &&
         (err.code === 'NETWORK_ERROR' || COLD_START_STATUSES.has(err.status));
-      const hasMore = attempt < maxAttempts - 1;
       if (!retriable || !hasMore) break;
-      await sleep(NETWORK_RETRY_DELAYS_MS[attempt]!);
+      await sleep(delay);
     }
   }
   throw lastError;
@@ -621,10 +663,10 @@ export interface CreateManualInvoicePayload {
 export const invoicesApi = {
   /** Kézi javítás létrehozása (számla nélkül) – Document + Invoice + tételek. */
   createManual(payload: CreateManualInvoicePayload) {
-    return apiRequest<{ documentId: string; invoiceId: string }>(
-      '/invoices/manual',
-      { method: 'POST', json: payload },
-    );
+    return apiRequest<{ documentId: string; invoiceId: string }>('/invoices/manual', {
+      method: 'POST',
+      json: payload,
+    });
   },
   updateItem(itemId: string, payload: UpdateInvoiceItemPayload) {
     return apiRequest<InvoiceItem>(`/invoices/items/${itemId}`, {

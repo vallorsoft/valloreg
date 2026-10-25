@@ -38,6 +38,8 @@ export const ErrorCode = {
   // Általános
   VALIDATION_FAILED: 'VALIDATION_FAILED',
   NOT_FOUND: 'NOT_FOUND',
+  /** Túl sok kérés (HTTP 429) – jellemzően a hosting edge-e (Render/Cloudflare) adja. */
+  RATE_LIMITED: 'RATE_LIMITED',
   INTERNAL_ERROR: 'INTERNAL_ERROR',
 } as const;
 
